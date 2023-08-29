@@ -1,0 +1,79 @@
+package de.sotterbeck.iumetro.entity.ticket;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class CommonTicketBuilderConstraintTest {
+
+    private CommonTicketBuilder underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new CommonTicketBuilder("Ticket", UUID.randomUUID());
+    }
+
+    @Test
+    void isValid_ShouldReturnTrue_WhenNoLimitIsAdded() {
+        Ticket ticket = underTest.build();
+
+        boolean valid = ticket.isValid();
+
+        assertThat(valid).isTrue();
+    }
+
+    @Test
+    void isValid_ShouldReturnTrue_WhenTicketBothUsageConstraintsReturnValid() {
+        Ticket ticket = underTest
+                .usageLimit(10)
+                .timeLimit(Duration.ofDays(31), LocalDateTime.now())
+                .build();
+
+        boolean valid = ticket.isValid();
+
+        assertThat(valid).isTrue();
+    }
+
+    @Test
+    void isValid_ShouldReturnFalse_WhenUsageLimitIsNotValidAndTimeLimitIsValid() {
+        int limit = 1;
+        TicketReaderInfo entryReader = new TicketEntryReader(new SimpleStation("any"));
+        TicketReaderInfo exitReader = new TicketExitReader(new SimpleStation("any"));
+
+        Ticket ticket = underTest
+                .usageLimit(limit)
+                .timeLimit(Duration.ofDays(31), LocalDateTime.now())
+                .addUsage(entryReader)
+                .addUsage(exitReader)
+                .addUsage(entryReader)
+                .build();
+        boolean valid = ticket.isValid();
+
+        assertThat(valid).isFalse();
+    }
+
+    @Test
+    void isValid_ShouldReturnFalse_WhenUsageLimitIsValidAndTimeLimitIsNotValid() {
+        TicketReaderInfo entryReader = new TicketEntryReader(new SimpleStation("any"));
+        TicketReaderInfo exitReader = new TicketExitReader(new SimpleStation("any"));
+        Duration timeLimit = Duration.ofDays(31);
+
+        LocalDateTime timeAtTestAfterTimeSurpassed = LocalDateTime.now().plusDays(90);
+        Ticket ticket = underTest
+                .usageLimit(2)
+                .timeLimit(timeLimit, timeAtTestAfterTimeSurpassed)
+                .addUsage(entryReader)
+                .addUsage(exitReader)
+                .addUsage(entryReader)
+                .build();
+        boolean valid = ticket.isValid();
+
+        assertThat(valid).isFalse();
+    }
+
+}
