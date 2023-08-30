@@ -2,7 +2,6 @@ package de.sotterbeck.iumetro.entity.ticket;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,7 +10,7 @@ class TicketStateTest {
 
     @Test
     void isInSystem_ShouldBeFalse_WhenTicketIsInvalid() {
-        TicketReader reader = new TicketEntryReader(new SimpleStation("any"));
+        TicketReader reader = createEntryReader();
         Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .customLimit(t -> false)
                 .build();
@@ -24,7 +23,7 @@ class TicketStateTest {
 
     @Test
     void isInSystem_ShouldBeTrue_WhenTicketIsValid() {
-        TicketReader reader = new TicketEntryReader(new SimpleStation("any"));
+        TicketReader reader = createEntryReader();
         Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID()).build();
 
         reader.tap(ticket);
@@ -35,7 +34,7 @@ class TicketStateTest {
 
     @Test
     void isInSystem_ShouldBeTrue_WhenLastValidUsageWasAEntryGate() {
-        TicketReaderInfo entryReader = new TicketEntryReader(new SimpleStation("any"));
+        TicketReaderInfo entryReader = createEntryReader();
 
         Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .addUsage(entryReader)
@@ -48,7 +47,7 @@ class TicketStateTest {
 
     @Test
     void isInSystem_ShouldBeFalse_WhenLastValidUsageWasAExitGate() {
-        TicketReaderInfo exitReader = new TicketExitReader(new SimpleStation("any"), LocalDateTime.now());
+        TicketReaderInfo exitReader = createExitReader();
 
         Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .addUsage(exitReader)
@@ -57,6 +56,14 @@ class TicketStateTest {
 
         assertThat(inSystem).isFalse();
 
+    }
+
+    private TicketReader createEntryReader() {
+        return new TicketEntryReaderFactory().create(new SimpleStation("any"));
+    }
+
+    private TicketReader createExitReader() {
+        return new TicketExitReaderFactory().create(new SimpleStation("any"));
     }
 
 }

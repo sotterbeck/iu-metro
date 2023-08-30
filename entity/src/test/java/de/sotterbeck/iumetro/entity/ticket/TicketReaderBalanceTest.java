@@ -13,7 +13,7 @@ class TicketReaderBalanceTest {
     void tap_ShouldDeductCostFromBalance_WhenEntryReader() {
         BigDecimal balance = BigDecimal.valueOf(5);
         BigDecimal usageCost = BigDecimal.valueOf(2.5);
-        TicketReader reader = new TicketEntryReader(new SimpleStation("any"));
+        TicketReader reader = createEntryReader();
         RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargeable Ticket",
                 UUID.randomUUID(),
                 balance,
@@ -30,8 +30,8 @@ class TicketReaderBalanceTest {
     void tap_ShouldNotDeductCostFromBalance_WhenExitReader() {
         BigDecimal balance = BigDecimal.valueOf(5);
         BigDecimal usageCost = BigDecimal.valueOf(2.5);
-        TicketReader entryReader = new TicketEntryReader(new SimpleStation("any"));
-        TicketReader exitReader = new TicketExitReader(new SimpleStation("any"));
+        TicketReader entryReader = createEntryReader();
+        TicketReader exitReader = createExitReader();
         RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargeable Ticket",
                 UUID.randomUUID(),
                 balance,
@@ -43,6 +43,14 @@ class TicketReaderBalanceTest {
         BigDecimal balanceAfterUse = ticket.balance();
 
         assertThat(balanceAfterUse).isEqualTo("2.5");
+    }
+
+    private TicketReader createEntryReader() {
+        return new TicketEntryReaderFactory().create(new SimpleStation("any"));
+    }
+
+    private TicketReader createExitReader() {
+        return new TicketExitReaderFactory().create(new SimpleStation("any"));
     }
 
 }

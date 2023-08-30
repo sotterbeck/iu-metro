@@ -23,7 +23,7 @@ class TicketUsageLimitConstraintTest {
     @Test
     void isValid_ShouldBeFalse_WhenUsageLimitSurpassedBeforeEntry() {
         int limit = 1;
-        TicketReaderInfo oneUsage = createEntryTicketReader();
+        TicketReaderInfo oneUsage = createEntryReader();
 
         Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
@@ -37,8 +37,8 @@ class TicketUsageLimitConstraintTest {
     @Test
     void isValid_ShouldBeFalse_WhenExitAfterLimitNotSurpassedAtEntry() {
         int limit = 1;
-        TicketReaderInfo oneUsage = createEntryTicketReader();
-        TicketReaderInfo oneUsageExit = new TicketExitReader(new SimpleStation("any"));
+        TicketReaderInfo oneUsage = createEntryReader();
+        TicketReaderInfo oneUsageExit = createExitReader();
 
         Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
@@ -53,8 +53,8 @@ class TicketUsageLimitConstraintTest {
     @Test
     void isValid_ShouldBeTrue_WhenLimitNotSurpassedAtSecondEntry() {
         int limit = 2;
-        TicketReaderInfo firstUsage = createEntryTicketReader();
-        TicketReaderInfo firstUsageExit = new TicketExitReader(new SimpleStation("any"));
+        TicketReaderInfo firstUsage = createEntryReader();
+        TicketReaderInfo firstUsageExit = createExitReader();
 
         Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
@@ -78,8 +78,12 @@ class TicketUsageLimitConstraintTest {
         assertThat(valid).isTrue();
     }
 
-    private TicketReaderInfo createEntryTicketReader() {
-        return new TicketEntryReader(new SimpleStation("any"));
+    private TicketReaderInfo createEntryReader() {
+        return new TicketEntryReaderFactory().create(new SimpleStation("any"));
+    }
+
+    private TicketReader createExitReader() {
+        return new TicketExitReaderFactory().create(new SimpleStation("any"));
     }
 
 }

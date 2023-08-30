@@ -11,8 +11,8 @@ class RechargeableTicketPaidUsageLimitTest {
 
     @Test
     void tap_ShouldRemoveBalance_WhenPaidUsageLimitIsNotSurpassed() {
-        TicketReader entryReader = new TicketEntryReader(new SimpleStation("any"));
-        TicketReaderInfo exitReader = new TicketExitReader(new SimpleStation("any"));
+        TicketReader entryReader = createEntryReader();
+        TicketReaderInfo exitReader = createExitReader();
         BigDecimal initialBalance = BigDecimal.valueOf(10);
         BigDecimal usageCost = BigDecimal.TWO;
 
@@ -30,8 +30,8 @@ class RechargeableTicketPaidUsageLimitTest {
 
     @Test
     void tap_ShouldNotRemoveBalance_WhenPaidUsageLimitIsSurpassed() {
-        TicketReader entryReader = new TicketEntryReader(new SimpleStation("any"));
-        TicketReaderInfo exitReader = new TicketExitReader(new SimpleStation("any"));
+        TicketReader entryReader = createEntryReader();
+        TicketReaderInfo exitReader = createExitReader();
         BigDecimal initialBalance = BigDecimal.valueOf(10);
         BigDecimal usageCost = BigDecimal.TWO;
 
@@ -45,6 +45,14 @@ class RechargeableTicketPaidUsageLimitTest {
         entryReader.tap(ticket);
 
         assertThat(ticket.balance()).isEqualTo("10");
+    }
+
+    private TicketReader createEntryReader() {
+        return new TicketEntryReaderFactory().create(new SimpleStation("any"));
+    }
+
+    private TicketReader createExitReader() {
+        return new TicketExitReaderFactory().create(new SimpleStation("any"));
     }
 
 }

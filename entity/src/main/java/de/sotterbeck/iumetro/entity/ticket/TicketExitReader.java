@@ -2,32 +2,26 @@ package de.sotterbeck.iumetro.entity.ticket;
 
 import java.time.LocalDateTime;
 
-public class TicketExitReader implements TicketReader {
+class TicketExitReader implements TicketReader {
 
     private final Station station;
-    private final LocalDateTime time;
 
-    public TicketExitReader(Station station, LocalDateTime time) {
+    TicketExitReader(Station station) {
         this.station = station;
-        this.time = time;
-    }
-
-    public TicketExitReader(Station station) {
-        this(station, LocalDateTime.now());
     }
 
     @Override
     public void tap(Ticket ticket) {
-        ticket.onExit(new ImmutableTicketReaderInfo(station(), time, usageType()));
+        ticket.onExit(new ImmutableTicketReaderInfo(station(), LocalDateTime.now(), usageType()));
     }
 
     @Override
-    public boolean opensGate(Ticket ticket) {
+    public boolean shouldOpenGate(Ticket ticket) {
         return true;
     }
 
     @Override
-    public boolean finesUser(Ticket ticket) {
+    public boolean shouldFineUser(Ticket ticket) {
         return !ticket.isInSystem();
     }
 
@@ -38,7 +32,7 @@ public class TicketExitReader implements TicketReader {
 
     @Override
     public LocalDateTime time() {
-        return time;
+        return LocalDateTime.now();
     }
 
     @Override

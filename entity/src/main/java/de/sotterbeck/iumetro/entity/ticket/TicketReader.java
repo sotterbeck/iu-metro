@@ -4,10 +4,8 @@ public interface TicketReader extends TicketReaderInfo {
 
     void tap(Ticket ticket);
 
-    boolean opensGate(Ticket ticket);
+    boolean shouldOpenGate(Ticket ticket);
 
-    default boolean finesUser(Ticket ticket) {
-        return false;
-    }
+    boolean shouldFineUser(Ticket ticket);
 
 }

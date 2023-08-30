@@ -11,11 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class TicketExitReaderTest {
 
-    private TicketExitReader underTest;
+    private TicketReader underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new TicketExitReader(new SimpleStation("any"));
+        underTest = new TicketExitReaderFactory().create(new SimpleStation("any"));
     }
 
     @Nested
@@ -56,7 +56,7 @@ class TicketExitReaderTest {
 
             Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
                     .build();
-            boolean shouldOpenGate = reader.opensGate(ticket);
+            boolean shouldOpenGate = reader.shouldOpenGate(ticket);
 
             assertThat(shouldOpenGate).isTrue();
         }
@@ -68,7 +68,7 @@ class TicketExitReaderTest {
             Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
                     .customLimit(invalid())
                     .build();
-            boolean shouldOpenGate = reader.opensGate(ticket);
+            boolean shouldOpenGate = reader.shouldOpenGate(ticket);
 
             assertThat(shouldOpenGate).isTrue();
         }
@@ -78,12 +78,12 @@ class TicketExitReaderTest {
     @Test
     void finesUser_ShouldReturnFalse_WhenTicketLastUsageWasAtEntryReader() {
         TicketReader exitReader = underTest;
-        TicketReaderInfo entryReader = new TicketEntryReader(new SimpleStation("any"));
+        TicketReaderInfo entryReader = createEntryReader();
 
         Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .addUsage(entryReader)
                 .build();
-        boolean finesUser = exitReader.finesUser(ticket);
+        boolean finesUser = exitReader.shouldFineUser(ticket);
 
         assertThat(finesUser).isFalse();
     }
@@ -94,9 +94,13 @@ class TicketExitReaderTest {
 
         Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .build();
-        boolean finesUser = exitReader.finesUser(ticket);
+        boolean finesUser = exitReader.shouldFineUser(ticket);
 
         assertThat(finesUser).isTrue();
+    }
+
+    private TicketReader createEntryReader() {
+        return new TicketEntryReaderFactory().create(new SimpleStation("any"));
     }
 
     private static Predicate<Ticket> invalid() {

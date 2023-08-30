@@ -42,8 +42,8 @@ class CommonTicketBuilderConstraintTest {
     @Test
     void isValid_ShouldReturnFalse_WhenUsageLimitIsNotValidAndTimeLimitIsValid() {
         int limit = 1;
-        TicketReaderInfo entryReader = new TicketEntryReader(new SimpleStation("any"));
-        TicketReaderInfo exitReader = new TicketExitReader(new SimpleStation("any"));
+        TicketReaderInfo entryReader = createEntryReader();
+        TicketReaderInfo exitReader = createExitReader();
 
         Ticket ticket = underTest
                 .usageLimit(limit)
@@ -59,8 +59,8 @@ class CommonTicketBuilderConstraintTest {
 
     @Test
     void isValid_ShouldReturnFalse_WhenUsageLimitIsValidAndTimeLimitIsNotValid() {
-        TicketReaderInfo entryReader = new TicketEntryReader(new SimpleStation("any"));
-        TicketReaderInfo exitReader = new TicketExitReader(new SimpleStation("any"));
+        TicketReaderInfo entryReader = createEntryReader();
+        TicketReaderInfo exitReader = createExitReader();
         Duration timeLimit = Duration.ofDays(31);
 
         LocalDateTime timeAtTestAfterTimeSurpassed = LocalDateTime.now().plusDays(90);
@@ -74,6 +74,14 @@ class CommonTicketBuilderConstraintTest {
         boolean valid = ticket.isValid();
 
         assertThat(valid).isFalse();
+    }
+
+    private TicketReader createExitReader() {
+        return new TicketExitReaderFactory().create(new SimpleStation("any"));
+    }
+
+    private TicketReader createEntryReader() {
+        return new TicketEntryReaderFactory().create(new SimpleStation("any"));
     }
 
 }

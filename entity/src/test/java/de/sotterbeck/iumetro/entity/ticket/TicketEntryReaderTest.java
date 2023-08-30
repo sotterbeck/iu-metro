@@ -11,11 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class TicketEntryReaderTest {
 
-    private TicketEntryReader underTest;
+    private TicketReader underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new TicketEntryReader(anyStation());
+        underTest = new TicketEntryReaderFactory().create(new SimpleStation("any"));
     }
 
     @Nested
@@ -28,7 +28,7 @@ class TicketEntryReaderTest {
             Ticket ticket = Tickets.createConstrainedTicket("Invalid Ticket", UUID.randomUUID())
                     .customLimit(Invalid())
                     .build();
-            boolean shouldOpen = reader.opensGate(ticket);
+            boolean shouldOpen = reader.shouldOpenGate(ticket);
 
             assertThat(shouldOpen).isFalse();
         }
@@ -38,7 +38,7 @@ class TicketEntryReaderTest {
             TicketReader reader = underTest;
 
             Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID()).build();
-            boolean shouldOpen = reader.opensGate(ticket);
+            boolean shouldOpen = reader.shouldOpenGate(ticket);
 
             assertThat(shouldOpen).isTrue();
         }
@@ -51,7 +51,7 @@ class TicketEntryReaderTest {
             Ticket ticket = Tickets.createConstrainedTicket("Simple Ticket", UUID.randomUUID())
                     .addUsage(entry)
                     .build();
-            boolean shouldOpen = reader.opensGate(ticket);
+            boolean shouldOpen = reader.shouldOpenGate(ticket);
 
             assertThat(shouldOpen).isFalse();
         }
