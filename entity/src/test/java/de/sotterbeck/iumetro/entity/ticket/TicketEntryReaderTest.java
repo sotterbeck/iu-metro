@@ -105,8 +105,4 @@ class TicketEntryReaderTest {
         return t -> false;
     }
 
-    private static SimpleStation anyStation() {
-        return new SimpleStation("any");
-    }
-
 }
