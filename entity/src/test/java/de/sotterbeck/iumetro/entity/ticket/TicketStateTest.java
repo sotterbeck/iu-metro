@@ -12,7 +12,7 @@ class TicketStateTest {
     @Test
     void isInSystem_ShouldBeFalse_WhenTicketIsInvalid() {
         TicketReader reader = new TicketEntryReader(new SimpleStation("any"));
-        Ticket ticket = new CommonTicketBuilder("Common Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .customLimit(t -> false)
                 .build();
 
@@ -25,7 +25,7 @@ class TicketStateTest {
     @Test
     void isInSystem_ShouldBeTrue_WhenTicketIsValid() {
         TicketReader reader = new TicketEntryReader(new SimpleStation("any"));
-        Ticket ticket = new CommonTicketBuilder("Common Ticket", UUID.randomUUID()).build();
+        Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID()).build();
 
         reader.tap(ticket);
         boolean inSystem = ticket.isInSystem();
@@ -37,7 +37,7 @@ class TicketStateTest {
     void isInSystem_ShouldBeTrue_WhenLastValidUsageWasAEntryGate() {
         TicketReaderInfo entryReader = new TicketEntryReader(new SimpleStation("any"));
 
-        Ticket ticket = new CommonTicketBuilder("Common Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .addUsage(entryReader)
                 .build();
         boolean inSystem = ticket.isInSystem();
@@ -50,7 +50,7 @@ class TicketStateTest {
     void isInSystem_ShouldBeFalse_WhenLastValidUsageWasAExitGate() {
         TicketReaderInfo exitReader = new TicketExitReader(new SimpleStation("any"), LocalDateTime.now());
 
-        Ticket ticket = new CommonTicketBuilder("Common Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .addUsage(exitReader)
                 .build();
         boolean inSystem = ticket.isInSystem();

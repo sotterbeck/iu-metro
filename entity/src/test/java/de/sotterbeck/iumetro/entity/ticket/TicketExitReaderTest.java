@@ -25,7 +25,7 @@ class TicketExitReaderTest {
         void shouldAddUsage_WhenTicketIsValid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = new CommonTicketBuilder("Valid Ticket", UUID.randomUUID())
+            Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
                     .build();
             reader.tap(ticket);
 
@@ -36,7 +36,7 @@ class TicketExitReaderTest {
         void shouldAddUsage_WhenTicketIsNotValid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = new CommonTicketBuilder("Valid Ticket", UUID.randomUUID())
+            Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
                     .customLimit(invalid())
                     .build();
             reader.tap(ticket);
@@ -54,7 +54,7 @@ class TicketExitReaderTest {
         void shouldReturnTrue_WhenTicketIsValid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = new CommonTicketBuilder("Valid Ticket", UUID.randomUUID())
+            Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
                     .build();
             boolean shouldOpenGate = reader.opensGate(ticket);
 
@@ -65,7 +65,7 @@ class TicketExitReaderTest {
         void shouldReturnTrue_WhenTicketIsNotValid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = new CommonTicketBuilder("Valid Ticket", UUID.randomUUID())
+            Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
                     .customLimit(invalid())
                     .build();
             boolean shouldOpenGate = reader.opensGate(ticket);
@@ -80,7 +80,7 @@ class TicketExitReaderTest {
         TicketReader exitReader = underTest;
         TicketReaderInfo entryReader = new TicketEntryReader(new SimpleStation("any"));
 
-        Ticket ticket = new CommonTicketBuilder("Common Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .addUsage(entryReader)
                 .build();
         boolean finesUser = exitReader.finesUser(ticket);
@@ -92,7 +92,7 @@ class TicketExitReaderTest {
     void finesUser_ShouldReturnTrue_WhenTicketLastUsageWasNotAtEntryReader() {
         TicketReader exitReader = underTest;
 
-        Ticket ticket = new CommonTicketBuilder("Common Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .build();
         boolean finesUser = exitReader.finesUser(ticket);
 

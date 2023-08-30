@@ -14,7 +14,7 @@ class RechargeableTicketValidationTest {
         BigDecimal sufficientBalance = BigDecimal.valueOf(5);
         BigDecimal usageCost = BigDecimal.valueOf(2.5);
 
-        RechargeableTicket ticket = new RechargeableTicketBuilder("Rechargeable Ticket",
+        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargeable Ticket",
                 UUID.randomUUID(),
                 sufficientBalance,
                 usageCost)
@@ -29,7 +29,7 @@ class RechargeableTicketValidationTest {
         BigDecimal noBalance = BigDecimal.valueOf(0);
         BigDecimal usageCost = BigDecimal.valueOf(2.5);
 
-        RechargeableTicket ticket = new RechargeableTicketBuilder("Rechargeable Ticket",
+        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargeable Ticket",
                 UUID.randomUUID(),
                 noBalance,
                 usageCost)

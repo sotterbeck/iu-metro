@@ -12,7 +12,7 @@ class TicketUsageLimitConstraintTest {
     void isValid_ShouldBeTrue_WhenUsageLimitNotSurpassed() {
         int limit = 1;
 
-        Ticket ticket = new CommonTicketBuilder("Single-use Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
                 .build();
         boolean valid = ticket.isValid();
@@ -25,7 +25,7 @@ class TicketUsageLimitConstraintTest {
         int limit = 1;
         TicketReaderInfo oneUsage = createEntryTicketReader();
 
-        Ticket ticket = new CommonTicketBuilder("Single-use Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
                 .addUsage(oneUsage)
                 .build();
@@ -40,7 +40,7 @@ class TicketUsageLimitConstraintTest {
         TicketReaderInfo oneUsage = createEntryTicketReader();
         TicketReaderInfo oneUsageExit = new TicketExitReader(new SimpleStation("any"));
 
-        Ticket ticket = new CommonTicketBuilder("Single-use Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
                 .addUsage(oneUsage)
                 .addUsage(oneUsageExit)
@@ -56,7 +56,7 @@ class TicketUsageLimitConstraintTest {
         TicketReaderInfo firstUsage = createEntryTicketReader();
         TicketReaderInfo firstUsageExit = new TicketExitReader(new SimpleStation("any"));
 
-        Ticket ticket = new CommonTicketBuilder("Single-use Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
                 .addUsage(firstUsage)
                 .addUsage(firstUsageExit)
@@ -70,7 +70,7 @@ class TicketUsageLimitConstraintTest {
     void isValid_ShouldBeTrue_WhenUsageLimitIsZero() {
         int limit = 0;
 
-        Ticket ticket = new CommonTicketBuilder("Single-use Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
                 .build();
         boolean valid = ticket.isValid();

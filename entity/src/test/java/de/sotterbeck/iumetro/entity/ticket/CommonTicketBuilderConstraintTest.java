@@ -11,11 +11,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CommonTicketBuilderConstraintTest {
 
-    private CommonTicketBuilder underTest;
+    private ConstrainedTicketBuilder underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CommonTicketBuilder("Ticket", UUID.randomUUID());
+        underTest = Tickets.createConstrainedTicket("Ticket", UUID.randomUUID());
     }
 
     @Test

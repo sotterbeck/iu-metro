@@ -27,7 +27,7 @@ class TicketTimeLimitConstraintTest {
         TicketReaderInfo firstUsage = createAnyStation();
 
         LocalDateTime timeAtTestNotSurpassed = firstUsage.time().plusHours(1);
-        Ticket ticket = new CommonTicketBuilder("4-Hour Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("4-Hour Ticket", UUID.randomUUID())
                 .timeLimit(timeLimit, timeAtTestNotSurpassed)
                 .addUsage(firstUsage)
                 .build();
@@ -42,7 +42,7 @@ class TicketTimeLimitConstraintTest {
         TicketReaderInfo firstUsage = createAnyStation();
 
         LocalDateTime timeAtTestSurpassed = firstUsage.time().plusHours(5);
-        Ticket ticket = new CommonTicketBuilder("4-Hour Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("4-Hour Ticket", UUID.randomUUID())
                 .timeLimit(timeLimit, timeAtTestSurpassed)
                 .addUsage(firstUsage)
                 .build();
@@ -55,7 +55,7 @@ class TicketTimeLimitConstraintTest {
     void isValid_ShouldBeTrue_WhenTicketWithTimeConstantHasNoUsage() {
         Duration timeLimit = Duration.ofHours(4);
         LocalDateTime timeAtTest = LocalDateTime.now();
-        Ticket ticket = new CommonTicketBuilder("4-Hour Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("4-Hour Ticket", UUID.randomUUID())
                 .timeLimit(timeLimit, timeAtTest)
                 .build();
 
@@ -69,7 +69,7 @@ class TicketTimeLimitConstraintTest {
         Duration timeLimit = Duration.ofHours(0);
         LocalDateTime timeAtTest = LocalDateTime.now().plusSeconds(1);
         TicketReaderInfo firstUsage = createAnyStation();
-        Ticket ticket = new CommonTicketBuilder("Valid Ticket", UUID.randomUUID())
+        Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
                 .timeLimit(timeLimit, timeAtTest)
                 .addUsage(firstUsage)
                 .build();

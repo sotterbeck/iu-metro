@@ -13,7 +13,7 @@ class RechargeableTicketAddBalanceTest {
     @Test
     void addBalance_ShouldAddBalance_WhenAmountIsPositive() {
         BigDecimal positiveAmount = BigDecimal.valueOf(5);
-        RechargeableTicket ticket = new RechargeableTicketBuilder("Rechargable Ticket", UUID.randomUUID(), BigDecimal.valueOf(15), BigDecimal.TWO).build();
+        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), BigDecimal.valueOf(15), BigDecimal.TWO).build();
 
         ticket.addBalance(positiveAmount);
         BigDecimal balance = ticket.balance();
@@ -24,7 +24,7 @@ class RechargeableTicketAddBalanceTest {
     @Test
     void addBalance_ShouldThrowException_WhenAmountIsNegative() {
         BigDecimal negativeAmount = BigDecimal.valueOf(-5);
-        RechargeableTicket ticket = new RechargeableTicketBuilder("Rechargable Ticket", UUID.randomUUID(), BigDecimal.valueOf(15), BigDecimal.TWO).build();
+        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), BigDecimal.valueOf(15), BigDecimal.TWO).build();
 
         Throwable throwable = catchThrowable(() -> ticket.addBalance(negativeAmount));
 

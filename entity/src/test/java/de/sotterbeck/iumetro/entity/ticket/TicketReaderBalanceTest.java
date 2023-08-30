@@ -14,7 +14,7 @@ class TicketReaderBalanceTest {
         BigDecimal balance = BigDecimal.valueOf(5);
         BigDecimal usageCost = BigDecimal.valueOf(2.5);
         TicketReader reader = new TicketEntryReader(new SimpleStation("any"));
-        RechargeableTicket ticket = new RechargeableTicketBuilder("Rechargeable Ticket",
+        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargeable Ticket",
                 UUID.randomUUID(),
                 balance,
                 usageCost)
@@ -32,7 +32,7 @@ class TicketReaderBalanceTest {
         BigDecimal usageCost = BigDecimal.valueOf(2.5);
         TicketReader entryReader = new TicketEntryReader(new SimpleStation("any"));
         TicketReader exitReader = new TicketExitReader(new SimpleStation("any"));
-        RechargeableTicket ticket = new RechargeableTicketBuilder("Rechargeable Ticket",
+        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargeable Ticket",
                 UUID.randomUUID(),
                 balance,
                 usageCost)

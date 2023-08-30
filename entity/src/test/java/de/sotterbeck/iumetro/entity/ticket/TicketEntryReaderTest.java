@@ -25,7 +25,7 @@ class TicketEntryReaderTest {
         void shouldReturnFalse_WhenTicketIsNotValid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = new CommonTicketBuilder("Invalid Ticket", UUID.randomUUID())
+            Ticket ticket = Tickets.createConstrainedTicket("Invalid Ticket", UUID.randomUUID())
                     .customLimit(Invalid())
                     .build();
             boolean shouldOpen = reader.opensGate(ticket);
@@ -37,7 +37,7 @@ class TicketEntryReaderTest {
         void shouldReturnTrue_WhenTicketIsValid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = new CommonTicketBuilder("Valid Ticket", UUID.randomUUID()).build();
+            Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID()).build();
             boolean shouldOpen = reader.opensGate(ticket);
 
             assertThat(shouldOpen).isTrue();
@@ -48,7 +48,7 @@ class TicketEntryReaderTest {
             TicketReader reader = underTest;
             TicketReaderInfo entry = underTest;
 
-            Ticket ticket = new CommonTicketBuilder("Simple Ticket", UUID.randomUUID())
+            Ticket ticket = Tickets.createConstrainedTicket("Simple Ticket", UUID.randomUUID())
                     .addUsage(entry)
                     .build();
             boolean shouldOpen = reader.opensGate(ticket);
@@ -65,7 +65,7 @@ class TicketEntryReaderTest {
         void tap_ShouldAddUsage_WhenTicketIsValid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = new CommonTicketBuilder("Valid Ticket", UUID.randomUUID())
+            Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
                     .build();
             reader.tap(ticket);
             int usages = ticket.usageCount();
@@ -77,7 +77,7 @@ class TicketEntryReaderTest {
         void tap_ShouldNotAddUsage_WhenTicketIsInvalid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = new CommonTicketBuilder("Invalid Ticket", UUID.randomUUID())
+            Ticket ticket = Tickets.createConstrainedTicket("Invalid Ticket", UUID.randomUUID())
                     .customLimit(Invalid())
                     .build();
             reader.tap(ticket);
@@ -91,7 +91,7 @@ class TicketEntryReaderTest {
         void tap_ShouldNotAddUsage_WhenTicketIsInSystem() {
             TicketReader reader = underTest;
 
-            Ticket ticket = new CommonTicketBuilder("Simple Ticket", UUID.randomUUID())
+            Ticket ticket = Tickets.createConstrainedTicket("Simple Ticket", UUID.randomUUID())
                     .addUsage(underTest)
                     .build();
             reader.tap(ticket);
