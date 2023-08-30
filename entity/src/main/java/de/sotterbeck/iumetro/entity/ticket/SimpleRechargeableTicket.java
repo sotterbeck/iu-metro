@@ -22,7 +22,7 @@ class SimpleRechargeableTicket extends AbstractTicket implements RechargeableTic
     @Override
     public void onEntry(TicketReaderInfo ticketReader) {
         addUsage(ticketReader);
-        balance = balance.subtract(usageCost);
+        subtractBalance(usageCost);
     }
 
     @Override
@@ -37,6 +37,11 @@ class SimpleRechargeableTicket extends AbstractTicket implements RechargeableTic
     @Override
     public BigDecimal balance() {
         return balance;
+    }
+
+    @Override
+    public void subtractBalance(BigDecimal amount) {
+        balance = balance.subtract(amount);
     }
 
     @Override

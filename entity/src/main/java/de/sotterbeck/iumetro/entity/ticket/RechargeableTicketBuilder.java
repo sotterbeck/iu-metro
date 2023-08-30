@@ -12,6 +12,7 @@ public class RechargeableTicketBuilder {
     private final BigDecimal balance;
     private final BigDecimal usageCost;
     private final List<TicketReaderInfo> usages = new ArrayList<>();
+    private int paidUsages;
 
     public RechargeableTicketBuilder(String name, UUID id, BigDecimal balance, BigDecimal usageCost) {
         this.name = name;
@@ -20,7 +21,20 @@ public class RechargeableTicketBuilder {
         this.usageCost = usageCost;
     }
 
+    public RechargeableTicketBuilder addUsage(TicketReaderInfo ticketReader) {
+        usages.add(ticketReader);
+        return this;
+    }
+
+    public RechargeableTicketBuilder paidUsageLimit(int paidUsages) {
+        this.paidUsages = paidUsages;
+        return this;
+    }
+
     public RechargeableTicket build() {
+        if (paidUsages != 0) {
+            return new PaidUsageLimitedRechargeableTicket(name, id, balance, usageCost, paidUsages, usages);
+        }
         return new SimpleRechargeableTicket(name, id, balance, usageCost, usages);
     }
 

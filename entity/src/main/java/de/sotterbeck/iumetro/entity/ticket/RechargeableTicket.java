@@ -8,4 +8,6 @@ public interface RechargeableTicket extends Ticket {
 
     void addBalance(BigDecimal amount);
 
+    void subtractBalance(BigDecimal amount);
+
 }
