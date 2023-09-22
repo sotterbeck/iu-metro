@@ -1,3 +1,4 @@
 module iumetro.usecase {
-    exports de.sotterbeck.uimetro.usecase.ticket.obtain;
+    exports de.sotterbeck.iumetro.usecase.ticket;
+    exports de.sotterbeck.iumetro.usecase.ticket.obtain;
 }
