@@ -17,6 +17,10 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:5.4.0")
 }
 
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+}
+
 tasks.test {
     useJUnitPlatform()
 }

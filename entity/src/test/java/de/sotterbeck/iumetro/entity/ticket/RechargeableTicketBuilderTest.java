@@ -14,7 +14,7 @@ class RechargeableTicketPaidUsageLimitTest {
         TicketReader entryReader = createEntryReader();
         TicketReaderInfo exitReader = createExitReader();
         BigDecimal initialBalance = BigDecimal.valueOf(10);
-        BigDecimal usageCost = BigDecimal.TWO;
+        BigDecimal usageCost = BigDecimal.valueOf(2);
 
         RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), initialBalance, usageCost)
                 .paidUsageLimit(10)
@@ -33,7 +33,7 @@ class RechargeableTicketPaidUsageLimitTest {
         TicketReader entryReader = createEntryReader();
         TicketReaderInfo exitReader = createExitReader();
         BigDecimal initialBalance = BigDecimal.valueOf(10);
-        BigDecimal usageCost = BigDecimal.TWO;
+        BigDecimal usageCost = BigDecimal.valueOf(2);
 
         RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), initialBalance, usageCost)
                 .paidUsageLimit(1)
