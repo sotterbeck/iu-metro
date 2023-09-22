@@ -1,4 +1,4 @@
-package de.sotterbeck.uimetro.usecase.ticket;
+package de.sotterbeck.iumetro.usecase.ticket;
 
 import java.util.Optional;
 import java.util.UUID;
