@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -28,7 +27,7 @@ class CreateTicketInteractorTest {
 
     @Test
     void invoke_ShouldSaveTicket() {
-        TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", BigDecimal.ONE, 0, Duration.ZERO);
+        TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", 0, Duration.ZERO);
         underTest = new CreateTicketInteractorImpl(ticketDsGateway, ticketPresenter);
 
         underTest.invoke(ticketRequestModel);
@@ -38,7 +37,7 @@ class CreateTicketInteractorTest {
 
     @Test
     void invoke_ShouldPrintTicket() {
-        TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", BigDecimal.ONE, 0, Duration.ZERO);
+        TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", 0, Duration.ZERO);
         underTest = new CreateTicketInteractorImpl(ticketDsGateway, ticketPresenter);
 
         underTest.invoke(ticketRequestModel);
@@ -48,7 +47,7 @@ class CreateTicketInteractorTest {
 
     @Test
     void invoke_ShouldPrepareSuccessView() {
-        TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", BigDecimal.ONE, 0, Duration.ZERO);
+        TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", 0, Duration.ZERO);
         underTest = new CreateTicketInteractorImpl(ticketDsGateway, ticketPresenter);
 
         underTest.invoke(ticketRequestModel);
