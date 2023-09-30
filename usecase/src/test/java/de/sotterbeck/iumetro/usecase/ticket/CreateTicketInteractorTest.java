@@ -32,7 +32,7 @@ class CreateTicketInteractorTest {
 
         underTest.invoke(ticketRequestModel);
 
-        then(ticketDsGateway).should(times(1)).save(any(TicketDsRequestModel.class));
+        then(ticketDsGateway).should(times(1)).save(any(TicketDsModel.class));
     }
 
     @Test
@@ -52,6 +52,6 @@ class CreateTicketInteractorTest {
 
         underTest.invoke(ticketRequestModel);
 
-        then(ticketPresenter).should(times(1)).prepareSuccessView(any());
+        then(ticketPresenter).should(times(1)).prepareSuccessView(any(), any());
     }
 }

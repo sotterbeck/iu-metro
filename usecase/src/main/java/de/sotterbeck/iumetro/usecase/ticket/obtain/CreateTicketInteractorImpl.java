@@ -1,7 +1,7 @@
 package de.sotterbeck.iumetro.usecase.ticket.obtain;
 
 import de.sotterbeck.iumetro.usecase.ticket.TicketDsGateway;
-import de.sotterbeck.iumetro.usecase.ticket.TicketDsRequestModel;
+import de.sotterbeck.iumetro.usecase.ticket.TicketDsModel;
 import de.sotterbeck.iumetro.usecase.ticket.TicketPresenter;
 import de.sotterbeck.iumetro.usecase.ticket.TicketRequestModel;
 
@@ -23,11 +23,11 @@ public class CreateTicketInteractorImpl implements CreateTicketInteractor {
 
     private void preparePresenter(TicketRequestModel ticket) {
         ticketPresenter.printTicket(ticket);
-        ticketPresenter.prepareSuccessView(ticket);
+        ticketPresenter.prepareSuccessView(ticket, "You created a ticket with the id %s".formatted(ticket.id()));
     }
 
-    private static TicketDsRequestModel toDsTicket(TicketRequestModel ticket) {
-        return new TicketDsRequestModel(ticket.id(), ticket.name(), ticket.usageLimit(), ticket.timeLimit());
+    private static TicketDsModel toDsTicket(TicketRequestModel ticket) {
+        return new TicketDsModel(ticket.id(), ticket.name(), ticket.usageLimit(), ticket.timeLimit());
     }
 
 }
