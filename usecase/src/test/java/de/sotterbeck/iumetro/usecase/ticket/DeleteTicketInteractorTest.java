@@ -33,7 +33,7 @@ class DeleteTicketInteractorTest {
     @Test
     void invoke_ShouldDeleteTicketAndPrepareSuccessView_WhenTicketExits() {
         UUID id = UUID.fromString("1ed0a79e-f95e-4347-bd74-3f6c4ef3dc12");
-        TicketDsRequestModel ticketDsModel = new TicketDsRequestModel(id, "Single-use Ticket");
+        TicketDsModel ticketDsModel = new TicketDsModel(id, "Single-use Ticket");
 
         when(ticketDsGateway.existsById(id)).thenReturn(true);
         when(ticketDsGateway.get(id)).thenReturn(Optional.of(ticketDsModel));
@@ -44,7 +44,7 @@ class DeleteTicketInteractorTest {
                 eq(new TicketRequestModel(ticketDsModel.id(),
                         ticketDsModel.name(),
                         ticketDsModel.usageLimit(),
-                        ticketDsModel.timeLimit())));
+                        ticketDsModel.timeLimit())), any());
     }
 
     @Test

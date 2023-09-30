@@ -5,9 +5,10 @@ import java.util.UUID;
 
 public interface TicketDsGateway {
 
-    void save(TicketDsRequestModel ticket);
+    void save(TicketDsModel ticket);
 
     Optional<TicketDsRequestModel> get(UUID id);
+    Optional<TicketDsModel> get(UUID id);
 
     boolean existsById(UUID id);
 
