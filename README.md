@@ -44,6 +44,10 @@ cd iu-metro
 ./gradlew build
 ```
 
+Note: The project is designed with a clean architecture, enabling flexibility for adaptation to various technologies
+such as a
+Minecraft plugin, RESTful web API, or Discord bot.
+
 ## License
 
 This project is licensed under he [Apache-2.0](LICENSE) license.
