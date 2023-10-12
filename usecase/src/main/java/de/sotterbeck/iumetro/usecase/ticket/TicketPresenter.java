@@ -1,11 +1,12 @@
 package de.sotterbeck.iumetro.usecase.ticket;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 public interface TicketPresenter {
 
-    void prepareSuccessView(TicketRequestModel ticket, String message);
+    @NotNull TicketResponseModel prepareSuccessView(TicketRequestModel ticket);
 
-    void prepareFailView(String message);
-
-    void printTicket(TicketRequestModel ticket);
+    @Nullable TicketResponseModel prepareFailView(String message);
 
 }

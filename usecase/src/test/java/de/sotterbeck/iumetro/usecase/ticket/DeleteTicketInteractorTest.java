@@ -31,28 +31,28 @@ class DeleteTicketInteractorTest {
     }
 
     @Test
-    void invoke_ShouldDeleteTicketAndPrepareSuccessView_WhenTicketExits() {
+    void delete_ShouldDeleteTicketAndPrepareSuccessView_WhenTicketExits() {
         UUID id = UUID.fromString("1ed0a79e-f95e-4347-bd74-3f6c4ef3dc12");
         TicketDsModel ticketDsModel = new TicketDsModel(id, "Single-use Ticket");
 
         when(ticketDsGateway.existsById(id)).thenReturn(true);
         when(ticketDsGateway.get(id)).thenReturn(Optional.of(ticketDsModel));
-        underTest.invoke(id);
+        underTest.delete(id);
 
         then(ticketDsGateway).should(times(1)).deleteById(eq(id));
         then(ticketPresenter).should(times(1)).prepareSuccessView(
                 eq(new TicketRequestModel(ticketDsModel.id(),
                         ticketDsModel.name(),
                         ticketDsModel.usageLimit(),
-                        ticketDsModel.timeLimit())), any());
+                        ticketDsModel.timeLimit())));
     }
 
     @Test
-    void invoke_ShouldNotDeleteTicketAndPrepareFailView_WhenTicketDoesNotExits() {
+    void delete_ShouldNotDeleteTicketAndPrepareFailView_WhenTicketDoesNotExits() {
         UUID id = UUID.fromString("1ed0a79e-f95e-4347-bd74-3f6c4ef3dc12");
 
         when(ticketDsGateway.existsById(id)).thenReturn(false);
-        underTest.invoke(id);
+        underTest.delete(id);
 
         then(ticketDsGateway).should(never()).deleteById(eq(id));
         then(ticketPresenter).should(times(1)).prepareFailView(any());

@@ -1,9 +1,6 @@
 package de.sotterbeck.iumetro.usecase.ticket.obtain;
 
-import de.sotterbeck.iumetro.usecase.ticket.TicketDsGateway;
-import de.sotterbeck.iumetro.usecase.ticket.TicketDsModel;
-import de.sotterbeck.iumetro.usecase.ticket.TicketPresenter;
-import de.sotterbeck.iumetro.usecase.ticket.TicketRequestModel;
+import de.sotterbeck.iumetro.usecase.ticket.*;
 
 import java.util.UUID;
 
@@ -18,14 +15,13 @@ public class DeleteTicketInteractorImpl implements DeleteTicketInteractor {
     }
 
     @Override
-    public void invoke(UUID ticketId) {
+    public TicketResponseModel delete(UUID ticketId) {
         if (!ticketDsGateway.existsById(ticketId)) {
-            ticketPresenter.prepareFailView("Ticket with id %s does not exists.".formatted(ticketId));
-            return;
+            return ticketPresenter.prepareFailView("Ticket with id %s does not exists.".formatted(ticketId));
         }
         TicketDsModel ticket = ticketDsGateway.get(ticketId).orElseThrow(AssertionError::new);
         ticketDsGateway.deleteById(ticketId);
-        ticketPresenter.prepareSuccessView(toRequestModel(ticket), "You deleted the ticket with the id %s".formatted(ticket.id()));
+        return ticketPresenter.prepareSuccessView(toRequestModel(ticket));
     }
 
     private static TicketRequestModel toRequestModel(TicketDsModel ticket) {

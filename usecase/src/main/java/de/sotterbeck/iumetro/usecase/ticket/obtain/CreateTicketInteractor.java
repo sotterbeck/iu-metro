@@ -1,9 +1,10 @@
 package de.sotterbeck.iumetro.usecase.ticket.obtain;
 
 import de.sotterbeck.iumetro.usecase.ticket.TicketRequestModel;
+import de.sotterbeck.iumetro.usecase.ticket.TicketResponseModel;
 
 public interface CreateTicketInteractor {
 
-    void invoke(TicketRequestModel ticket);
+    TicketResponseModel create(TicketRequestModel ticket);
 
 }
