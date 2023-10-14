@@ -16,4 +16,6 @@ public interface TicketDsGateway {
 
     void deleteById(UUID id);
 
+    List<UsageDsModel> getTicketUsages(UUID uuid);
+
 }
