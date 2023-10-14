@@ -1,33 +1,65 @@
 package de.sotterbeck.iumetro.usecase.ticket;
 
-import de.sotterbeck.iumetro.usecase.ticket.obtain.DeleteTicketInteractor;
-import de.sotterbeck.iumetro.usecase.ticket.obtain.DeleteTicketInteractorImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DeleteTicketInteractorTest {
+class TicketManagingInteractorTest {
 
     @Mock
-    TicketDsGateway ticketDsGateway;
-
+    private TicketDsGateway ticketDsGateway;
     @Mock
-    TicketPresenter ticketPresenter;
-    DeleteTicketInteractor underTest;
+    private TicketPresenter ticketPresenter;
+    @Mock
+    private TicketPrintingHandler printingGateway;
+
+    private TicketManagingInteractor underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new DeleteTicketInteractorImpl(ticketDsGateway, ticketPresenter);
+        underTest = new TicketManagingInteractorImpl(ticketDsGateway, ticketPresenter);
+    }
+
+    @Test
+    void create_ShouldSaveTicket() {
+        TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", 0, Duration.ZERO);
+        underTest = new TicketManagingInteractorImpl(ticketDsGateway, ticketPresenter, printingGateway);
+
+        underTest.create(ticketRequestModel);
+
+        then(ticketDsGateway).should(times(1)).save(any(TicketDsModel.class));
+    }
+
+    @Test
+    void create_ShouldPrepareSuccessView() {
+        TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", 0, Duration.ZERO);
+        underTest = new TicketManagingInteractorImpl(ticketDsGateway, ticketPresenter, printingGateway);
+
+        underTest.create(ticketRequestModel);
+
+        then(ticketPresenter).should(times(1)).prepareSuccessView(any());
+    }
+
+    @Test
+    void create_ShouldPrintTicket() {
+        TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", 0, Duration.ZERO);
+        underTest = new TicketManagingInteractorImpl(ticketDsGateway, ticketPresenter, printingGateway);
+
+        underTest.create(ticketRequestModel);
+
+        then(printingGateway).should(times(1)).printTicket(any());
     }
 
     @Test
