@@ -1,5 +1,6 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -9,6 +10,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class RechargeableTicketPaidUsageLimitTest {
 
+    private TicketFactory ticketFactory;
+
+    @BeforeEach
+    void setUp() {
+        ticketFactory = new SimpleTicketFactory();
+    }
+
     @Test
     void tap_ShouldRemoveBalance_WhenPaidUsageLimitIsNotSurpassed() {
         TicketReader entryReader = createEntryReader();
@@ -16,7 +24,7 @@ class RechargeableTicketPaidUsageLimitTest {
         BigDecimal initialBalance = BigDecimal.valueOf(10);
         BigDecimal usageCost = BigDecimal.valueOf(2);
 
-        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), initialBalance, usageCost)
+        RechargeableTicket ticket = ticketFactory.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), initialBalance, usageCost)
                 .paidUsageLimit(10)
                 .addUsage(entryReader)
                 .addUsage(exitReader)
@@ -35,7 +43,7 @@ class RechargeableTicketPaidUsageLimitTest {
         BigDecimal initialBalance = BigDecimal.valueOf(10);
         BigDecimal usageCost = BigDecimal.valueOf(2);
 
-        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), initialBalance, usageCost)
+        RechargeableTicket ticket = ticketFactory.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), initialBalance, usageCost)
                 .paidUsageLimit(1)
                 .addUsage(entryReader)
                 .addUsage(exitReader)

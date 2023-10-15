@@ -10,7 +10,8 @@ class TicketConstraintTest {
 
     @Test
     void isValid_ShouldBeTrue_WhenEmployeeTicket() {
-        Ticket ticket = Tickets.createConstrainedTicket("Employee Ticket", UUID.randomUUID())
+        TicketFactory ticketFactory = new SimpleTicketFactory();
+        Ticket ticket = ticketFactory.createConstrainedTicket("Employee Ticket", UUID.randomUUID())
                 .build();
 
         boolean valid = ticket.isValid();

@@ -15,7 +15,8 @@ class CommonTicketBuilderConstraintTest {
 
     @BeforeEach
     void setUp() {
-        underTest = Tickets.createConstrainedTicket("Ticket", UUID.randomUUID());
+        TicketFactory ticketFactory = new SimpleTicketFactory();
+        underTest = ticketFactory.createConstrainedTicket("Ticket", UUID.randomUUID());
     }
 
     @Test

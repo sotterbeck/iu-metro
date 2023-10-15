@@ -1,5 +1,6 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -9,12 +10,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class TicketReaderBalanceTest {
 
+    TicketFactory ticketFactory;
+
+    @BeforeEach
+    void setUp() {
+        ticketFactory = new SimpleTicketFactory();
+    }
+
     @Test
     void tap_ShouldDeductCostFromBalance_WhenEntryReader() {
         BigDecimal balance = BigDecimal.valueOf(5);
         BigDecimal usageCost = BigDecimal.valueOf(2.5);
         TicketReader reader = createEntryReader();
-        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargeable Ticket",
+        RechargeableTicket ticket = ticketFactory.createRechargeableTicket("Rechargeable Ticket",
                 UUID.randomUUID(),
                 balance,
                 usageCost)
@@ -32,7 +40,7 @@ class TicketReaderBalanceTest {
         BigDecimal usageCost = BigDecimal.valueOf(2.5);
         TicketReader entryReader = createEntryReader();
         TicketReader exitReader = createExitReader();
-        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargeable Ticket",
+        RechargeableTicket ticket = ticketFactory.createRechargeableTicket("Rechargeable Ticket",
                 UUID.randomUUID(),
                 balance,
                 usageCost)

@@ -1,5 +1,6 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -10,10 +11,17 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 class RechargeableTicketAddBalanceTest {
 
+    private TicketFactory ticketFactory;
+
+    @BeforeEach
+    void setUp() {
+        ticketFactory = new SimpleTicketFactory();
+    }
+
     @Test
     void addBalance_ShouldAddBalance_WhenAmountIsPositive() {
         BigDecimal positiveAmount = BigDecimal.valueOf(5);
-        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), BigDecimal.valueOf(15), BigDecimal.valueOf(2)).build();
+        RechargeableTicket ticket = ticketFactory.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), BigDecimal.valueOf(15), BigDecimal.valueOf(2)).build();
 
         ticket.addBalance(positiveAmount);
         BigDecimal balance = ticket.balance();
@@ -24,7 +32,7 @@ class RechargeableTicketAddBalanceTest {
     @Test
     void addBalance_ShouldThrowException_WhenAmountIsNegative() {
         BigDecimal negativeAmount = BigDecimal.valueOf(-5);
-        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), BigDecimal.valueOf(15), BigDecimal.valueOf(2)).build();
+        RechargeableTicket ticket = ticketFactory.createRechargeableTicket("Rechargable Ticket", UUID.randomUUID(), BigDecimal.valueOf(15), BigDecimal.valueOf(2)).build();
 
         Throwable throwable = catchThrowable(() -> ticket.addBalance(negativeAmount));
 

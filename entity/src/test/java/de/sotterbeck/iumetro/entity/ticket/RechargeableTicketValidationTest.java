@@ -1,5 +1,6 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -9,12 +10,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class RechargeableTicketValidationTest {
 
+    private TicketFactory ticketFactory;
+
+    @BeforeEach
+    void setUp() {
+        ticketFactory = new SimpleTicketFactory();
+    }
+
     @Test
     void isValid_ShouldBeTrue_WhenFundsSufficient() {
         BigDecimal sufficientBalance = BigDecimal.valueOf(5);
         BigDecimal usageCost = BigDecimal.valueOf(2.5);
 
-        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargeable Ticket",
+        RechargeableTicket ticket = ticketFactory.createRechargeableTicket("Rechargeable Ticket",
                 UUID.randomUUID(),
                 sufficientBalance,
                 usageCost)
@@ -29,7 +37,7 @@ class RechargeableTicketValidationTest {
         BigDecimal noBalance = BigDecimal.valueOf(0);
         BigDecimal usageCost = BigDecimal.valueOf(2.5);
 
-        RechargeableTicket ticket = Tickets.createRechargeableTicket("Rechargeable Ticket",
+        RechargeableTicket ticket = ticketFactory.createRechargeableTicket("Rechargeable Ticket",
                 UUID.randomUUID(),
                 noBalance,
                 usageCost)

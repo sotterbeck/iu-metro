@@ -1,5 +1,6 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -11,6 +12,13 @@ import static org.assertj.core.api.BDDAssertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.then;
 
 class TicketTimeLimitConstraintTest {
+
+    private TicketFactory ticketFactory;
+
+    @BeforeEach
+    void setUp() {
+        ticketFactory = new SimpleTicketFactory();
+    }
 
     @Test
     void constructor_ShouldThrowException_WhenTimeLimitIsNegative() {
@@ -27,7 +35,7 @@ class TicketTimeLimitConstraintTest {
         TicketReaderInfo firstUsage = createEntryReader();
 
         LocalDateTime timeAtTestNotSurpassed = firstUsage.time().plusHours(1);
-        Ticket ticket = Tickets.createConstrainedTicket("4-Hour Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("4-Hour Ticket", UUID.randomUUID())
                 .timeLimit(timeLimit, timeAtTestNotSurpassed)
                 .addUsage(firstUsage)
                 .build();
@@ -42,7 +50,7 @@ class TicketTimeLimitConstraintTest {
         TicketReaderInfo firstUsage = createEntryReader();
 
         LocalDateTime timeAtTestSurpassed = firstUsage.time().plusHours(5);
-        Ticket ticket = Tickets.createConstrainedTicket("4-Hour Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("4-Hour Ticket", UUID.randomUUID())
                 .timeLimit(timeLimit, timeAtTestSurpassed)
                 .addUsage(firstUsage)
                 .build();
@@ -55,7 +63,7 @@ class TicketTimeLimitConstraintTest {
     void isValid_ShouldBeTrue_WhenTicketWithTimeConstantHasNoUsage() {
         Duration timeLimit = Duration.ofHours(4);
         LocalDateTime timeAtTest = LocalDateTime.now();
-        Ticket ticket = Tickets.createConstrainedTicket("4-Hour Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("4-Hour Ticket", UUID.randomUUID())
                 .timeLimit(timeLimit, timeAtTest)
                 .build();
 
@@ -69,7 +77,7 @@ class TicketTimeLimitConstraintTest {
         Duration timeLimit = Duration.ofHours(0);
         LocalDateTime timeAtTest = LocalDateTime.now().plusSeconds(1);
         TicketReaderInfo firstUsage = createEntryReader();
-        Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
                 .timeLimit(timeLimit, timeAtTest)
                 .addUsage(firstUsage)
                 .build();

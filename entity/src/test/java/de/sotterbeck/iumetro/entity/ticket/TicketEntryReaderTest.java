@@ -12,10 +12,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TicketEntryReaderTest {
 
     private TicketReader underTest;
+    private TicketFactory ticketFactory;
 
     @BeforeEach
     void setUp() {
         underTest = new TicketEntryReaderFactory().create(new SimpleStation("any"));
+        ticketFactory = new SimpleTicketFactory();
     }
 
     @Nested
@@ -25,7 +27,7 @@ class TicketEntryReaderTest {
         void shouldReturnFalse_WhenTicketIsNotValid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = Tickets.createConstrainedTicket("Invalid Ticket", UUID.randomUUID())
+            Ticket ticket = ticketFactory.createConstrainedTicket("Invalid Ticket", UUID.randomUUID())
                     .customLimit(Invalid())
                     .build();
             boolean shouldOpen = reader.shouldOpenGate(ticket);
@@ -37,7 +39,7 @@ class TicketEntryReaderTest {
         void shouldReturnTrue_WhenTicketIsValid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID()).build();
+            Ticket ticket = ticketFactory.createConstrainedTicket("Valid Ticket", UUID.randomUUID()).build();
             boolean shouldOpen = reader.shouldOpenGate(ticket);
 
             assertThat(shouldOpen).isTrue();
@@ -48,7 +50,7 @@ class TicketEntryReaderTest {
             TicketReader reader = underTest;
             TicketReaderInfo entry = underTest;
 
-            Ticket ticket = Tickets.createConstrainedTicket("Simple Ticket", UUID.randomUUID())
+            Ticket ticket = ticketFactory.createConstrainedTicket("Simple Ticket", UUID.randomUUID())
                     .addUsage(entry)
                     .build();
             boolean shouldOpen = reader.shouldOpenGate(ticket);
@@ -65,7 +67,7 @@ class TicketEntryReaderTest {
         void tap_ShouldAddUsage_WhenTicketIsValid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = Tickets.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
+            Ticket ticket = ticketFactory.createConstrainedTicket("Valid Ticket", UUID.randomUUID())
                     .build();
             reader.tap(ticket);
             int usages = ticket.usageCount();
@@ -77,7 +79,7 @@ class TicketEntryReaderTest {
         void tap_ShouldNotAddUsage_WhenTicketIsInvalid() {
             TicketReader reader = underTest;
 
-            Ticket ticket = Tickets.createConstrainedTicket("Invalid Ticket", UUID.randomUUID())
+            Ticket ticket = ticketFactory.createConstrainedTicket("Invalid Ticket", UUID.randomUUID())
                     .customLimit(Invalid())
                     .build();
             reader.tap(ticket);
@@ -91,7 +93,7 @@ class TicketEntryReaderTest {
         void tap_ShouldNotAddUsage_WhenTicketIsInSystem() {
             TicketReader reader = underTest;
 
-            Ticket ticket = Tickets.createConstrainedTicket("Simple Ticket", UUID.randomUUID())
+            Ticket ticket = ticketFactory.createConstrainedTicket("Simple Ticket", UUID.randomUUID())
                     .addUsage(underTest)
                     .build();
             reader.tap(ticket);

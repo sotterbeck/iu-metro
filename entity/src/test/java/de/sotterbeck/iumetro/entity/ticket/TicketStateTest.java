@@ -1,5 +1,6 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -8,10 +9,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class TicketStateTest {
 
+    private TicketFactory ticketFactory;
+
+    @BeforeEach
+    void setUp() {
+        ticketFactory = new SimpleTicketFactory();
+    }
+
     @Test
     void isInSystem_ShouldBeFalse_WhenTicketIsInvalid() {
         TicketReader reader = createEntryReader();
-        Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .customLimit(t -> false)
                 .build();
 
@@ -24,7 +32,7 @@ class TicketStateTest {
     @Test
     void isInSystem_ShouldBeTrue_WhenTicketIsValid() {
         TicketReader reader = createEntryReader();
-        Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID()).build();
+        Ticket ticket = ticketFactory.createConstrainedTicket("Common Ticket", UUID.randomUUID()).build();
 
         reader.tap(ticket);
         boolean inSystem = ticket.isInSystem();
@@ -36,7 +44,7 @@ class TicketStateTest {
     void isInSystem_ShouldBeTrue_WhenLastValidUsageWasAEntryGate() {
         TicketReaderInfo entryReader = createEntryReader();
 
-        Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .addUsage(entryReader)
                 .build();
         boolean inSystem = ticket.isInSystem();
@@ -49,7 +57,7 @@ class TicketStateTest {
     void isInSystem_ShouldBeFalse_WhenLastValidUsageWasAExitGate() {
         TicketReaderInfo exitReader = createExitReader();
 
-        Ticket ticket = Tickets.createConstrainedTicket("Common Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("Common Ticket", UUID.randomUUID())
                 .addUsage(exitReader)
                 .build();
         boolean inSystem = ticket.isInSystem();

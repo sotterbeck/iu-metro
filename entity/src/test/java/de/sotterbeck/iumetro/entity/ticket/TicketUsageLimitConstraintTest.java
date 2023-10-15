@@ -1,5 +1,6 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -8,11 +9,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class TicketUsageLimitConstraintTest {
 
+    private TicketFactory ticketFactory;
+
+    @BeforeEach
+    void setUp() {
+        ticketFactory = new SimpleTicketFactory();
+    }
+
     @Test
     void isValid_ShouldBeTrue_WhenUsageLimitNotSurpassed() {
         int limit = 1;
 
-        Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
                 .build();
         boolean valid = ticket.isValid();
@@ -25,7 +33,7 @@ class TicketUsageLimitConstraintTest {
         int limit = 1;
         TicketReaderInfo oneUsage = createEntryReader();
 
-        Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
                 .addUsage(oneUsage)
                 .build();
@@ -40,7 +48,7 @@ class TicketUsageLimitConstraintTest {
         TicketReaderInfo oneUsage = createEntryReader();
         TicketReaderInfo oneUsageExit = createExitReader();
 
-        Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
                 .addUsage(oneUsage)
                 .addUsage(oneUsageExit)
@@ -56,7 +64,7 @@ class TicketUsageLimitConstraintTest {
         TicketReaderInfo firstUsage = createEntryReader();
         TicketReaderInfo firstUsageExit = createExitReader();
 
-        Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
                 .addUsage(firstUsage)
                 .addUsage(firstUsageExit)
@@ -70,7 +78,7 @@ class TicketUsageLimitConstraintTest {
     void isValid_ShouldBeTrue_WhenUsageLimitIsZero() {
         int limit = 0;
 
-        Ticket ticket = Tickets.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
+        Ticket ticket = ticketFactory.createConstrainedTicket("Single-use Ticket", UUID.randomUUID())
                 .usageLimit(limit)
                 .build();
         boolean valid = ticket.isValid();
