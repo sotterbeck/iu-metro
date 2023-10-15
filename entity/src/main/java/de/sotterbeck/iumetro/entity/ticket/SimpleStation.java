@@ -1,5 +1,5 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
-record SimpleStation(String name) implements Station {
+public record SimpleStation(String name) implements Station {
 
 }
