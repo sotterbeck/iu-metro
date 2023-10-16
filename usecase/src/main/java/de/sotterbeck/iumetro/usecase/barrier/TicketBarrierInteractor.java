@@ -1,5 +1,6 @@
 package de.sotterbeck.iumetro.usecase.barrier;
 
+import de.sotterbeck.iumetro.entity.ticket.UsageType;
 import de.sotterbeck.iumetro.entity.ticket.*;
 import de.sotterbeck.iumetro.usecase.ticket.TicketDsGateway;
 import de.sotterbeck.iumetro.usecase.ticket.TicketDsModel;
@@ -32,18 +33,27 @@ public class TicketBarrierInteractor {
         if (!ticketDsGateway.existsById(ticketId)) {
             return false;
         }
-        TicketDsModel ticketDsModel = ticketDsGateway.get(ticketId).orElseThrow();
-
-        TicketFactory ticketFactory = new SimpleTicketFactory();
-
-        Ticket ticket = toTicketEntity(ticketFactory, ticketDsModel);
-
         TicketReader reader = ticketReaderFactory.create(new SimpleStation(usage.station()));
-        return reader.shouldOpenGate(ticket);
+        return reader.shouldOpenGate(retrieveTicketEntity(ticketId));
+    }
+
+    public boolean canFineUser(UUID ticketId, UsageRequestModel usage) {
+        if (!ticketDsGateway.existsById(ticketId)) {
+            return false;
+        }
+        TicketReader reader = ticketReaderFactory.create(new SimpleStation(usage.station()));
+        return reader.shouldFineUser(retrieveTicketEntity(ticketId));
+    }
+
+    private Ticket retrieveTicketEntity(UUID ticketId) {
+        TicketDsModel dsTicket = ticketDsGateway.get(ticketId).orElseThrow();
+        TicketFactory ticketFactory = new SimpleTicketFactory();
+        return toTicketEntity(ticketFactory, dsTicket);
     }
 
     private Ticket toTicketEntity(TicketFactory ticketFactory, TicketDsModel ticketDsModel) {
-        ConstrainedTicketBuilder ticketBuilder = ticketFactory.createConstrainedTicket(ticketDsModel.name(), ticketDsModel.id());
+        ConstrainedTicketBuilder ticketBuilder = ticketFactory
+                .createConstrainedTicket(ticketDsModel.name(), ticketDsModel.id());
 
         ticketBuilder.usageLimit(ticketDsModel.usageLimit());
         ticketBuilder.timeLimit(ticketDsModel.timeLimit(), LocalDateTime.now());
@@ -57,10 +67,13 @@ public class TicketBarrierInteractor {
 
     @NotNull
     private static TicketReaderInfo toReaderInfo(UsageDsModel u) {
-        return new ImmutableTicketReaderInfo(new SimpleStation(u.station()), u.timeAtUsage().toLocalDateTime(), switch (u.usageType()) {
+        UsageType entityUsageType = switch (u.usageType()) {
             case ENTRY -> UsageType.ENTRY;
             case EXIT -> UsageType.EXIT;
-        });
+        };
+        return new ImmutableTicketReaderInfo(new SimpleStation(u.station()),
+                u.timeAtUsage().toLocalDateTime(),
+                entityUsageType);
     }
 
     public enum BarrierType {ENTRY_BARRIER, EXIT_BARRIER}

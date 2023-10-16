@@ -2,6 +2,7 @@ package de.sotterbeck.iumetro.usecase.ticket;
 
 import de.sotterbeck.iumetro.usecase.barrier.UsageDsModel;
 import de.sotterbeck.iumetro.usecase.barrier.UsageResponseModel;
+import de.sotterbeck.iumetro.usecase.barrier.UsageType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

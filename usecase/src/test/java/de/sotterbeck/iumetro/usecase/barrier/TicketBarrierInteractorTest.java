@@ -2,7 +2,6 @@ package de.sotterbeck.iumetro.usecase.barrier;
 
 import de.sotterbeck.iumetro.usecase.ticket.TicketDsGateway;
 import de.sotterbeck.iumetro.usecase.ticket.TicketDsModel;
-import de.sotterbeck.iumetro.usecase.ticket.UsageType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -59,20 +58,28 @@ class TicketBarrierInteractorTest {
         then(ticketDsGateway).should(times(0)).addTicketUsage(any(), any());
     }
 
+    @Test
+    void canOpenGate_ShouldReturnFalse_WhenTicketIdDoesNotExist() {
+        when(ticketDsGateway.existsById(id)).thenReturn(false);
+        boolean canOpen = underTest.canOpen(id, entry);
+
+        assertThat(canOpen).isFalse();
+    }
+
+    @Test
+    void canFineUser_ShouldReturnFalse_WhenTicketWithIdDoesNotExist() {
+        when(ticketDsGateway.existsById(id)).thenReturn(false);
+        boolean canFineUser = underTest.canFineUser(id, entry);
+
+        assertThat(canFineUser).isFalse();
+    }
+
     @Nested
     class GivenEntryBarrier {
 
         @BeforeEach
         void setUp() {
             underTest = new TicketBarrierInteractor(ticketDsGateway, ENTRY_BARRIER);
-        }
-
-        @Test
-        void canOpenGate_ShouldReturnFalse_WhenTicketIdDoesNotExist() {
-            when(ticketDsGateway.existsById(id)).thenReturn(false);
-            boolean canOpen = underTest.canOpen(id, entry);
-
-            assertThat(canOpen).isFalse();
         }
 
         @Test
@@ -99,6 +106,14 @@ class TicketBarrierInteractorTest {
             assertThat(canOpen).isFalse();
         }
 
+        @Test
+        void canFineUser_ShouldReturnFalse_WhenTicketExists() {
+            when(ticketDsGateway.existsById(id)).thenReturn(true);
+            when(ticketDsGateway.get(id)).thenReturn(Optional.of(new TicketDsModel(id, "ticket")));
+            boolean canFineUser = underTest.canFineUser(id, entry);
+
+            assertThat(canFineUser).isFalse();
+        }
     }
 
     @Nested
@@ -107,14 +122,6 @@ class TicketBarrierInteractorTest {
         @BeforeEach
         void setUp() {
             underTest = new TicketBarrierInteractor(ticketDsGateway, EXIT_BARRIER);
-        }
-
-        @Test
-        void canOpenGate_ShouldReturnFalse_WhenTicketIdDoesNotExist() {
-            when(ticketDsGateway.existsById(id)).thenReturn(false);
-            boolean canOpen = underTest.canOpen(id, entry);
-
-            assertThat(canOpen).isFalse();
         }
 
         @Test
@@ -139,6 +146,30 @@ class TicketBarrierInteractorTest {
             boolean canOpen = underTest.canOpen(id, entry);
 
             assertThat(canOpen).isTrue();
+        }
+
+        @Test
+        void canFineUser_ShouldReturnFalse_WhenTheTicketsPreviousUsageWasEntry() {
+            UsageDsModel entry = new UsageDsModel("station", ZonedDateTime.now().minusHours(1), UsageType.ENTRY);
+
+            when(ticketDsGateway.existsById(id)).thenReturn(true);
+            when(ticketDsGateway.get(id)).thenReturn(Optional.of(new TicketDsModel(id, "ticket", 1, Duration.ZERO)));
+            when(ticketDsGateway.getTicketUsages(id)).thenReturn(List.of(entry));
+            boolean canFineUser = underTest.canFineUser(id, new UsageRequestModel("station", ZonedDateTime.now(), UsageType.EXIT));
+
+            assertThat(canFineUser).isFalse();
+        }
+
+        @Test
+        void canFineUser_ShouldReturnTrue_WhenTheTicketsPreviousUsageWasExit() {
+            UsageDsModel exit = new UsageDsModel("station", ZonedDateTime.now().minusHours(1), UsageType.EXIT);
+
+            when(ticketDsGateway.existsById(id)).thenReturn(true);
+            when(ticketDsGateway.get(id)).thenReturn(Optional.of(new TicketDsModel(id, "ticket", 1, Duration.ZERO)));
+            when(ticketDsGateway.getTicketUsages(id)).thenReturn(List.of(exit));
+            boolean canFineUser = underTest.canFineUser(id, new UsageRequestModel("station", ZonedDateTime.now(), UsageType.EXIT));
+
+            assertThat(canFineUser).isTrue();
         }
 
     }
