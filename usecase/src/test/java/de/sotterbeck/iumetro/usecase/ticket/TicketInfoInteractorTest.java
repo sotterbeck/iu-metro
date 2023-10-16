@@ -1,12 +1,14 @@
 package de.sotterbeck.iumetro.usecase.ticket;
 
+import de.sotterbeck.iumetro.usecase.barrier.UsageDsModel;
+import de.sotterbeck.iumetro.usecase.barrier.UsageResponseModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,8 +61,8 @@ class TicketInfoInteractorTest {
     void usages_ShouldReturnMultipleUsages_WhenTicketHasUsages() {
         UUID id = UUID.fromString("02c1a3c5-979c-4845-9315-e96ffe8aa6eb");
         List<UsageDsModel> dsUsages = List.of(
-                new UsageDsModel("firstStation", LocalDateTime.now(), UsageType.ENTRY),
-                new UsageDsModel("secondStation", LocalDateTime.now().plusHours(1), UsageType.EXIT)
+                new UsageDsModel("firstStation", ZonedDateTime.now(), UsageType.ENTRY),
+                new UsageDsModel("secondStation", ZonedDateTime.now().plusHours(1), UsageType.EXIT)
         );
 
         when(ticketDsGateway.getTicketUsages(id)).thenReturn(dsUsages);

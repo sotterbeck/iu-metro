@@ -1,5 +1,7 @@
 package de.sotterbeck.iumetro.usecase.ticket;
 
+import de.sotterbeck.iumetro.usecase.barrier.UsageResponseModel;
+
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
@@ -24,7 +26,7 @@ public class TicketInfoInteractorImpl implements TicketInfoInteractor {
         return ticketDsGateway.getTicketUsages(id).stream()
                 .map(dsModel -> new UsageResponseModel(
                         dsModel.station(),
-                        dsModel.time().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)),
+                        dsModel.timeAtUsage().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)),
                         dsModel.usageType().toString().toLowerCase()))
                 .toList();
     }
