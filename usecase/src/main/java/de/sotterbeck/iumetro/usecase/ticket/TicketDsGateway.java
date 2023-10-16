@@ -1,5 +1,7 @@
 package de.sotterbeck.iumetro.usecase.ticket;
 
+import de.sotterbeck.iumetro.usecase.barrier.UsageDsModel;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,5 +19,7 @@ public interface TicketDsGateway {
     void deleteById(UUID id);
 
     List<UsageDsModel> getTicketUsages(UUID uuid);
+
+    void addTicketUsage(UUID ticketId, UsageDsModel usage);
 
 }
