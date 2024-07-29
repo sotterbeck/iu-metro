@@ -25,7 +25,7 @@ public class TicketResponseFormatter implements TicketPresenter {
     }
 
     protected String formatShortId(UUID id) {
-        return id.toString().substring(0, 7);
+        return id.toString().substring(0, 8);
     }
 
 }
