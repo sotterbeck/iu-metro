@@ -1,5 +1,8 @@
+import org.jooq.meta.jaxb.Property
+
 plugins {
     id("java-library")
+    id("nu.studer.jooq") version "9.0"
 }
 
 group = "de.sotterbeck"
@@ -11,23 +14,58 @@ repositories {
 
 dependencies {
     implementation(project(":usecase"))
-    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
-    implementation("org.flywaydb:flyway-core:9.21.0")
-    testImplementation("org.postgresql:postgresql:42.6.0")
-    testImplementation("org.testcontainers:postgresql:1.19.0")
-    testImplementation("org.testcontainers:junit-jupiter:1.18.3")
-    testImplementation("com.radcortez.flyway:flyway-junit5-extension:1.4.1")
-    testImplementation("org.hibernate:hibernate-core:6.2.7.Final")
-    testImplementation("org.assertj:assertj-core:3.24.2")
-    testImplementation("org.assertj:assertj-db:2.0.2")
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+    implementation(libs.jooq)
+    jooqGenerator("com.github.sabomichal:jooq-meta-postgres-flyway:1.2.0")
+
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.junit.jupiter)
+    testImplementation(libs.postgresql)
+    testImplementation(libs.flywaydb)
+    testImplementation(libs.flywaydb.database.postgresql)
+    testImplementation(libs.assertj.core)
+    testImplementation(libs.assertj.db)
+    testImplementation(libs.junit.jupiter)
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get()))
 }
 
-tasks.test {
-    useJUnitPlatform()
+jooq {
+    configurations {
+        create("main") {
+            jooqConfiguration.apply {
+                generator.apply {
+                    name = "org.jooq.codegen.DefaultGenerator"
+                    database.apply {
+                        name = "com.github.sabomichal.jooq.PostgresDDLDatabase"
+                        inputSchema = "public"
+                        includes = "public.*"
+                        excludes = "flyway_schema_history"
+                        properties = listOf(
+                            Property().withKey("locations").withValue("src/main/resources/db/migration"),
+                            Property().withKey("dockerImage").withValue("postgres:15")
+                        )
+                    }
+                    generate.apply {
+                        isDeprecated = false
+                        isRecords = true
+                        isImmutablePojos = true
+                        isFluentSetters = true
+                        isDaos = true
+                    }
+                    target.apply {
+                        packageName = "de.sotterbeck.iumetro.dataprovider.postgres.jooq.generated"
+                    }
+                    strategy.name = "org.jooq.codegen.DefaultGeneratorStrategy"
+                }
+            }
+        }
+    }
+}
+
+tasks {
+    test {
+        useJUnitPlatform()
+    }
 }

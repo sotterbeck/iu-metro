@@ -3,7 +3,7 @@ include(
     "entity",
     "usecase",
     "entrypoints:papermc",
-    "dataproviders:postgres"
+    "dataproviders:postgres",
 )
 findProject(":entrypoints:papermc")
 findProject(":dataproviders:postgres")

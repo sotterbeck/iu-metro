@@ -1,0 +1,40 @@
+[versions]
+java = "21"
+
+flywaydb = "10.15.2"
+postgresql = "42.7.3"
+jooq = "3.19.8"
+slf4j = "2.0.13"
+guice = "7.0.0"
+hikaricp = "5.1.0"
+cloud = "2.0.0-rc.2"
+cloud-paper = "2.0.0-beta.9"
+paper = "1.20.1-R0.1-SNAPSHOT"
+junit = "5.10.3"
+assertj-core = "3.26.3"
+assertj-db = "2.0.2"
+mockito = "5.12.0"
+testcontainers = "1.20.0"
+
+[libraries]
+flywaydb = { module = "org.flywaydb:flyway-core", version.ref = "flywaydb" }
+flywaydb-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flywaydb" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
+jooq-meta = { module = "org.jooq:jooq-meta", version.ref = "jooq" }
+jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+guice = { module = "com.google.inject:guice", version.ref = "guice" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+cloud-core = { module = "org.incendo:cloud-core", version.ref = "cloud" }
+cloud-annotations = { module = "org.incendo:cloud-annotations", version.ref = "cloud" }
+cloud-paper = { module = "org.incendo:cloud-paper", version.ref = "cloud-paper" }
+paper = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj-core" }
+assertj-db = { module = "org.assertj:assertj-db", version.ref = "assertj-db" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
