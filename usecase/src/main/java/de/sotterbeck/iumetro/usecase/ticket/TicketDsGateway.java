@@ -20,6 +20,6 @@ public interface TicketDsGateway {
 
     List<UsageDsModel> getTicketUsages(UUID uuid);
 
-    void addTicketUsage(UUID ticketId, UsageDsModel usage);
+    void saveTicketUsage(UUID ticketId, UsageDsModel usage);
 
 }

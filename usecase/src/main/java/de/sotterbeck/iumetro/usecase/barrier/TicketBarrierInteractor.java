@@ -26,7 +26,7 @@ public class TicketBarrierInteractor {
         if (!ticketDsGateway.existsById(ticketId)) {
             throw new IllegalArgumentException("Ticket with the ticketId does not exist");
         }
-        ticketDsGateway.addTicketUsage(ticketId, new UsageDsModel(usage.station(), usage.timeAtUsage(), usage.usageType()));
+        ticketDsGateway.saveTicketUsage(ticketId, new UsageDsModel(usage.station(), usage.timeAtUsage(), usage.usageType()));
     }
 
     public boolean canOpen(UUID ticketId, UsageRequestModel usage) {

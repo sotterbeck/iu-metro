@@ -46,7 +46,7 @@ class TicketBarrierInteractorTest {
         when(ticketDsGateway.existsById(id)).thenReturn(true);
         underTest.addUsageToTicket(id, entry);
 
-        then(ticketDsGateway).should(times(1)).addTicketUsage(any(), any());
+        then(ticketDsGateway).should(times(1)).saveTicketUsage(any(), any());
     }
 
     @Test
@@ -55,7 +55,7 @@ class TicketBarrierInteractorTest {
         Throwable thrown = catchThrowable(() -> underTest.addUsageToTicket(id, entry));
 
         assertThat(thrown).isNotNull();
-        then(ticketDsGateway).should(times(0)).addTicketUsage(any(), any());
+        then(ticketDsGateway).should(times(0)).saveTicketUsage(any(), any());
     }
 
     @Test
