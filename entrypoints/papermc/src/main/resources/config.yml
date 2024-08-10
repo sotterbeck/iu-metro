@@ -1,0 +1,6 @@
+postgres:
+  host: "127.0.0.1:5432"
+  database: paper
+  username: dev
+  password: 12345678
+  schema: public

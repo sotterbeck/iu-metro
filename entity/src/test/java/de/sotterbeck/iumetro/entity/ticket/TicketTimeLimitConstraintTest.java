@@ -1,5 +1,10 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import de.sotterbeck.iumetro.entity.reader.TicketReaderFactory;
+import de.sotterbeck.iumetro.entity.reader.TicketReaderFactoryImpl;
+import de.sotterbeck.iumetro.entity.reader.TicketReaderInfo;
+import de.sotterbeck.iumetro.entity.station.SimpleStation;
+import de.sotterbeck.iumetro.entity.ticket.constained.TimeLimitConstraint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -88,7 +93,7 @@ class TicketTimeLimitConstraintTest {
     }
 
     private TicketReaderInfo createEntryReader() {
-        return new TicketEntryReaderFactory().create(new SimpleStation("any"));
+        return new TicketReaderFactoryImpl().create(TicketReaderFactory.ReaderType.ENTRY, new SimpleStation("any"));
     }
 
 }

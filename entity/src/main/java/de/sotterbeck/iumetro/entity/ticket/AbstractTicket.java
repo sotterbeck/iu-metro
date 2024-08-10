@@ -1,16 +1,18 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import de.sotterbeck.iumetro.entity.reader.TicketReaderInfo;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-abstract class AbstractTicket implements Ticket {
+public abstract class AbstractTicket implements Ticket {
 
     private final String name;
     private final UUID id;
     private final List<TicketReaderInfo> usages;
 
-    AbstractTicket(String name, UUID id, List<TicketReaderInfo> usages) {
+    protected AbstractTicket(String name, UUID id, List<TicketReaderInfo> usages) {
         this.name = name;
         this.id = id;
         this.usages = usages;

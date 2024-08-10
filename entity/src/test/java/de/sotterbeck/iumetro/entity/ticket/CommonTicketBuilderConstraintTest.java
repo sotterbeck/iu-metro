@@ -1,5 +1,11 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import de.sotterbeck.iumetro.entity.reader.TicketReader;
+import de.sotterbeck.iumetro.entity.reader.TicketReaderFactory;
+import de.sotterbeck.iumetro.entity.reader.TicketReaderFactoryImpl;
+import de.sotterbeck.iumetro.entity.reader.TicketReaderInfo;
+import de.sotterbeck.iumetro.entity.station.SimpleStation;
+import de.sotterbeck.iumetro.entity.ticket.constained.ConstrainedTicketBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CommonTicketBuilderConstraintTest {
 
+    private final TicketReaderFactory ticketReaderFactory = new TicketReaderFactoryImpl();
     private ConstrainedTicketBuilder underTest;
 
     @BeforeEach
@@ -78,11 +85,11 @@ class CommonTicketBuilderConstraintTest {
     }
 
     private TicketReader createExitReader() {
-        return new TicketExitReaderFactory().create(new SimpleStation("any"));
+        return ticketReaderFactory.create(TicketReaderFactory.ReaderType.EXIT, new SimpleStation("any"));
     }
 
     private TicketReader createEntryReader() {
-        return new TicketEntryReaderFactory().create(new SimpleStation("any"));
+        return ticketReaderFactory.create(TicketReaderFactory.ReaderType.ENTRY, new SimpleStation("any"));
     }
 
 }

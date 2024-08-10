@@ -1,6 +1,6 @@
 package de.sotterbeck.iumetro.usecase.ticket;
 
-import de.sotterbeck.iumetro.usecase.barrier.UsageResponseModel;
+import de.sotterbeck.iumetro.usecase.faregate.UsageResponseModel;
 
 import java.util.List;
 import java.util.UUID;

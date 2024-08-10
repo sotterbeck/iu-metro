@@ -1,5 +1,8 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import de.sotterbeck.iumetro.entity.reader.TicketReaderInfo;
+import de.sotterbeck.iumetro.entity.station.Station;
+
 import java.time.LocalDateTime;
 
 public record ImmutableTicketReaderInfo(

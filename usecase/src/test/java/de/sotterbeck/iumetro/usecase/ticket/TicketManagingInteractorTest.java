@@ -19,33 +19,31 @@ import static org.mockito.Mockito.*;
 class TicketManagingInteractorTest {
 
     @Mock
-    private TicketDsGateway ticketDsGateway;
+    private TicketRepository ticketRepository;
     @Mock
     private TicketPresenter ticketPresenter;
-    @Mock
-    private TicketPrintingHandler printingGateway;
 
     private TicketManagingInteractor underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new TicketManagingInteractorImpl(ticketDsGateway, ticketPresenter);
+        underTest = new TicketManagingInteractorImpl(ticketRepository, ticketPresenter);
     }
 
     @Test
     void create_ShouldSaveTicket() {
         TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", 0, Duration.ZERO);
-        underTest = new TicketManagingInteractorImpl(ticketDsGateway, ticketPresenter, printingGateway);
+        underTest = new TicketManagingInteractorImpl(ticketRepository, ticketPresenter);
 
         underTest.create(ticketRequestModel);
 
-        then(ticketDsGateway).should(times(1)).save(any(TicketDsModel.class));
+        then(ticketRepository).should(times(1)).save(any(TicketDto.class));
     }
 
     @Test
     void create_ShouldPrepareSuccessView() {
         TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", 0, Duration.ZERO);
-        underTest = new TicketManagingInteractorImpl(ticketDsGateway, ticketPresenter, printingGateway);
+        underTest = new TicketManagingInteractorImpl(ticketRepository, ticketPresenter);
 
         underTest.create(ticketRequestModel);
 
@@ -53,40 +51,30 @@ class TicketManagingInteractorTest {
     }
 
     @Test
-    void create_ShouldPrintTicket() {
-        TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", 0, Duration.ZERO);
-        underTest = new TicketManagingInteractorImpl(ticketDsGateway, ticketPresenter, printingGateway);
-
-        underTest.create(ticketRequestModel);
-
-        then(printingGateway).should(times(1)).printTicket(any());
-    }
-
-    @Test
     void delete_ShouldDeleteTicketAndPrepareSuccessView_WhenTicketExits() {
         UUID id = UUID.fromString("1ed0a79e-f95e-4347-bd74-3f6c4ef3dc12");
-        TicketDsModel ticketDsModel = new TicketDsModel(id, "Single-use Ticket");
+        TicketDto ticketDto = new TicketDto(id, "Single-use Ticket");
 
-        when(ticketDsGateway.existsById(id)).thenReturn(true);
-        when(ticketDsGateway.get(id)).thenReturn(Optional.of(ticketDsModel));
+        when(ticketRepository.existsById(id)).thenReturn(true);
+        when(ticketRepository.get(id)).thenReturn(Optional.of(ticketDto));
         underTest.delete(id);
 
-        then(ticketDsGateway).should(times(1)).deleteById(eq(id));
+        then(ticketRepository).should(times(1)).deleteById(eq(id));
         then(ticketPresenter).should(times(1)).prepareSuccessView(
-                eq(new TicketRequestModel(ticketDsModel.id(),
-                        ticketDsModel.name(),
-                        ticketDsModel.usageLimit(),
-                        ticketDsModel.timeLimit())));
+                eq(new TicketRequestModel(ticketDto.id(),
+                        ticketDto.name(),
+                        ticketDto.usageLimit(),
+                        ticketDto.timeLimit())));
     }
 
     @Test
     void delete_ShouldNotDeleteTicketAndPrepareFailView_WhenTicketDoesNotExits() {
         UUID id = UUID.fromString("1ed0a79e-f95e-4347-bd74-3f6c4ef3dc12");
 
-        when(ticketDsGateway.existsById(id)).thenReturn(false);
+        when(ticketRepository.existsById(id)).thenReturn(false);
         underTest.delete(id);
 
-        then(ticketDsGateway).should(never()).deleteById(eq(id));
+        then(ticketRepository).should(never()).deleteById(eq(id));
         then(ticketPresenter).should(times(1)).prepareFailView(any());
     }
 

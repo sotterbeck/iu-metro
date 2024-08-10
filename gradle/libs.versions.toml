@@ -9,11 +9,12 @@ guice = "7.0.0"
 hikaricp = "5.1.0"
 cloud = "2.0.0-rc.2"
 cloud-paper = "2.0.0-beta.9"
-paper = "1.20.1-R0.1-SNAPSHOT"
+paper = "1.20.4-R0.1-SNAPSHOT"
 junit = "5.10.3"
 assertj-core = "3.26.3"
 assertj-db = "2.0.2"
 mockito = "5.12.0"
+mockbukkit = "3.95.1"
 testcontainers = "1.20.0"
 
 [libraries]
@@ -36,5 +37,6 @@ assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj-cor
 assertj-db = { module = "org.assertj:assertj-db", version.ref = "assertj-db" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+mockbukkit = { module = "com.github.seeseemelk:MockBukkit-v1.21", version.ref = "mockbukkit" }
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }

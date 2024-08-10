@@ -17,12 +17,20 @@ dependencies {
     implementation(project(":dataproviders:postgres"))
     implementation(libs.guice)
     implementation(libs.flywaydb)
+    implementation(libs.flywaydb.database.postgresql)
     implementation(libs.hikaricp)
     implementation(libs.postgresql)
-    implementation("dev.jorel:commandapi-bukkit-shade:9.1.0")
     implementation(libs.jooq)
+    implementation(libs.cloud.core)
+    implementation(libs.cloud.annotations)
+    implementation(libs.cloud.paper)
     compileOnly(libs.paper)
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.assertj.core)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.junit)
+    testImplementation(libs.mockbukkit)
+    testImplementation(libs.paper)
 }
 
 java {
@@ -36,5 +44,9 @@ tasks {
 
     runServer {
         minecraftVersion("1.20.4")
+    }
+
+    shadowJar {
+        mergeServiceFiles()
     }
 }

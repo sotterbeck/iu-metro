@@ -1,0 +1,4 @@
+name: iuMetro
+main: de.sotterbeck.iumetro.entrypoint.papermc.IuMetroPlugin
+version: 0.0.1
+api-version: 1.20

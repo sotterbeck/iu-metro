@@ -1,6 +1,6 @@
 package de.sotterbeck.iumetro.usecase.ticket;
 
-import de.sotterbeck.iumetro.usecase.barrier.UsageResponseModel;
+import de.sotterbeck.iumetro.usecase.faregate.UsageResponseModel;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -9,25 +9,25 @@ import java.util.UUID;
 
 public class TicketInfoInteractorImpl implements TicketInfoInteractor {
 
-    private final TicketDsGateway ticketDsGateway;
+    private final TicketRepository ticketRepository;
 
-    public TicketInfoInteractorImpl(TicketDsGateway ticketDsGateway) {
-        this.ticketDsGateway = ticketDsGateway;
+    public TicketInfoInteractorImpl(TicketRepository ticketRepository) {
+        this.ticketRepository = ticketRepository;
     }
 
     @Override
     public boolean exists(String ticketId) {
         UUID id = UUID.fromString(ticketId);
-        return ticketDsGateway.existsById(id);
+        return ticketRepository.existsById(id);
     }
 
     @Override
     public List<UsageResponseModel> usages(UUID id) {
-        return ticketDsGateway.getTicketUsages(id).stream()
-                .map(dsModel -> new UsageResponseModel(
-                        dsModel.station(),
-                        dsModel.timeAtUsage().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)),
-                        dsModel.usageType().toString().toLowerCase()))
+        return ticketRepository.getTicketUsages(id).stream()
+                .map(dto -> new UsageResponseModel(
+                        dto.station(),
+                        dto.timeAtUsage().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)),
+                        dto.usageType().toString().toLowerCase()))
                 .toList();
     }
 

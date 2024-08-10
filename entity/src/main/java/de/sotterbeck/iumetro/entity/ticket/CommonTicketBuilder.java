@@ -1,5 +1,8 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import de.sotterbeck.iumetro.entity.reader.TicketReaderInfo;
+import de.sotterbeck.iumetro.entity.ticket.constained.*;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,14 +11,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-class CommonTicketBuilder implements ConstrainedTicketBuilder {
+public class CommonTicketBuilder implements ConstrainedTicketBuilder {
 
     private final String name;
     private final UUID id;
     private final List<TicketReaderInfo> usageList = new ArrayList<>();
     private final TicketUsageConstraintComposite usageConstraints = new TicketUsageConstraintComposite();
 
-    CommonTicketBuilder(String name, UUID id) {
+    public CommonTicketBuilder(String name, UUID id) {
         this.name = name;
         this.id = id;
     }

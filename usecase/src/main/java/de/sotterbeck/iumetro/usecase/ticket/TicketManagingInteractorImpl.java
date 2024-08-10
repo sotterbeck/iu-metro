@@ -7,48 +7,40 @@ import java.util.UUID;
 
 public class TicketManagingInteractorImpl implements TicketManagingInteractor {
 
-    private final TicketDsGateway ticketDsGateway;
+    private final TicketRepository ticketRepository;
     private final TicketPresenter ticketPresenter;
-    private final TicketPrintingHandler printingHandler;
 
-    public TicketManagingInteractorImpl(TicketDsGateway ticketDsGateway, TicketPresenter ticketPresenter) {
-        this(ticketDsGateway, ticketPresenter, new NoTicketPrintingHandler());
-    }
-
-    public TicketManagingInteractorImpl(TicketDsGateway ticketDsGateway, TicketPresenter ticketPresenter, TicketPrintingHandler printingHandler) {
-        this.ticketDsGateway = ticketDsGateway;
+    public TicketManagingInteractorImpl(TicketRepository ticketRepository, TicketPresenter ticketPresenter) {
+        this.ticketRepository = ticketRepository;
         this.ticketPresenter = ticketPresenter;
-        this.printingHandler = printingHandler;
     }
 
     @Override
     public TicketResponseModel create(TicketRequestModel ticketRequestModel) {
-        ticketDsGateway.save(toDsModel(ticketRequestModel));
-        TicketResponseModel ticketResponse = ticketPresenter.prepareSuccessView(ticketRequestModel);
-        printingHandler.printTicket(ticketResponse);
-        return ticketResponse;
+        ticketRepository.save(toDto(ticketRequestModel));
+        return ticketPresenter.prepareSuccessView(ticketRequestModel);
     }
 
     @Override
     public TicketResponseModel delete(UUID id) {
-        if (!ticketDsGateway.existsById(id)) {
+        if (!ticketRepository.existsById(id)) {
             return ticketPresenter.prepareFailView("Ticket with id %s does not exists.".formatted(id));
         }
-        TicketDsModel ticket = ticketDsGateway.get(id).orElseThrow(AssertionError::new);
-        ticketDsGateway.deleteById(id);
+        TicketDto ticket = ticketRepository.get(id).orElseThrow(AssertionError::new);
+        ticketRepository.deleteById(id);
         return ticketPresenter.prepareSuccessView(toRequestModel(ticket));
     }
 
     @Override
     public List<String> getAllIds() {
-        return ticketDsGateway.getAll().stream()
-                .map(ticketDsModel -> ticketPresenter.prepareSuccessView(toRequestModel(ticketDsModel)))
+        return ticketRepository.getAll().stream()
+                .map(ticketDto -> ticketPresenter.prepareSuccessView(toRequestModel(ticketDto)))
                 .map(TicketResponseModel::fullId)
                 .toList();
     }
 
     @NotNull
-    private TicketRequestModel toRequestModel(TicketDsModel ticket) {
+    private TicketRequestModel toRequestModel(TicketDto ticket) {
         return new TicketRequestModel(ticket.id(),
                 ticket.name(),
                 ticket.usageLimit(),
@@ -56,20 +48,10 @@ public class TicketManagingInteractorImpl implements TicketManagingInteractor {
     }
 
     @NotNull
-    private TicketDsModel toDsModel(TicketRequestModel ticketRequestModel) {
-        return new TicketDsModel(ticketRequestModel.id(),
+    private TicketDto toDto(TicketRequestModel ticketRequestModel) {
+        return new TicketDto(ticketRequestModel.id(),
                 ticketRequestModel.name(),
                 ticketRequestModel.usageLimit(),
                 ticketRequestModel.timeLimit());
     }
-
-    private static class NoTicketPrintingHandler implements TicketPrintingHandler {
-
-        @Override
-        public void printTicket(TicketResponseModel ticketResponseModel) {
-
-        }
-
-    }
-
 }

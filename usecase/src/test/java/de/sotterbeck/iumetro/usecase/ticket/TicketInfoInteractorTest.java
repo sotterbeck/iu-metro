@@ -1,8 +1,8 @@
 package de.sotterbeck.iumetro.usecase.ticket;
 
-import de.sotterbeck.iumetro.usecase.barrier.UsageDsModel;
-import de.sotterbeck.iumetro.usecase.barrier.UsageResponseModel;
-import de.sotterbeck.iumetro.usecase.barrier.UsageType;
+import de.sotterbeck.iumetro.usecase.faregate.UsageDto;
+import de.sotterbeck.iumetro.usecase.faregate.UsageResponseModel;
+import de.sotterbeck.iumetro.usecase.faregate.UsageType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,19 +20,19 @@ import static org.mockito.Mockito.when;
 class TicketInfoInteractorTest {
 
     @Mock
-    private TicketDsGateway ticketDsGateway;
+    private TicketRepository ticketRepository;
 
     private TicketInfoInteractor underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new TicketInfoInteractorImpl(ticketDsGateway);
+        underTest = new TicketInfoInteractorImpl(ticketRepository);
     }
 
     @Test
     void exists_ShouldReturnFalse_WhenTicketDoesNotExist() {
         String id = "02c1a3c5-979c-4845-9315-e96ffe8aa6eb";
-        when(ticketDsGateway.existsById(UUID.fromString(id))).thenReturn(false);
+        when(ticketRepository.existsById(UUID.fromString(id))).thenReturn(false);
 
         boolean exists = underTest.exists(id);
 
@@ -42,7 +42,7 @@ class TicketInfoInteractorTest {
     @Test
     void exists_ShouldReturnTrue_WhenTicketDoesExist() {
         String id = "02c1a3c5-979c-4845-9315-e96ffe8aa6eb";
-        when(ticketDsGateway.existsById(UUID.fromString(id))).thenReturn(true);
+        when(ticketRepository.existsById(UUID.fromString(id))).thenReturn(true);
 
         boolean exists = underTest.exists(id);
 
@@ -61,12 +61,12 @@ class TicketInfoInteractorTest {
     @Test
     void usages_ShouldReturnMultipleUsages_WhenTicketHasUsages() {
         UUID id = UUID.fromString("02c1a3c5-979c-4845-9315-e96ffe8aa6eb");
-        List<UsageDsModel> dsUsages = List.of(
-                new UsageDsModel("firstStation", ZonedDateTime.now(), UsageType.ENTRY),
-                new UsageDsModel("secondStation", ZonedDateTime.now().plusHours(1), UsageType.EXIT)
+        List<UsageDto> dsUsages = List.of(
+                new UsageDto("firstStation", ZonedDateTime.now(), UsageType.ENTRY),
+                new UsageDto("secondStation", ZonedDateTime.now().plusHours(1), UsageType.EXIT)
         );
 
-        when(ticketDsGateway.getTicketUsages(id)).thenReturn(dsUsages);
+        when(ticketRepository.getTicketUsages(id)).thenReturn(dsUsages);
         List<UsageResponseModel> usages = underTest.usages(id);
 
         assertThat(usages).hasSize(2);

@@ -1,5 +1,10 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import de.sotterbeck.iumetro.entity.reader.TicketReader;
+import de.sotterbeck.iumetro.entity.reader.TicketReaderFactory;
+import de.sotterbeck.iumetro.entity.reader.TicketReaderFactoryImpl;
+import de.sotterbeck.iumetro.entity.reader.TicketReaderInfo;
+import de.sotterbeck.iumetro.entity.station.SimpleStation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,7 +21,7 @@ class TicketEntryReaderTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new TicketEntryReaderFactory().create(new SimpleStation("any"));
+        underTest = new TicketReaderFactoryImpl().create(TicketReaderFactory.ReaderType.ENTRY, new SimpleStation("any"));
         ticketFactory = new SimpleTicketFactory();
     }
 

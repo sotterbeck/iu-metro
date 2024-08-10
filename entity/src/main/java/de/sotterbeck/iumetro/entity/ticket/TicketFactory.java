@@ -1,5 +1,8 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import de.sotterbeck.iumetro.entity.ticket.constained.ConstrainedTicketBuilder;
+import de.sotterbeck.iumetro.entity.ticket.rechargeable.RechargeableTicketBuilder;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 

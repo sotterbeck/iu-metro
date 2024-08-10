@@ -1,5 +1,7 @@
 package de.sotterbeck.iumetro.entity.ticket;
 
+import de.sotterbeck.iumetro.entity.reader.TicketReaderInfo;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
