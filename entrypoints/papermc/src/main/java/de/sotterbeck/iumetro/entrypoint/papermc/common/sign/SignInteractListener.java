@@ -28,8 +28,12 @@ public class SignInteractListener implements Listener {
         Block clickedBlock = event.getClickedBlock();
         if (clickedBlock == null
                 || !(clickedBlock.getState() instanceof Sign sign)
-                || !sign.getPersistentDataContainer().has(signTypeKey, PersistentDataType.STRING)
-                || !isInteractingFromFront(event.getPlayer(), clickedBlock)) {
+                || !sign.getPersistentDataContainer().has(signTypeKey, PersistentDataType.STRING)) {
+            return;
+        }
+
+        if (!isInteractingFromFront(event.getPlayer(), clickedBlock)) {
+            event.setCancelled(true);
             return;
         }
 
