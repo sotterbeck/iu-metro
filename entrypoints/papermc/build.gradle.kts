@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("com.github.johnrengelman.shadow").version("8.1.1")
+    id("com.gradleup.shadow").version("8.3.0")
     id("xyz.jpenilla.run-paper").version("2.3.0")
 }
 
@@ -47,6 +47,31 @@ tasks {
     }
 
     shadowJar {
+        val relocatedPackage = "de.sotterbeck.iumetro.libs"
+
+        val relocations = mapOf<String, String>(
+            "com.google" to "$relocatedPackage.google",
+            "com.fasterxml" to "$relocatedPackage.fasterxml",
+            "com.zaxxer" to "$relocatedPackage.zaxxer",
+            "io.leangen.geantyref" to "$relocatedPackage.geantyref",
+            "io.r2dbc" to "$relocatedPackage.r2dbc",
+            "jakarta.inject" to "$relocatedPackage.jakarta.inject",
+            "javax.inject" to "$relocatedPackage.javax.inject",
+            "javax.annotation" to "$relocatedPackage.javax.annotation",
+            "org.aopalliance" to "$relocatedPackage.aopalliance",
+            "org.checkerframework" to "$relocatedPackage.checkerframework",
+            "org.flywaydb" to "$relocatedPackage.flywaydb",
+            "org.incendo" to "$relocatedPackage.incendo",
+            "org.jooq" to "$relocatedPackage.jooq",
+            "org.postgresql" to "$relocatedPackage.postgresql",
+            "org.reactivestreams" to "$relocatedPackage.reactiveStreams",
+            "org.slf4j" to "$relocatedPackage.slf4j",
+        )
+
+        relocations.forEach { (original, relocated) ->
+            relocate(original, relocated)
+        }
+
         mergeServiceFiles()
     }
 }

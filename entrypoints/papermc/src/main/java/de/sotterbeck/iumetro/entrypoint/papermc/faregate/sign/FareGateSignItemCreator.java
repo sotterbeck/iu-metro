@@ -1,6 +1,7 @@
 package de.sotterbeck.iumetro.entrypoint.papermc.faregate.sign;
 
 import de.sotterbeck.iumetro.entrypoint.papermc.common.Components;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.IuMetroConfig;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.sign.SignTypeKeyFactory;
 import de.sotterbeck.iumetro.entrypoint.papermc.faregate.FareGateKeyFactory;
 import net.kyori.adventure.text.Component;
@@ -17,14 +18,17 @@ public class FareGateSignItemCreator {
 
     private final SignTypeKeyFactory signTypeKeyFactory;
     private final FareGateKeyFactory fareGateKeyFactory;
+    private final IuMetroConfig config;
 
-    public FareGateSignItemCreator(SignTypeKeyFactory signTypeKeyFactory, FareGateKeyFactory fareGateKeyFactory) {
+    public FareGateSignItemCreator(SignTypeKeyFactory signTypeKeyFactory, FareGateKeyFactory fareGateKeyFactory, IuMetroConfig config) {
         this.signTypeKeyFactory = signTypeKeyFactory;
         this.fareGateKeyFactory = fareGateKeyFactory;
+        this.config = config;
     }
 
     public ItemStack createItem(String type, String stationName, String stationId) {
-        ItemStack item = new ItemStack(Material.OAK_SIGN);
+        Material defaultMaterial = config.signMaterial();
+        ItemStack item = new ItemStack(defaultMaterial);
         ItemMeta meta = item.getItemMeta();
 
         String shortId = stationId.substring(0, 6);

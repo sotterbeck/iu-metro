@@ -1,8 +1,12 @@
 package de.sotterbeck.iumetro.entrypoint.papermc;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.IuMetroConfig;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.SpigotIuMetroConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
@@ -26,4 +30,9 @@ class PaperPluginModule extends AbstractModule {
         bind(FileConfiguration.class).toInstance(plugin.getConfig());
     }
 
+    @Provides
+    @Singleton
+    static IuMetroConfig provideIuMetroConfig(JavaPlugin plugin) {
+        return new SpigotIuMetroConfig(plugin);
+    }
 }

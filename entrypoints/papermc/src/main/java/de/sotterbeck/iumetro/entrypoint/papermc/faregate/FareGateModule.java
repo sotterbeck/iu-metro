@@ -6,7 +6,7 @@ import com.google.inject.multibindings.ProvidesIntoMap;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import com.google.inject.multibindings.StringMapKey;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
-import de.sotterbeck.iumetro.entrypoint.papermc.common.Components;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.IuMetroConfig;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.sign.SignClickHandler;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.sign.SignInitializer;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.sign.SignTypeKeyFactory;
@@ -19,8 +19,6 @@ import de.sotterbeck.iumetro.usecase.station.MetroStationManagingInteractor;
 import org.bukkit.World;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.List;
 
 public class FareGateModule extends AbstractModule {
 
@@ -60,8 +58,8 @@ public class FareGateModule extends AbstractModule {
     }
 
     @Provides
-    static FareGateSignItemCreator provideFareGateSignItemCreator(SignTypeKeyFactory signTypeKeyFactory, FareGateKeyFactory fareGateKeyFactory) {
-        return new FareGateSignItemCreator(signTypeKeyFactory, fareGateKeyFactory);
+    static FareGateSignItemCreator provideFareGateSignItemCreator(SignTypeKeyFactory signTypeKeyFactory, FareGateKeyFactory fareGateKeyFactory, IuMetroConfig iuMetroConfig) {
+        return new FareGateSignItemCreator(signTypeKeyFactory, fareGateKeyFactory, iuMetroConfig);
     }
 
     @Provides
@@ -81,11 +79,8 @@ public class FareGateModule extends AbstractModule {
 
     @ProvidesIntoMap
     @StringMapKey("faregate_entry")
-    static SignInitializer provideFareGateEntrySignInitializer(SignTypeKeyFactory signTypeKeyFactory, FareGateKeyFactory fareGateKeyFactory) {
-        return new FareGateSignInitializer(signTypeKeyFactory, fareGateKeyFactory, List.of(
-                Components.mm("[FareGate]"),
-                Components.mm("<gold>Entry")
-        ));
+    static SignInitializer provideFareGateEntrySignInitializer(SignTypeKeyFactory signTypeKeyFactory, FareGateKeyFactory fareGateKeyFactory, IuMetroConfig config) {
+        return new FareGateSignInitializer(signTypeKeyFactory, fareGateKeyFactory, config.signLines("faregate_entry"));
     }
 
     @ProvidesIntoMap
@@ -96,11 +91,8 @@ public class FareGateModule extends AbstractModule {
 
     @ProvidesIntoMap
     @StringMapKey("faregate_exit")
-    static SignInitializer provideFareGateExitSignInitializer(SignTypeKeyFactory signTypeKeyFactory, FareGateKeyFactory fareGateKeyFactory) {
-        return new FareGateSignInitializer(signTypeKeyFactory, fareGateKeyFactory, List.of(
-                Components.mm("[FareGate]"),
-                Components.mm("<gold>Exit")
-        ));
+    static SignInitializer provideFareGateExitSignInitializer(SignTypeKeyFactory signTypeKeyFactory, FareGateKeyFactory fareGateKeyFactory, IuMetroConfig config) {
+        return new FareGateSignInitializer(signTypeKeyFactory, fareGateKeyFactory, config.signLines("faregate_exit"));
     }
 
     @ProvidesIntoMap

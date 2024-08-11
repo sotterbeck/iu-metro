@@ -1,6 +1,20 @@
 postgres:
   host: "127.0.0.1:5432"
-  database: paper
-  username: dev
-  password: 12345678
+  database: postgres
+  username: postgres
+  password: password
   schema: public
+
+signs:
+  material: acacia_sign
+  lines:
+    faregate_entry:
+      - "[TicketSystem]"
+      - "<green><bold>-->"
+      - "Mit Ticket"
+      - "anklicken"
+    faregate_exit:
+      - "[TicketSystem]"
+      - "<green><bold>-->"
+      - "Mit Ticket"
+      - "anklicken"
