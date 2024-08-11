@@ -15,6 +15,7 @@ import de.sotterbeck.iumetro.entrypoint.papermc.faregate.sign.FareGateSignInitia
 import de.sotterbeck.iumetro.entrypoint.papermc.faregate.sign.FareGateSignItemCreator;
 import de.sotterbeck.iumetro.entrypoint.papermc.faregate.sign.SpigotFareGateSignRepository;
 import de.sotterbeck.iumetro.usecase.faregate.*;
+import de.sotterbeck.iumetro.usecase.station.MetroStationManagingInteractor;
 import org.bukkit.World;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -69,8 +70,8 @@ public class FareGateModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
-    static AnnotatedCommand provideFareGateCreateCommand(FareGateSignItemCreator signItemCreator) {
-        return new FareGateCreateCommand(signItemCreator);
+    static AnnotatedCommand provideFareGateCreateCommand(MetroStationManagingInteractor metroStationManagingInteractor, FareGateSignItemCreator signItemCreator) {
+        return new FareGateCreateCommand(metroStationManagingInteractor, signItemCreator);
     }
 
     @ProvidesIntoSet

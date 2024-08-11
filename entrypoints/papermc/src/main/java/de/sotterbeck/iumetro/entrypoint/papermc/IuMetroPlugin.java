@@ -5,6 +5,7 @@ import com.google.inject.Injector;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.sign.SignModule;
 import de.sotterbeck.iumetro.entrypoint.papermc.faregate.FareGateModule;
+import de.sotterbeck.iumetro.entrypoint.papermc.station.MetroStationModule;
 import de.sotterbeck.iumetro.entrypoint.papermc.ticket.TicketModule;
 import de.sotterbeck.iumetro.usecase.common.DbMigrator;
 import jakarta.inject.Inject;
@@ -40,7 +41,8 @@ public class IuMetroPlugin extends JavaPlugin {
                 new PersistenceModule(),
                 new TicketModule(),
                 new SignModule(),
-                new FareGateModule()
+                new FareGateModule(),
+                new MetroStationModule()
         );
 
         ExecutionCoordinator<CommandSender> executionCoordinator = ExecutionCoordinator.asyncCoordinator();

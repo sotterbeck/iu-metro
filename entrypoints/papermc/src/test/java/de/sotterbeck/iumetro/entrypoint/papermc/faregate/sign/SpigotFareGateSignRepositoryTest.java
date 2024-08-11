@@ -39,7 +39,7 @@ class SpigotFareGateSignRepositoryTest {
 
     private NamespacedKey signTypeKey;
     private NamespacedKey fareGateTypeKey;
-    private NamespacedKey stationNameKey;
+    private NamespacedKey stationKey;
 
     @BeforeEach
     void setUp() {
@@ -48,7 +48,7 @@ class SpigotFareGateSignRepositoryTest {
         repository = new SpigotFareGateSignRepository(world, signTypeKeyFactory, fareGateKeyFactory);
         signTypeKey = new NamespacedKey("iumetro", "sign_type");
         fareGateTypeKey = new NamespacedKey("iumetro", "faregate_type");
-        stationNameKey = new NamespacedKey("iumetro", "station_name");
+        stationKey = new NamespacedKey("iumetro", "station");
     }
 
     @AfterEach
@@ -86,21 +86,21 @@ class SpigotFareGateSignRepositoryTest {
         SignMock sign = (SignMock) block.getState();
         when(signTypeKeyFactory.getSignTypeNamespacedKey()).thenReturn(signTypeKey);
         when(fareGateKeyFactory.getFareGateTypeKey()).thenReturn(fareGateTypeKey);
-        when(fareGateKeyFactory.getStationNameKey()).thenReturn(stationNameKey);
+        when(fareGateKeyFactory.getStationKey()).thenReturn(stationKey);
         setupPersistentDataContainer(sign);
 
         Optional<FareGateDto> result = repository.findAt(position);
 
         assertThat(result).isPresent();
         assertThat(result.get().type()).isEqualTo("entry");
-        assertThat(result.get().stationName()).isEqualTo("Central Station");
+        assertThat(result.get().stationId()).isEqualTo("bb97848b-0195-4cc4-a9c9-ab1573f09821");
     }
 
     private void setupPersistentDataContainer(SignMock sign) {
         PersistentDataContainer container = sign.getPersistentDataContainer();
         container.set(signTypeKey, PersistentDataType.STRING, "faregate_entry");
         container.set(fareGateTypeKey, PersistentDataType.STRING, "entry");
-        container.set(stationNameKey, PersistentDataType.STRING, "Central Station");
+        container.set(stationKey, PersistentDataType.STRING, "bb97848b-0195-4cc4-a9c9-ab1573f09821");
         sign.update();
     }
 

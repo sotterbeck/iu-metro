@@ -41,8 +41,8 @@ public class SpigotFareGateSignRepository implements FareGateSignRepository {
 
 
         String type = container.get(fareGateKeyFactory.getFareGateTypeKey(), PersistentDataType.STRING);
-        String stationName = container.get(fareGateKeyFactory.getStationNameKey(), PersistentDataType.STRING);
-        FareGateDto fareGateDto = new FareGateDto(location, type, stationName);
+        String stationId = container.get(fareGateKeyFactory.getStationKey(), PersistentDataType.STRING);
+        FareGateDto fareGateDto = new FareGateDto(location, type, stationId);
 
         return Optional.of(fareGateDto);
     }

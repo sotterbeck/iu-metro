@@ -35,11 +35,11 @@ public class FareGateSignInitializer implements SignInitializer {
 
         NamespacedKey signTypeKey = signTypeKeyFactory.getSignTypeNamespacedKey();
         NamespacedKey fareGateTypeKey = fareGateKeyFactory.getFareGateTypeKey();
-        NamespacedKey stationNameKey = fareGateKeyFactory.getStationNameKey();
+        NamespacedKey stationKey = fareGateKeyFactory.getStationKey();
 
         signContainer.set(signTypeKey, PersistentDataType.STRING, Objects.requireNonNull(itemContainer.get(signTypeKey, PersistentDataType.STRING)));
         signContainer.set(fareGateTypeKey, PersistentDataType.STRING, Objects.requireNonNull(itemContainer.get(fareGateTypeKey, PersistentDataType.STRING)));
-        signContainer.set(stationNameKey, PersistentDataType.STRING, Objects.requireNonNull(itemContainer.get(stationNameKey, PersistentDataType.STRING)));
+        signContainer.set(stationKey, PersistentDataType.STRING, Objects.requireNonNull(itemContainer.get(stationKey, PersistentDataType.STRING)));
 
         for (int i = 0; i < lines.size(); i++) {
             sign.getSide(Side.FRONT).line(i, lines.get(i));
