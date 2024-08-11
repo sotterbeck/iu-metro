@@ -6,6 +6,7 @@ import com.google.inject.multibindings.ProvidesIntoSet;
 import de.sotterbeck.iumetro.dataprovider.postgres.ticket.PostgresTicketRepository;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
 import de.sotterbeck.iumetro.usecase.ticket.*;
+import jakarta.inject.Singleton;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.sql.DataSource;
@@ -13,26 +14,31 @@ import javax.sql.DataSource;
 public class TicketModule extends AbstractModule {
 
     @Provides
+    @Singleton
     static TicketRepository provideTicketRepository(DataSource dataSource) {
         return new PostgresTicketRepository(dataSource);
     }
 
     @Provides
+    @Singleton
     static TicketPresenter provideTicketPresenter() {
         return new TicketResponseFormatter();
     }
 
     @Provides
+    @Singleton
     static TicketManagingInteractor provideTicketManagingInteractor(TicketRepository ticketRepository, TicketPresenter ticketPresenter) {
         return new TicketManagingInteractorImpl(ticketRepository, ticketPresenter);
     }
 
     @Provides
+    @Singleton
     static TicketInfoInteractor provideTicketInfoInteractor(TicketRepository ticketRepository) {
         return new TicketInfoInteractorImpl(ticketRepository);
     }
 
     @Provides
+    @Singleton
     static PaperTicketPrinter providePaperTicketPrinter(JavaPlugin plugin) {
         return new PaperTicketPrinter(plugin);
     }

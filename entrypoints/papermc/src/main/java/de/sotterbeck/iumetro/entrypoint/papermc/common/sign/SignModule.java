@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.ProvidesIntoSet;
+import jakarta.inject.Singleton;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -18,16 +19,19 @@ public class SignModule extends AbstractModule {
     }
 
     @Provides
+    @Singleton
     static SignTypeKeyFactory provideSignTypeNamespacedKey(JavaPlugin plugin) {
         return new SignTypeKeyFactory(plugin);
     }
 
     @Provides
+    @Singleton
     static SignInitializerFactory provideSignFactory(Map<String, SignInitializer> initializers) {
         return new SignInitializerFactoryImpl(initializers);
     }
 
     @Provides
+    @Singleton
     static SignClickHandlerFactory provideSignClickHandlerFactory(SignTypeKeyFactory signTypeKeyFactory, Map<String, SignClickHandler> handlers) {
         return new SignClickHandlerFactoryImpl(signTypeKeyFactory.getSignTypeNamespacedKey(), handlers);
     }

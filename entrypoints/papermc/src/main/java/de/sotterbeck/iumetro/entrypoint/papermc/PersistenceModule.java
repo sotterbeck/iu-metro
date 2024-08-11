@@ -5,6 +5,7 @@ import com.google.inject.Provides;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.FlywayDbMigrator;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.HikariDataSourceProvider;
 import de.sotterbeck.iumetro.usecase.common.DbMigrator;
+import jakarta.inject.Singleton;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,6 +14,7 @@ import javax.sql.DataSource;
 class PersistenceModule extends AbstractModule {
 
     @Provides
+    @Singleton
     static DataSource provideDataSource(FileConfiguration config) {
         return new HikariDataSourceProvider.Builder(
                 config.getString("postgres.database"),
@@ -24,6 +26,7 @@ class PersistenceModule extends AbstractModule {
     }
 
     @Provides
+    @Singleton
     static DbMigrator provideDbMigrator(DataSource dataSource, JavaPlugin plugin) {
         return new FlywayDbMigrator(dataSource, plugin.getClass().getClassLoader());
     }
