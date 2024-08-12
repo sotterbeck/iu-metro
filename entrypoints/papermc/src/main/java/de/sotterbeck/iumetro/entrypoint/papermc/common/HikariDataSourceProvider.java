@@ -14,11 +14,15 @@ public class HikariDataSourceProvider implements Supplier<DataSource> {
     private final String password;
     private final String dataSourceClassName;
     private final String schema;
+    private final String host;
+    private final int port;
 
     private HikariDataSourceProvider(Builder builder) {
         databaseName = builder.databaseName;
         user = builder.user;
         password = builder.password;
+        host = builder.host;
+        port = builder.port;
         dataSourceClassName = builder.dataSourceClassName;
         schema = builder.schema;
     }
@@ -35,6 +39,8 @@ public class HikariDataSourceProvider implements Supplier<DataSource> {
         properties.setProperty("dataSource.user", user);
         properties.setProperty("dataSource.password", password);
         properties.setProperty("dataSource.databaseName", databaseName);
+        properties.setProperty("dataSource.serverName", host);
+        properties.setProperty("dataSource.portNumber", String.valueOf(port));
         properties.setProperty("dataSource.currentSchema", schema);
         return properties;
     }
@@ -44,6 +50,8 @@ public class HikariDataSourceProvider implements Supplier<DataSource> {
         private final String databaseName;
         private final String user;
         private final String password;
+        private String host = "localhost";
+        private int port = 5432;
         private String dataSourceClassName = "org.postgresql.ds.PGSimpleDataSource";
         private String schema;
 
@@ -60,6 +68,16 @@ public class HikariDataSourceProvider implements Supplier<DataSource> {
 
         public Builder schema(String schema) {
             this.schema = schema;
+            return this;
+        }
+
+        public Builder host(String host) {
+            this.host = host;
+            return this;
+        }
+
+        public Builder port(int port) {
+            this.port = port;
             return this;
         }
 

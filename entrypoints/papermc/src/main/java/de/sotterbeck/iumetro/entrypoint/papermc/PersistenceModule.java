@@ -16,10 +16,12 @@ class PersistenceModule extends AbstractModule {
     @Provides
     @Singleton
     static DataSource provideDataSource(FileConfiguration config) {
-        return new HikariDataSourceProvider.Builder(
-                config.getString("postgres.database"),
-                config.getString("postgres.username"),
-                config.getString("postgres.password"))
+        String database = config.getString("postgres.database");
+        String username = config.getString("postgres.username");
+        String password = config.getString("postgres.password");
+        return new HikariDataSourceProvider.Builder(database, username, password)
+                .host(config.getString("postgres.host"))
+                .port(config.getInt("postgres.port"))
                 .schema(config.getString("postgres.schema"))
                 .build()
                 .get();
