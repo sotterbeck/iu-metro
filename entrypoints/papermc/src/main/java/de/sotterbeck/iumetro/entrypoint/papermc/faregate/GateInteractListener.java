@@ -3,7 +3,6 @@ package de.sotterbeck.iumetro.entrypoint.papermc.faregate;
 import de.sotterbeck.iumetro.usecase.faregate.FareGateProtectionInteractor;
 import de.sotterbeck.iumetro.usecase.faregate.GateRequestModel;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Gate;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,9 +21,8 @@ public class GateInteractListener implements Listener {
 
     @EventHandler
     public void onFenceGateInteract(PlayerInteractEvent event) {
-        Block clickedBlock = Objects.requireNonNull(event.getClickedBlock());
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK
-                || !(clickedBlock.getBlockData() instanceof Gate)
+                || !(Objects.requireNonNull(event.getClickedBlock()).getBlockData() instanceof Gate)
         ) {
             return;
         }
