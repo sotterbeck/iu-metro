@@ -24,7 +24,7 @@ jobs:
           build-scan-terms-of-use-agree: "yes"
 
       - name: Run build
-        run: ./gradlew build
+        run: ./gradlew shadowJar
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
