@@ -32,7 +32,7 @@ public class FareGateModule extends AbstractModule {
     @Provides
     @Singleton
     static FareGateSignRepository provideFareGateSignRepository(JavaPlugin plugin, SignTypeKeyFactory signTypeKeyFactory, FareGateKeyFactory fareGateKeyFactory) {
-        World world = plugin.getServer().getWorld("world");
+        World world = plugin.getServer().getWorlds().getFirst();
         return new SpigotFareGateSignRepository(world,
                 signTypeKeyFactory,
                 fareGateKeyFactory);
@@ -41,14 +41,14 @@ public class FareGateModule extends AbstractModule {
     @Provides
     @Singleton
     static GateRepository provideGateRepository(JavaPlugin plugin) {
-        World world = plugin.getServer().getWorld("world");
+        World world = plugin.getServer().getWorlds().getFirst();
         return new SpigotGateRepository(world);
     }
 
     @Provides
     @Singleton
     static GateControlAdapter provideGateControlAdapter(JavaPlugin plugin) {
-        World world = plugin.getServer().getWorld("world");
+        World world = plugin.getServer().getWorlds().getFirst();
         return new SpigotGateControlAdapter(world, plugin);
     }
 
