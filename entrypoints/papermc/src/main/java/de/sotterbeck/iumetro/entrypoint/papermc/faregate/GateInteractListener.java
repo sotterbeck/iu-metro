@@ -22,12 +22,11 @@ public class GateInteractListener implements Listener {
     @EventHandler
     public void onFenceGateInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK
-                || !(Objects.requireNonNull(event.getClickedBlock()).getBlockData() instanceof Gate)
+                || !(Objects.requireNonNull(event.getClickedBlock()).getBlockData() instanceof Gate gate)
         ) {
             return;
         }
 
-        Gate gate = (Gate) event.getClickedBlock().getBlockData();
         Location location = event.getClickedBlock().getLocation();
         String orientation = gate.getFacing().toString();
         GateRequestModel request = new GateRequestModel(location.getBlockX(), location.getBlockY(), location.getBlockZ(), orientation);
