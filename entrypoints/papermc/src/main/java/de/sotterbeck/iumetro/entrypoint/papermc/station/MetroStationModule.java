@@ -8,7 +8,9 @@ import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.usecase.station.MetroStationManagingInteractor;
 import de.sotterbeck.iumetro.usecase.station.MetroStationModifyInteractor;
 import de.sotterbeck.iumetro.usecase.station.MetroStationRepository;
+import de.sotterbeck.iumetro.usecase.station.MetroStationTeleportInteractor;
 import jakarta.inject.Singleton;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.sql.DataSource;
 
@@ -32,6 +34,12 @@ public class MetroStationModule extends AbstractModule {
         return new MetroStationModifyInteractor(metroStationRepository);
     }
 
+    @Provides
+    @Singleton
+    static MetroStationTeleportInteractor provideMetroStationTeleportInteractor(MetroStationRepository metroStationRepository) {
+        return new MetroStationTeleportInteractor(metroStationRepository);
+    }
+
     @ProvidesIntoSet
     static CloudAnnotated provideMetroStationListCommand(MetroStationManagingInteractor metroStationManagingInteractor) {
         return new MetroStationListCommand(metroStationManagingInteractor);
@@ -45,6 +53,11 @@ public class MetroStationModule extends AbstractModule {
     @ProvidesIntoSet
     static CloudAnnotated provideMetroStationModifyCommand(MetroStationManagingInteractor metroStationManagingInteractor, MetroStationModifyInteractor metroStationModifyInteractor) {
         return new MetroStationModifyCommand(metroStationManagingInteractor, metroStationModifyInteractor);
+    }
+
+    @ProvidesIntoSet
+    static CloudAnnotated provideMetroStationTpCommand(MetroStationTeleportInteractor metroStationTeleportInteractor, JavaPlugin plugin) {
+        return new MetroStationTpCommand(metroStationTeleportInteractor, plugin);
     }
 
 }
