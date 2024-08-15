@@ -1,6 +1,6 @@
 package de.sotterbeck.iumetro.entrypoint.papermc.station;
 
-import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.usecase.station.MetroStationManagingInteractor;
 import org.bukkit.command.CommandSender;
 import org.incendo.cloud.annotation.specifier.Greedy;
@@ -8,7 +8,7 @@ import org.incendo.cloud.annotations.Argument;
 import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.Permission;
 
-public class MetroStationDeleteCommand implements AnnotatedCommand {
+public class MetroStationDeleteCommand implements CloudAnnotated {
 
     private final MetroStationManagingInteractor metroStationManagingInteractor;
 

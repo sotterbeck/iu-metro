@@ -2,7 +2,7 @@ package de.sotterbeck.iumetro.entrypoint.papermc;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.sign.SignModule;
 import de.sotterbeck.iumetro.entrypoint.papermc.faregate.FareGateModule;
 import de.sotterbeck.iumetro.entrypoint.papermc.station.MetroStationModule;
@@ -28,7 +28,7 @@ public class IuMetroPlugin extends JavaPlugin {
     private DbMigrator migrator;
 
     @Inject
-    private Set<AnnotatedCommand> annotatedCommands;
+    private Set<CloudAnnotated> cloudAnnotateds;
 
     @Inject
     private Set<Listener> listeners;
@@ -64,7 +64,7 @@ public class IuMetroPlugin extends JavaPlugin {
                 CommandSender.class,
                 parserParameters -> CommandMeta.empty());
 
-        annotatedCommands.forEach(annotationParser::parse);
+        cloudAnnotateds.forEach(annotationParser::parse);
 
         PluginManager pluginManager = getServer().getPluginManager();
         listeners.forEach(listener -> pluginManager.registerEvents(listener, this));

@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import de.sotterbeck.iumetro.dataprovider.postgres.ticket.PostgresTicketRepository;
-import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.usecase.ticket.*;
 import jakarta.inject.Singleton;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -44,12 +44,12 @@ public class TicketModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
-    static AnnotatedCommand provideTicketCreateCommand(TicketManagingInteractor ticketManagingInteractor, PaperTicketPrinter ticketPrinter) {
+    static CloudAnnotated provideTicketCreateCommand(TicketManagingInteractor ticketManagingInteractor, PaperTicketPrinter ticketPrinter) {
         return new TicketCreateCommand(ticketManagingInteractor, ticketPrinter);
     }
 
     @ProvidesIntoSet
-    static AnnotatedCommand provideTicketDeleteCommand(TicketInfoInteractor ticketInfoInteractor, TicketManagingInteractor ticketManagingInteractor) {
+    static CloudAnnotated provideTicketDeleteCommand(TicketInfoInteractor ticketInfoInteractor, TicketManagingInteractor ticketManagingInteractor) {
         return new TicketDeleteCommand(ticketInfoInteractor, ticketManagingInteractor);
     }
 

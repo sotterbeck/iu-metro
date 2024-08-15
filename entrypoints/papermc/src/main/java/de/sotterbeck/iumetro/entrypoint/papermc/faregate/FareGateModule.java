@@ -5,7 +5,7 @@ import com.google.inject.Provides;
 import com.google.inject.multibindings.ProvidesIntoMap;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import com.google.inject.multibindings.StringMapKey;
-import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.IuMetroConfig;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.sign.SignClickHandler;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.sign.SignInitializer;
@@ -77,7 +77,7 @@ public class FareGateModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
-    static AnnotatedCommand provideFareGateCreateCommand(MetroStationManagingInteractor metroStationManagingInteractor, FareGateSignItemCreator signItemCreator) {
+    static CloudAnnotated provideFareGateCreateCommand(MetroStationManagingInteractor metroStationManagingInteractor, FareGateSignItemCreator signItemCreator) {
         return new FareGateCreateCommand(metroStationManagingInteractor, signItemCreator);
     }
 

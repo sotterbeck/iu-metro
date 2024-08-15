@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
-import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.IuMetroConfig;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.SpigotIuMetroConfig;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -22,7 +22,7 @@ class PaperPluginModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        Multibinder.newSetBinder(binder(), AnnotatedCommand.class);
+        Multibinder.newSetBinder(binder(), CloudAnnotated.class);
         Multibinder.newSetBinder(binder(), Listener.class);
 
         bind(JavaPlugin.class).toInstance(plugin);

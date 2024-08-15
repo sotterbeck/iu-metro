@@ -1,5 +1,7 @@
 package de.sotterbeck.iumetro.usecase.station;
 
+import de.sotterbeck.iumetro.usecase.faregate.PositionDto;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +31,11 @@ public class MetroStationManagingInteractor {
                 .toList();
     }
 
+    public List<String> getAllStationNames() {
+        return metroStationRepository.getAllStationNames().stream()
+                .toList();
+    }
+
     public boolean delete(String stationName) {
         if (!metroStationRepository.existsByName(stationName)) {
             return false;
@@ -39,7 +46,14 @@ public class MetroStationManagingInteractor {
     }
 
     private MetroStationResponseModel toResponseModel(MetroStationDto metroStationDto) {
-        return new MetroStationResponseModel(metroStationDto.id().toString(), metroStationDto.name());
+        String alias = metroStationDto.alias()
+                .map(a -> " / " + a)
+                .orElse("");
+
+        String id = metroStationDto.id().toString();
+        String displayId = metroStationDto.id().toString().substring(0, 8) + alias;
+        PositionDto position = metroStationDto.position().orElse(null);
+        return new MetroStationResponseModel(id, displayId, metroStationDto.name(), position);
     }
 
 }

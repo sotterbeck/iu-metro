@@ -26,16 +26,14 @@ public class FareGateSignItemCreator {
         this.config = config;
     }
 
-    public ItemStack createItem(String type, String stationName, String stationId) {
+    public ItemStack createItem(String type, String stationName, String stationId, String stationDisplayId) {
         Material defaultMaterial = config.signMaterial();
         ItemStack item = new ItemStack(defaultMaterial);
         ItemMeta meta = item.getItemMeta();
 
-        String shortId = stationId.substring(0, 6);
-
         meta.displayName(Components.mm("<gold>" + stationName + " Fare Gate Sign"));
         List<Component> lore = List.of(
-                Components.mm("<gray>Station: " + stationName + " (" + shortId + ")"),
+                Components.mm("<gray>Station: " + stationName + " (" + stationDisplayId + ")"),
                 Components.mm("<gray>Type: " + type)
         );
         meta.lore(lore);

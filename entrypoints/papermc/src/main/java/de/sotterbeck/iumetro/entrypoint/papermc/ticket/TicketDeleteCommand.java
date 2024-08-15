@@ -1,6 +1,6 @@
 package de.sotterbeck.iumetro.entrypoint.papermc.ticket;
 
-import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.usecase.ticket.TicketInfoInteractor;
 import de.sotterbeck.iumetro.usecase.ticket.TicketManagingInteractor;
 import org.bukkit.command.CommandSender;
@@ -14,7 +14,7 @@ import org.incendo.cloud.suggestion.Suggestion;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-public class TicketDeleteCommand implements AnnotatedCommand {
+public class TicketDeleteCommand implements CloudAnnotated {
 
     private static final Pattern UUID_REGEX =
             Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");

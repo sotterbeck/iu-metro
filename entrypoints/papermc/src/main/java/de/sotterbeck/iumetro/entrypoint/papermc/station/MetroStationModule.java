@@ -4,8 +4,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import de.sotterbeck.iumetro.dataprovider.postgres.station.PostgresMetroStationRepository;
-import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.usecase.station.MetroStationManagingInteractor;
+import de.sotterbeck.iumetro.usecase.station.MetroStationModifyInteractor;
 import de.sotterbeck.iumetro.usecase.station.MetroStationRepository;
 import jakarta.inject.Singleton;
 
@@ -25,9 +26,25 @@ public class MetroStationModule extends AbstractModule {
         return new MetroStationManagingInteractor(metroStationRepository);
     }
 
+    @Provides
+    @Singleton
+    static MetroStationModifyInteractor provideMetroStationModifyInteractor(MetroStationRepository metroStationRepository) {
+        return new MetroStationModifyInteractor(metroStationRepository);
+    }
+
     @ProvidesIntoSet
-    static AnnotatedCommand provideMetroStationDeleteCommand(MetroStationManagingInteractor metroStationManagingInteractor) {
+    static CloudAnnotated provideMetroStationListCommand(MetroStationManagingInteractor metroStationManagingInteractor) {
+        return new MetroStationListCommand(metroStationManagingInteractor);
+    }
+
+    @ProvidesIntoSet
+    static CloudAnnotated provideMetroStationDeleteCommand(MetroStationManagingInteractor metroStationManagingInteractor) {
         return new MetroStationDeleteCommand(metroStationManagingInteractor);
+    }
+
+    @ProvidesIntoSet
+    static CloudAnnotated provideMetroStationModifyCommand(MetroStationManagingInteractor metroStationManagingInteractor, MetroStationModifyInteractor metroStationModifyInteractor) {
+        return new MetroStationModifyCommand(metroStationManagingInteractor, metroStationModifyInteractor);
     }
 
 }

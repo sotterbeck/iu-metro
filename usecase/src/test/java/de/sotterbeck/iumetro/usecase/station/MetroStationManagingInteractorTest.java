@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,4 +52,48 @@ class MetroStationManagingInteractorTest {
         assertThat(response).isNotNull();
     }
 
+    @Test
+    void getAll_ShouldReturnAllStations_WhenStationExists() {
+        when(metroStationRepository.getAll()).thenReturn(List.of(
+                new MetroStationDto(UUID.fromString("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3"), "Station 1"),
+                new MetroStationDto(UUID.fromString("bcc38a6a-0816-473a-85be-3186560c7e5d"), "Station 2")));
+
+        List<MetroStationResponseModel> response = metroStationManagingInteractor.getAll();
+
+        assertThat(response).hasSize(2);
+    }
+
+    @Test
+    void getAll_ShouldReturnAllStationsCorrectlyFormatted_WhenStationsHaveAliases() {
+        when(metroStationRepository.getAll()).thenReturn(List.of(
+                new MetroStationDto(UUID.fromString("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3"), "Station 1", "ST"),
+                new MetroStationDto(UUID.fromString("bcc38a6a-0816-473a-85be-3186560c7e5d"), "Station 2", "ST2")));
+
+        List<MetroStationResponseModel> response = metroStationManagingInteractor.getAll();
+        assertThat(response).containsExactlyInAnyOrder(
+                new MetroStationResponseModel("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3", "2acd6e2a / ST", "Station 1", null),
+                new MetroStationResponseModel("bcc38a6a-0816-473a-85be-3186560c7e5d", "bcc38a6a / ST2", "Station 2", null)
+
+        );
+    }
+
+    @Test
+    void delete_ShouldReturnFalse_WhenStationDoesNotExist() {
+        String stationName = "Station 1";
+        when(metroStationRepository.existsByName(stationName)).thenReturn(false);
+
+        boolean deleted = metroStationManagingInteractor.delete(stationName);
+
+        assertThat(deleted).isFalse();
+    }
+
+    @Test
+    void delete_ShouldDeleteStationAndReturnTrue_WhenStationExists() {
+        String stationName = "Station 1";
+        when(metroStationRepository.existsByName(stationName)).thenReturn(true);
+
+        boolean deleted = metroStationManagingInteractor.delete(stationName);
+
+        assertThat(deleted).isTrue();
+    }
 }

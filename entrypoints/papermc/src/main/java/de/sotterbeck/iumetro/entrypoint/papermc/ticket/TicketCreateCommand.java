@@ -1,6 +1,6 @@
 package de.sotterbeck.iumetro.entrypoint.papermc.ticket;
 
-import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.usecase.ticket.TicketManagingInteractor;
 import de.sotterbeck.iumetro.usecase.ticket.TicketRequestModel;
 import org.bukkit.command.CommandSender;
@@ -13,7 +13,7 @@ import org.incendo.cloud.annotations.Permission;
 import java.time.Duration;
 import java.util.UUID;
 
-public class TicketCreateCommand implements AnnotatedCommand {
+public class TicketCreateCommand implements CloudAnnotated {
 
     private final TicketManagingInteractor ticketManagingInteractor;
     private final PaperTicketPrinter ticketPrinter;

@@ -1,6 +1,6 @@
 package de.sotterbeck.iumetro.entrypoint.papermc.faregate;
 
-import de.sotterbeck.iumetro.entrypoint.papermc.common.AnnotatedCommand;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.entrypoint.papermc.faregate.sign.FareGateSignItemCreator;
 import de.sotterbeck.iumetro.usecase.station.MetroStationManagingInteractor;
 import de.sotterbeck.iumetro.usecase.station.MetroStationRequestModel;
@@ -16,7 +16,7 @@ import org.incendo.cloud.annotations.suggestion.Suggestions;
 
 import java.util.List;
 
-public class FareGateCreateCommand implements AnnotatedCommand {
+public class FareGateCreateCommand implements CloudAnnotated {
 
     private final FareGateSignItemCreator signItemCreator;
     private final MetroStationManagingInteractor metroStationManagingInteractor;
@@ -41,7 +41,7 @@ public class FareGateCreateCommand implements AnnotatedCommand {
         MetroStationRequestModel station = new MetroStationRequestModel(stationName);
         MetroStationResponseModel savedStation = metroStationManagingInteractor.save(station);
 
-        ItemStack item = signItemCreator.createItem(type.name(), savedStation.name(), savedStation.id());
+        ItemStack item = signItemCreator.createItem(type.name(), savedStation.name(), savedStation.id(), savedStation.displayId());
 
         player.getInventory().addItem(item);
         player.sendRichMessage("<green>Created " + type.name() + " sign for station " + stationName + ".");
@@ -53,9 +53,6 @@ public class FareGateCreateCommand implements AnnotatedCommand {
 
     @Suggestions("stationNames")
     public List<String> suggestions() {
-        return metroStationManagingInteractor.getAll().stream()
-                .map(MetroStationResponseModel::name)
-                .toList();
+        return metroStationManagingInteractor.getAllStationNames();
     }
-
 }
