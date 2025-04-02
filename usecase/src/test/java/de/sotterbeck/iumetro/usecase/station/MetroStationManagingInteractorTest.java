@@ -1,5 +1,6 @@
 package de.sotterbeck.iumetro.usecase.station;
 
+import de.sotterbeck.iumetro.usecase.faregate.PositionDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,6 +75,27 @@ class MetroStationManagingInteractorTest {
                 new MetroStationResponseModel("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3", "2acd6e2a / ST", "Station 1", null),
                 new MetroStationResponseModel("bcc38a6a-0816-473a-85be-3186560c7e5d", "bcc38a6a / ST2", "Station 2", null)
 
+        );
+    }
+
+    @Test
+    void getAllPositioned_ShouldReturnAllStationWithPositions() {
+
+        MetroStationDto stationWithPosition = new MetroStationDto(UUID.fromString("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3"),
+                "Station 1",
+                "ST",
+                new PositionDto(0, 0, 0));
+        MetroStationDto stationWithoutPosition = new MetroStationDto(UUID.fromString("bcc38a6a-0816-473a-85be-3186560c7e5d"),
+                "Station 2",
+                "ST2");
+        when(metroStationRepository.getAll()).thenReturn(List.of(
+                stationWithPosition,
+                stationWithoutPosition));
+
+        List<MetroStationResponseModel> response = metroStationManagingInteractor.getAllPositioned();
+
+        assertThat(response).contains(
+                new MetroStationResponseModel("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3", "2acd6e2a / ST", "Station 1", new PositionDto(0, 0, 0))
         );
     }
 

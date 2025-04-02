@@ -31,6 +31,13 @@ public class MetroStationManagingInteractor {
                 .toList();
     }
 
+    public List<MetroStationResponseModel> getAllPositioned() {
+        return metroStationRepository.getAll().stream()
+                .filter(metroStationDto -> metroStationDto.position().isPresent())
+                .map(this::toResponseModel)
+                .toList();
+    }
+
     public List<String> getAllStationNames() {
         return metroStationRepository.getAllStationNames().stream()
                 .toList();

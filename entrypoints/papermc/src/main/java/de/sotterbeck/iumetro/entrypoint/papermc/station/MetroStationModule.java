@@ -5,10 +5,13 @@ import com.google.inject.Provides;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import de.sotterbeck.iumetro.dataprovider.postgres.station.PostgresMetroStationRepository;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.web.Routing;
+import de.sotterbeck.iumetro.entrypoint.papermc.station.web.MetroStationRouting;
 import de.sotterbeck.iumetro.usecase.station.MetroStationManagingInteractor;
 import de.sotterbeck.iumetro.usecase.station.MetroStationModifyInteractor;
 import de.sotterbeck.iumetro.usecase.station.MetroStationRepository;
 import de.sotterbeck.iumetro.usecase.station.MetroStationTeleportInteractor;
+import io.javalin.Javalin;
 import jakarta.inject.Singleton;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -60,4 +63,8 @@ public class MetroStationModule extends AbstractModule {
         return new MetroStationTpCommand(metroStationTeleportInteractor, plugin);
     }
 
+    @ProvidesIntoSet
+    static Routing provideMetroStationRouting(Javalin javalin, MetroStationManagingInteractor metroStationManagingInteractor) {
+        return new MetroStationRouting(javalin, metroStationManagingInteractor);
+    }
 }

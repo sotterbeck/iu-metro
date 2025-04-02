@@ -4,6 +4,7 @@ import de.sotterbeck.iumetro.usecase.faregate.PositionDto;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface MetroStationRepository {
 
@@ -15,11 +16,15 @@ public interface MetroStationRepository {
 
     Optional<MetroStationDto> getByName(String name);
 
+    Optional<MetroStationDto> getById(UUID id);
+
     void save(MetroStationDto station);
 
     void saveAlias(String stationName, String alias);
 
     void savePosition(String stationName, PositionDto position);
+
+    boolean existsById(UUID id);
 
     boolean existsByName(String name);
 

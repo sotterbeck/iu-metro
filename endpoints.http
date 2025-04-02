@@ -1,0 +1,46 @@
+### GET request to example server
+GET http://localhost:8080/api/metro-stations
+
+###
+GET http://localhost:8080/api/metro-stations/positioned
+
+###
+GET http://localhost:8080/api/metro-network/graph
+
+###
+GET http://localhost:8080/api/lines
+
+###
+POST http://localhost:8080/api/lines
+Content-Type: application/json
+
+{
+  "name": "M2",
+  "color": "#ffffff"
+}
+
+###
+DELETE http://localhost:8080/api/lines/M23
+
+###
+POST http://localhost:8080/api/metro-network/connections
+Content-Type: application/json
+
+{
+  "station1Id": "1d5c2052-a4ad-4495-b7cd-9c5fe6947044",
+  "station2Id": "e6d49d3d-2ba0-4c1a-8eaa-2420de8c20aa",
+  "lines": []
+}
+
+###
+PUT http://localhost:8080/api/metro-network/connections/1d5c2052-a4ad-4495-b7cd-9c5fe6947044/e6d49d3d-2ba0-4c1a-8eaa-2420de8c20aa
+Content-Type: application/json
+
+{
+  "lines": [
+    {
+      "name": "M2",
+      "sequenceNumber": 0
+    }
+  ]
+}

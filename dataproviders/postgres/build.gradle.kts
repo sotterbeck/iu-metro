@@ -15,6 +15,7 @@ repositories {
 dependencies {
     implementation(project(":usecase"))
     implementation(libs.jooq)
+    jooqGenerator(libs.slf4j.simple)
     jooqGenerator("com.github.sabomichal:jooq-meta-postgres-flyway:1.2.0")
 
     testImplementation(libs.testcontainers.postgresql)

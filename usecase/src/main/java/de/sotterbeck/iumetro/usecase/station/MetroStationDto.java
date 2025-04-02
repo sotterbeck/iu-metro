@@ -20,8 +20,8 @@ public final class MetroStationDto {
         this.position = position;
     }
 
-    public MetroStationDto(UUID uuid, String stationName, String alias) {
-        this(uuid, stationName, alias, null);
+    public MetroStationDto(UUID id, String stationName, String alias) {
+        this(id, stationName, alias, null);
     }
 
     public MetroStationDto(UUID id, String stationName) {

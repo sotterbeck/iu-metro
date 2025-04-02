@@ -7,6 +7,8 @@ jooq = "3.19.8"
 slf4j = "2.0.13"
 guice = "7.0.0"
 hikaricp = "5.1.0"
+javalin = "6.2.0"
+jackson = "2.17.2"
 cloud = "2.0.0-rc.2"
 cloud-paper = "2.0.0-beta.9"
 paper = "1.20.4-R0.1-SNAPSHOT"
@@ -27,6 +29,9 @@ jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 guice = { module = "com.google.inject:guice", version.ref = "guice" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8", version.ref = "jackson" }
 cloud-core = { module = "org.incendo:cloud-core", version.ref = "cloud" }
 cloud-annotations = { module = "org.incendo:cloud-annotations", version.ref = "cloud" }
 cloud-paper = { module = "org.incendo:cloud-paper", version.ref = "cloud-paper" }

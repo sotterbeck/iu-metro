@@ -19,6 +19,10 @@ dependencies {
     implementation(libs.flywaydb)
     implementation(libs.flywaydb.database.postgresql)
     implementation(libs.hikaricp)
+    implementation(libs.javalin)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.datatype.jdk8)
+    implementation(libs.slf4j.simple)
     implementation(libs.postgresql)
     implementation(libs.jooq)
     implementation(libs.cloud.core)
@@ -56,7 +60,9 @@ tasks {
             "io.leangen.geantyref" to "$relocatedPackage.geantyref",
             "io.r2dbc" to "$relocatedPackage.r2dbc",
             "jakarta.inject" to "$relocatedPackage.jakarta.inject",
+            "jakarta.servlet" to "$relocatedPackage.jakarta.servlet",
             "javax.inject" to "$relocatedPackage.javax.inject",
+            "javax.servlet" to "$relocatedPackage.javax.servlet",
             "javax.annotation" to "$relocatedPackage.javax.annotation",
             "org.aopalliance" to "$relocatedPackage.aopalliance",
             "org.checkerframework" to "$relocatedPackage.checkerframework",
@@ -66,6 +72,12 @@ tasks {
             "org.postgresql" to "$relocatedPackage.postgresql",
             "org.reactivestreams" to "$relocatedPackage.reactiveStreams",
             "org.slf4j" to "$relocatedPackage.slf4j",
+            "io.javalin" to "$relocatedPackage.javalin",
+            "kotlin" to "$relocatedPackage.kotlin",
+            "org.eclipse.jetty" to "$relocatedPackage.eclipse.jetty",
+            "org.intellij" to "$relocatedPackage.intellij",
+            "org.jetbrains.annotations" to "$relocatedPackage.jetbrains.annotations",
+
         )
 
         relocations.forEach { (original, relocated) ->

@@ -4,10 +4,14 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.entrypoint.papermc.common.sign.SignModule;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.web.Routing;
+import de.sotterbeck.iumetro.entrypoint.papermc.common.web.WebModule;
 import de.sotterbeck.iumetro.entrypoint.papermc.faregate.FareGateModule;
+import de.sotterbeck.iumetro.entrypoint.papermc.network.MetroNetworkModule;
 import de.sotterbeck.iumetro.entrypoint.papermc.station.MetroStationModule;
 import de.sotterbeck.iumetro.entrypoint.papermc.ticket.TicketModule;
 import de.sotterbeck.iumetro.usecase.common.DbMigrator;
+import io.javalin.Javalin;
 import jakarta.inject.Inject;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Listener;
@@ -28,7 +32,13 @@ public class IuMetroPlugin extends JavaPlugin {
     private DbMigrator migrator;
 
     @Inject
-    private Set<CloudAnnotated> cloudAnnotateds;
+    private Javalin javalin;
+
+    @Inject
+    private Set<Routing> routes;
+
+    @Inject
+    private Set<CloudAnnotated> cloudAnnotated;
 
     @Inject
     private Set<Listener> listeners;
@@ -39,12 +49,36 @@ public class IuMetroPlugin extends JavaPlugin {
         Injector injector = Guice.createInjector(
                 new PaperPluginModule(this),
                 new PersistenceModule(),
-                new TicketModule(),
+                new WebModule(),
                 new SignModule(),
+                new TicketModule(),
                 new FareGateModule(),
-                new MetroStationModule()
+                new MetroStationModule(),
+                new MetroNetworkModule()
         );
 
+        registerCommands();
+        registerEvents();
+
+        migrator.migrate();
+
+        setUpWebServer();
+
+        injector.injectMembers(this);
+    }
+
+    private void setUpWebServer() {
+        routes.forEach(Routing::bindRoutes);
+
+        javalin.start();
+    }
+
+    private void registerEvents() {
+        PluginManager pluginManager = getServer().getPluginManager();
+        listeners.forEach(listener -> pluginManager.registerEvents(listener, this));
+    }
+
+    private void registerCommands() {
         ExecutionCoordinator<CommandSender> executionCoordinator = ExecutionCoordinator.asyncCoordinator();
 
         LegacyPaperCommandManager<CommandSender> commandManager = new LegacyPaperCommandManager<>(
@@ -64,13 +98,12 @@ public class IuMetroPlugin extends JavaPlugin {
                 CommandSender.class,
                 parserParameters -> CommandMeta.empty());
 
-        cloudAnnotateds.forEach(annotationParser::parse);
+        cloudAnnotated.forEach(annotationParser::parse);
+    }
 
-        PluginManager pluginManager = getServer().getPluginManager();
-        listeners.forEach(listener -> pluginManager.registerEvents(listener, this));
-
-        injector.injectMembers(this);
-        migrator.migrate();
+    @Override
+    public void onDisable() {
+        javalin.stop();
     }
 
 }

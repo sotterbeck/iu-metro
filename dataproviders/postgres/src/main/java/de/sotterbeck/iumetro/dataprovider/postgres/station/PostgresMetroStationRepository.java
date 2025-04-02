@@ -23,7 +23,7 @@ import static de.sotterbeck.iumetro.dataprovider.postgres.jooq.generated.Tables.
 public class PostgresMetroStationRepository implements MetroStationRepository {
 
     private final DSLContext create;
-    private static final RecordMapper<Record, MetroStationDto> MAPPER = new RecordMetroStationDtoRecordMapper();
+    private static final RecordMapper<Record, MetroStationDto> MAPPER = new MetroStationDtoRecordMapper();
 
     public PostgresMetroStationRepository(DataSource dataSource) {
         create = DSL.using(dataSource, SQLDialect.POSTGRES);
@@ -60,6 +60,17 @@ public class PostgresMetroStationRepository implements MetroStationRepository {
                 .leftJoin(METRO_STATION_ALIASES).on(METRO_STATIONS.ID.eq(METRO_STATION_ALIASES.METRO_STATION_ID))
                 .leftJoin(METRO_STATION_POSITIONS).on(METRO_STATIONS.ID.eq(METRO_STATION_POSITIONS.METRO_STATION_ID))
                 .where(METRO_STATIONS.NAME.eq(name))
+                .fetchOptional()
+                .map(MAPPER);
+    }
+
+    @Override
+    public Optional<MetroStationDto> getById(UUID id) {
+        return create.select()
+                .from(METRO_STATIONS)
+                .leftJoin(METRO_STATION_ALIASES).on(METRO_STATIONS.ID.eq(METRO_STATION_ALIASES.METRO_STATION_ID))
+                .leftJoin(METRO_STATION_POSITIONS).on(METRO_STATIONS.ID.eq(METRO_STATION_POSITIONS.METRO_STATION_ID))
+                .where(METRO_STATIONS.ID.eq(id))
                 .fetchOptional()
                 .map(MAPPER);
     }
@@ -111,6 +122,11 @@ public class PostgresMetroStationRepository implements MetroStationRepository {
     }
 
     @Override
+    public boolean existsById(UUID id) {
+        return create.fetchOne(METRO_STATIONS, METRO_STATIONS.ID.eq(id)) != null;
+    }
+
+    @Override
     public boolean existsByName(String name) {
         return create.fetchOne(METRO_STATIONS, METRO_STATIONS.NAME.eq(name)) != null;
     }
@@ -148,31 +164,6 @@ public class PostgresMetroStationRepository implements MetroStationRepository {
         if (positionRecord != null) {
             positionRecord.delete();
         }
-    }
-
-    private static class RecordMetroStationDtoRecordMapper implements RecordMapper<Record, MetroStationDto> {
-
-        @Override
-        public MetroStationDto map(Record rec) {
-            PositionDto position;
-            if (rec.get(METRO_STATION_POSITIONS.METRO_STATION_ID) == null) {
-                position = null;
-            } else {
-                position = new PositionDto(
-                        rec.get(METRO_STATION_POSITIONS.POS_X),
-                        rec.get(METRO_STATION_POSITIONS.POS_Y),
-                        rec.get(METRO_STATION_POSITIONS.POS_Z)
-                );
-            }
-
-            return new MetroStationDto(
-                    rec.get(METRO_STATIONS.ID),
-                    rec.get(METRO_STATIONS.NAME),
-                    rec.get(METRO_STATION_ALIASES.ALIAS),
-                    position
-            );
-        }
-
     }
 
 }

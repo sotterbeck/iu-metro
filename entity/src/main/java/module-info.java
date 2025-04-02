@@ -8,4 +8,5 @@ module iumetro.entity {
     exports de.sotterbeck.iumetro.entity.station;
     exports de.sotterbeck.iumetro.entity.ticket.rechargeable;
     exports de.sotterbeck.iumetro.entity.ticket.constained;
+    exports de.sotterbeck.iumetro.entity.network;
 }
