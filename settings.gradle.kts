@@ -1,9 +1,9 @@
 rootProject.name = "iu-metro"
 include(
-    "entity",
-    "usecase",
-    "entrypoints:papermc",
-    "dataproviders:postgres",
+    "domain",
+    "application",
+    "infrastructure:papermc",
+    "infrastructure:postgres",
 )
-findProject(":entrypoints:papermc")
-findProject(":dataproviders:postgres")
+findProject(":infrastructure:papermc")
+findProject(":infrastructure:postgres")

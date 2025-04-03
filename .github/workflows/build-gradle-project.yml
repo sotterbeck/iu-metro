@@ -30,4 +30,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Package
-          path: entrypoints/papermc/build/libs
+          path: infrastructure/papermc/build/libs
