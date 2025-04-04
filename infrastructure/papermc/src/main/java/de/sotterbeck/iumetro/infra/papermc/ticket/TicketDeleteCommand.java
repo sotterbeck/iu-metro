@@ -1,7 +1,7 @@
 package de.sotterbeck.iumetro.infra.papermc.ticket;
 
-import de.sotterbeck.iumetro.app.ticket.TicketInfoInteractor;
-import de.sotterbeck.iumetro.app.ticket.TicketManagingInteractor;
+import de.sotterbeck.iumetro.app.ticket.TicketInfoService;
+import de.sotterbeck.iumetro.app.ticket.TicketIssueService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import org.bukkit.command.CommandSender;
 import org.incendo.cloud.annotations.Argument;
@@ -19,12 +19,12 @@ public class TicketDeleteCommand implements CloudAnnotated {
     private static final Pattern UUID_REGEX =
             Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
-    private final TicketInfoInteractor ticketInfoInteractor;
-    private final TicketManagingInteractor ticketManagingInteractor;
+    private final TicketInfoService ticketInfoService;
+    private final TicketIssueService ticketIssueService;
 
-    public TicketDeleteCommand(TicketInfoInteractor ticketInfoInteractor, TicketManagingInteractor ticketManagingInteractor) {
-        this.ticketInfoInteractor = ticketInfoInteractor;
-        this.ticketManagingInteractor = ticketManagingInteractor;
+    public TicketDeleteCommand(TicketInfoService ticketInfoService, TicketIssueService ticketIssueService) {
+        this.ticketInfoService = ticketInfoService;
+        this.ticketIssueService = ticketIssueService;
     }
 
     @Command("ticket delete <uuid>")
@@ -37,18 +37,18 @@ public class TicketDeleteCommand implements CloudAnnotated {
             return;
         }
 
-        if (!ticketInfoInteractor.exists(id)) {
+        if (!ticketInfoService.exists(id)) {
             sender.sendRichMessage("<red>Ticket with id " + id + " does not exist.");
             return;
         }
 
-        ticketManagingInteractor.delete(UUID.fromString(id));
+        ticketIssueService.delete(UUID.fromString(id));
         sender.sendMessage("Ticket with id " + id + " deleted.");
     }
 
     @Suggestions("ticketId")
     public Iterable<Suggestion> suggestions(CommandContext<CommandSender> context, String input) {
-        return ticketManagingInteractor.getAllIds().stream()
+        return ticketIssueService.getAllIds().stream()
                 .map(Suggestion::suggestion)
                 .toList();
     }

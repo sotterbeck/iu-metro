@@ -1,7 +1,7 @@
 package de.sotterbeck.iumetro.infra.papermc.station;
 
 import de.sotterbeck.iumetro.app.common.PositionDto;
-import de.sotterbeck.iumetro.app.station.MetroStationTeleportInteractor;
+import de.sotterbeck.iumetro.app.station.MetroStationTeleportService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -18,12 +18,12 @@ import java.util.List;
 
 public class MetroStationTpCommand implements CloudAnnotated {
 
-    private final MetroStationTeleportInteractor metroStationTeleportInteractor;
+    private final MetroStationTeleportService metroStationTeleportService;
     private final World world;
     private final Plugin plugin;
 
-    public MetroStationTpCommand(MetroStationTeleportInteractor metroStationTeleportInteractor, Plugin plugin) {
-        this.metroStationTeleportInteractor = metroStationTeleportInteractor;
+    public MetroStationTpCommand(MetroStationTeleportService metroStationTeleportService, Plugin plugin) {
+        this.metroStationTeleportService = metroStationTeleportService;
         this.world = plugin.getServer().getWorlds().getFirst();
         this.plugin = plugin;
     }
@@ -38,13 +38,13 @@ public class MetroStationTpCommand implements CloudAnnotated {
             sender.sendRichMessage("<red>Only players can use this command!");
             return;
         }
-        boolean teleportable = metroStationTeleportInteractor.isTeleportable(station);
+        boolean teleportable = metroStationTeleportService.isTeleportable(station);
         if (!teleportable) {
             player.sendRichMessage("<red>You can't teleport to this station!");
             return;
         }
 
-        PositionDto position = metroStationTeleportInteractor.getPosition(station).orElseThrow();
+        PositionDto position = metroStationTeleportService.getPosition(station).orElseThrow();
 
         Location location = new Location(world, position.x(), position.y(), position.z());
         plugin.getServer().getScheduler().runTask(plugin, () -> player.teleport(location));
@@ -53,7 +53,7 @@ public class MetroStationTpCommand implements CloudAnnotated {
 
     @Suggestions("teleportableStationNames")
     public List<String> suggestions() {
-        return metroStationTeleportInteractor.getAllTeleportableStationNames();
+        return metroStationTeleportService.getAllTeleportableStationNames();
     }
 
 }

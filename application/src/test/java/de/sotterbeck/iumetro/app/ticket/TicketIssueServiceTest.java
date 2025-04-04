@@ -16,24 +16,24 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class TicketManagingInteractorTest {
+class TicketIssueServiceTest {
 
     @Mock
     private TicketRepository ticketRepository;
     @Mock
     private TicketPresenter ticketPresenter;
 
-    private TicketManagingInteractor underTest;
+    private TicketIssueService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new TicketManagingInteractorImpl(ticketRepository, ticketPresenter);
+        underTest = new TicketIssueService(ticketRepository, ticketPresenter);
     }
 
     @Test
     void create_ShouldSaveTicket() {
         TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", 0, Duration.ZERO);
-        underTest = new TicketManagingInteractorImpl(ticketRepository, ticketPresenter);
+        underTest = new TicketIssueService(ticketRepository, ticketPresenter);
 
         underTest.create(ticketRequestModel);
 
@@ -43,7 +43,7 @@ class TicketManagingInteractorTest {
     @Test
     void create_ShouldPrepareSuccessView() {
         TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket", 0, Duration.ZERO);
-        underTest = new TicketManagingInteractorImpl(ticketRepository, ticketPresenter);
+        underTest = new TicketIssueService(ticketRepository, ticketPresenter);
 
         underTest.create(ticketRequestModel);
 

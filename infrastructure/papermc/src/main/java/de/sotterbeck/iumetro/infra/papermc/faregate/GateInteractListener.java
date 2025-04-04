@@ -1,7 +1,6 @@
 package de.sotterbeck.iumetro.infra.papermc.faregate;
 
-import de.sotterbeck.iumetro.app.faregate.FareGateProtectionInteractor;
-import de.sotterbeck.iumetro.app.faregate.GateRequestModel;
+import de.sotterbeck.iumetro.app.faregate.FareGateProtectionService;
 import org.bukkit.Location;
 import org.bukkit.block.data.type.Gate;
 import org.bukkit.event.EventHandler;
@@ -13,10 +12,10 @@ import java.util.Objects;
 
 public class GateInteractListener implements Listener {
 
-    private final FareGateProtectionInteractor fareGateProtectionInteractor;
+    private final FareGateProtectionService fareGateProtectionService;
 
-    public GateInteractListener(FareGateProtectionInteractor fareGateProtectionInteractor) {
-        this.fareGateProtectionInteractor = fareGateProtectionInteractor;
+    public GateInteractListener(FareGateProtectionService fareGateProtectionService) {
+        this.fareGateProtectionService = fareGateProtectionService;
     }
 
     @EventHandler
@@ -29,9 +28,9 @@ public class GateInteractListener implements Listener {
 
         Location location = event.getClickedBlock().getLocation();
         String orientation = gate.getFacing().toString();
-        GateRequestModel request = new GateRequestModel(location.getBlockX(), location.getBlockY(), location.getBlockZ(), orientation);
+        FareGateProtectionService.Request request = new FareGateProtectionService.Request(location.getBlockX(), location.getBlockY(), location.getBlockZ(), orientation);
 
-        boolean canOpenGate = fareGateProtectionInteractor.canOpenGate(request);
+        boolean canOpenGate = fareGateProtectionService.canOpenGate(request);
         if (!canOpenGate) {
             event.setCancelled(true);
         }

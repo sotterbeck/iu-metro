@@ -5,11 +5,11 @@ import de.sotterbeck.iumetro.app.common.PositionDto;
 import java.util.List;
 import java.util.Optional;
 
-public class MetroStationTeleportInteractor {
+public class MetroStationTeleportService {
 
     private final MetroStationRepository metroStationRepository;
 
-    public MetroStationTeleportInteractor(MetroStationRepository metroStationRepository) {
+    public MetroStationTeleportService(MetroStationRepository metroStationRepository) {
         this.metroStationRepository = metroStationRepository;
     }
 

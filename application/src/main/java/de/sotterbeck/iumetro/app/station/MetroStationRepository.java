@@ -18,7 +18,7 @@ public interface MetroStationRepository {
 
     Optional<MetroStationDto> getById(UUID id);
 
-    void save(MetroStationDto station);
+    void save(MetroStationDto name);
 
     void saveAlias(String stationName, String alias);
 
@@ -30,8 +30,8 @@ public interface MetroStationRepository {
 
     void deleteByName(String name);
 
-    void deleteAliasByStationName(String stationName);
+    void deleteAliasByName(String stationName);
 
-    void deletePositionByStationName(String stationName);
+    void deletePositionByName(String stationName);
 
 }

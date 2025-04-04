@@ -6,7 +6,7 @@ import com.google.inject.multibindings.ProvidesIntoMap;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import com.google.inject.multibindings.StringMapKey;
 import de.sotterbeck.iumetro.app.faregate.*;
-import de.sotterbeck.iumetro.app.station.MetroStationManagingInteractor;
+import de.sotterbeck.iumetro.app.station.MetroStationService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.infra.papermc.common.IuMetroConfig;
 import de.sotterbeck.iumetro.infra.papermc.common.sign.SignClickHandler;
@@ -54,14 +54,14 @@ public class FareGateModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static FareGateProtectionInteractor provideFareGateProtectionInteractor(FareGateSignRepository fareGateSignRepository) {
-        return new FareGateProtectionInteractor(fareGateSignRepository);
+    static FareGateProtectionService provideFareGateProtectionInteractor(FareGateSignRepository fareGateSignRepository) {
+        return new FareGateProtectionService(fareGateSignRepository);
     }
 
     @Provides
     @Singleton
-    static FareGateControlInteractor provideFareGateControlInteractor(GateRepository gateRepository, GateControlAdapter gateControlAdapter) {
-        return new FareGateControlInteractor(gateRepository, gateControlAdapter);
+    static FareGateControlService provideFareGateControlInteractor(GateRepository gateRepository, GateControlAdapter gateControlAdapter) {
+        return new FareGateControlService(gateRepository, gateControlAdapter);
     }
 
     @Provides
@@ -72,18 +72,18 @@ public class FareGateModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static FareGateSignClickHandler provideFareGateSignClickHandler(FareGateControlInteractor fareGateControlInteractor, FareGateKeyFactory fareGateKeyFactory) {
-        return new FareGateSignClickHandler(fareGateControlInteractor, fareGateKeyFactory);
+    static FareGateSignClickHandler provideFareGateSignClickHandler(FareGateControlService fareGateControlService, FareGateKeyFactory fareGateKeyFactory) {
+        return new FareGateSignClickHandler(fareGateControlService, fareGateKeyFactory);
     }
 
     @ProvidesIntoSet
-    static CloudAnnotated provideFareGateCreateCommand(MetroStationManagingInteractor metroStationManagingInteractor, FareGateSignItemCreator signItemCreator) {
-        return new FareGateCreateCommand(metroStationManagingInteractor, signItemCreator);
+    static CloudAnnotated provideFareGateCreateCommand(MetroStationService metroStationService, FareGateSignItemCreator signItemCreator) {
+        return new FareGateCreateCommand(metroStationService, signItemCreator);
     }
 
     @ProvidesIntoSet
-    static Listener provideGateInteractListener(FareGateProtectionInteractor fareGateProtectionInteractor) {
-        return new GateInteractListener(fareGateProtectionInteractor);
+    static Listener provideGateInteractListener(FareGateProtectionService fareGateProtectionService) {
+        return new GateInteractListener(fareGateProtectionService);
     }
 
     @ProvidesIntoMap

@@ -17,16 +17,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TicketInfoInteractorTest {
+class TicketInfoServiceTest {
 
     @Mock
     private TicketRepository ticketRepository;
 
-    private TicketInfoInteractor underTest;
+    private TicketInfoService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new TicketInfoInteractorImpl(ticketRepository);
+        underTest = new TicketInfoService(ticketRepository);
     }
 
     @Test

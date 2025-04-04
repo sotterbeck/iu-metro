@@ -1,8 +1,8 @@
 package de.sotterbeck.iumetro.infra.papermc.faregate.sign;
 
 import de.sotterbeck.iumetro.app.common.PositionDto;
-import de.sotterbeck.iumetro.app.faregate.FareGateControlInteractor;
 import de.sotterbeck.iumetro.app.faregate.FareGateControlRequestModel;
+import de.sotterbeck.iumetro.app.faregate.FareGateControlService;
 import de.sotterbeck.iumetro.infra.papermc.common.Components;
 import de.sotterbeck.iumetro.infra.papermc.common.sign.SignClickEvent;
 import de.sotterbeck.iumetro.infra.papermc.common.sign.SignClickHandler;
@@ -14,11 +14,11 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class FareGateSignClickHandler implements SignClickHandler {
 
-    private final FareGateControlInteractor fareGateControlInteractor;
+    private final FareGateControlService fareGateControlService;
     private final FareGateKeyFactory fareGateKeyFactory;
 
-    public FareGateSignClickHandler(FareGateControlInteractor fareGateControlInteractor, FareGateKeyFactory fareGateKeyFactory) {
-        this.fareGateControlInteractor = fareGateControlInteractor;
+    public FareGateSignClickHandler(FareGateControlService fareGateControlService, FareGateKeyFactory fareGateKeyFactory) {
+        this.fareGateControlService = fareGateControlService;
         this.fareGateKeyFactory = fareGateKeyFactory;
     }
 
@@ -33,7 +33,7 @@ public class FareGateSignClickHandler implements SignClickHandler {
         PositionDto position = new PositionDto(sign.getX(), sign.getY(), sign.getZ());
         FareGateControlRequestModel request = new FareGateControlRequestModel(position, orientation);
 
-        fareGateControlInteractor.openGate(request);
+        fareGateControlService.openGate(request);
     }
 
     @Override

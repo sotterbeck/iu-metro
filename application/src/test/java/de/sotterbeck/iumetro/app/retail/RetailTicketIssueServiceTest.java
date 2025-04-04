@@ -16,7 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RetailTicketManagingInteractorTest {
+class RetailTicketIssueServiceTest {
 
     @Mock
     private RetailTicketRepository retailTicketRepository;
@@ -24,11 +24,11 @@ class RetailTicketManagingInteractorTest {
     @Mock
     private RetailTicketPresenter presenter;
 
-    private RetailTicketManagingInteractor retailTicketManagingInteractor;
+    private RetailTicketService retailTicketService;
 
     @BeforeEach
     void setUp() {
-        retailTicketManagingInteractor = new RetailTicketManagingInteractor(retailTicketRepository, presenter);
+        retailTicketService = new RetailTicketService(retailTicketRepository, presenter);
     }
 
     @Test
@@ -38,7 +38,7 @@ class RetailTicketManagingInteractorTest {
         when(retailTicketRepository.existsByName(ticketName)).thenReturn(true);
         RetailTicketRequestModel request = createRetailTicketWithoutConstraints(ticketId, ticketName);
 
-        retailTicketManagingInteractor.create(request);
+        retailTicketService.create(request);
 
         verify(presenter).prepareFailView("Retail ticket with name " + ticketName + " already exists");
     }
@@ -50,7 +50,7 @@ class RetailTicketManagingInteractorTest {
         when(retailTicketRepository.existsByName(ticketName)).thenReturn(false);
         RetailTicketRequestModel request = createRetailTicketWithoutConstraints(ticketId, ticketName);
 
-        retailTicketManagingInteractor.create(request);
+        retailTicketService.create(request);
 
         verify(retailTicketRepository).save(any());
         verify(presenter).prepareSuccessView(request);
@@ -63,7 +63,7 @@ class RetailTicketManagingInteractorTest {
         when(retailTicketRepository.existsById(UUID.fromString(ticketId))).thenReturn(false);
         RetailTicketRequestModel request = createRetailTicketWithoutConstraints(ticketId, ticketName);
 
-        retailTicketManagingInteractor.update(ticketId, request);
+        retailTicketService.update(ticketId, request);
 
         verify(presenter).prepareFailView("Retail ticket with id " + ticketId + " does not exist");
     }
@@ -75,7 +75,7 @@ class RetailTicketManagingInteractorTest {
         when(retailTicketRepository.existsById(UUID.fromString(ticketId))).thenReturn(true);
         RetailTicketRequestModel request = createRetailTicketWithoutConstraints(ticketId, ticketName);
 
-        retailTicketManagingInteractor.update(ticketId, request);
+        retailTicketService.update(ticketId, request);
 
         verify(retailTicketRepository).save(any());
         verify(presenter).prepareSuccessView(request);
@@ -86,7 +86,7 @@ class RetailTicketManagingInteractorTest {
         String ticketId = "7fe89139-6d9f-4f21-84f7-10a6301d33a6";
         when(retailTicketRepository.getById(UUID.fromString(ticketId))).thenReturn(Optional.empty());
 
-        retailTicketManagingInteractor.delete(ticketId);
+        retailTicketService.delete(ticketId);
 
         verify(presenter).prepareFailView("Retail ticket with id " + ticketId + " does not exist");
     }
@@ -99,7 +99,7 @@ class RetailTicketManagingInteractorTest {
         when(retailTicketRepository.getById(UUID.fromString(ticketId))).thenReturn(Optional.of(dto));
         RetailTicketRequestModel request = createRetailTicketWithoutConstraints(ticketId, ticketName);
 
-        retailTicketManagingInteractor.delete(ticketId);
+        retailTicketService.delete(ticketId);
 
         verify(retailTicketRepository).delete(any());
         verify(presenter).prepareSuccessView(request);

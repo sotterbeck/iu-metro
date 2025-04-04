@@ -1,8 +1,7 @@
 package de.sotterbeck.iumetro.infra.papermc.faregate;
 
-import de.sotterbeck.iumetro.app.station.MetroStationManagingInteractor;
-import de.sotterbeck.iumetro.app.station.MetroStationRequestModel;
 import de.sotterbeck.iumetro.app.station.MetroStationResponseModel;
+import de.sotterbeck.iumetro.app.station.MetroStationService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.infra.papermc.faregate.sign.FareGateSignItemCreator;
 import org.bukkit.command.CommandSender;
@@ -19,11 +18,11 @@ import java.util.List;
 public class FareGateCreateCommand implements CloudAnnotated {
 
     private final FareGateSignItemCreator signItemCreator;
-    private final MetroStationManagingInteractor metroStationManagingInteractor;
+    private final MetroStationService metroStationService;
 
-    public FareGateCreateCommand(MetroStationManagingInteractor metroStationManagingInteractor, FareGateSignItemCreator signItemCreator) {
+    public FareGateCreateCommand(MetroStationService metroStationService, FareGateSignItemCreator signItemCreator) {
         this.signItemCreator = signItemCreator;
-        this.metroStationManagingInteractor = metroStationManagingInteractor;
+        this.metroStationService = metroStationService;
     }
 
     @Command("faregate create <type> <station>")
@@ -38,8 +37,7 @@ public class FareGateCreateCommand implements CloudAnnotated {
             return;
         }
 
-        MetroStationRequestModel station = new MetroStationRequestModel(stationName);
-        MetroStationResponseModel savedStation = metroStationManagingInteractor.save(station);
+        MetroStationResponseModel savedStation = metroStationService.save(stationName);
 
         ItemStack item = signItemCreator.createItem(type.name(), savedStation.name(), savedStation.id(), savedStation.displayId());
 
@@ -53,6 +51,6 @@ public class FareGateCreateCommand implements CloudAnnotated {
 
     @Suggestions("stationNames")
     public List<String> suggestions() {
-        return metroStationManagingInteractor.getAllStationNames();
+        return metroStationService.getAllStationNames();
     }
 }

@@ -27,14 +27,14 @@ public class TicketModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static TicketManagingInteractor provideTicketManagingInteractor(TicketRepository ticketRepository, TicketPresenter ticketPresenter) {
-        return new TicketManagingInteractorImpl(ticketRepository, ticketPresenter);
+    static TicketIssueService provideTicketManagingInteractor(TicketRepository ticketRepository, TicketPresenter ticketPresenter) {
+        return new TicketIssueService(ticketRepository, ticketPresenter);
     }
 
     @Provides
     @Singleton
-    static TicketInfoInteractor provideTicketInfoInteractor(TicketRepository ticketRepository) {
-        return new TicketInfoInteractorImpl(ticketRepository);
+    static TicketInfoService provideTicketInfoInteractor(TicketRepository ticketRepository) {
+        return new TicketInfoService(ticketRepository);
     }
 
     @Provides
@@ -44,13 +44,13 @@ public class TicketModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
-    static CloudAnnotated provideTicketCreateCommand(TicketManagingInteractor ticketManagingInteractor, PaperTicketPrinter ticketPrinter) {
-        return new TicketCreateCommand(ticketManagingInteractor, ticketPrinter);
+    static CloudAnnotated provideTicketCreateCommand(TicketIssueService ticketIssueService, PaperTicketPrinter ticketPrinter) {
+        return new TicketCreateCommand(ticketIssueService, ticketPrinter);
     }
 
     @ProvidesIntoSet
-    static CloudAnnotated provideTicketDeleteCommand(TicketInfoInteractor ticketInfoInteractor, TicketManagingInteractor ticketManagingInteractor) {
-        return new TicketDeleteCommand(ticketInfoInteractor, ticketManagingInteractor);
+    static CloudAnnotated provideTicketDeleteCommand(TicketInfoService ticketInfoService, TicketIssueService ticketIssueService) {
+        return new TicketDeleteCommand(ticketInfoService, ticketIssueService);
     }
 
 }

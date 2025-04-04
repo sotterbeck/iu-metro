@@ -1,4 +1,4 @@
-package de.sotterbeck.iumetro.app.faregate;
+package de.sotterbeck.iumetro.domain.reader;
 
 import de.sotterbeck.iumetro.domain.common.Position;
 

@@ -12,7 +12,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class FareGateControlInteractorTest {
+class FareGateControlServiceTest {
 
     @Mock
     private GateRepository gateRepository;
@@ -20,11 +20,11 @@ class FareGateControlInteractorTest {
     @Mock
     private GateControlAdapter gateControlAdapter;
 
-    private FareGateControlInteractor underTest;
+    private FareGateControlService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new FareGateControlInteractor(gateRepository, gateControlAdapter);
+        underTest = new FareGateControlService(gateRepository, gateControlAdapter);
     }
 
     @Test

@@ -1,6 +1,6 @@
 package de.sotterbeck.iumetro.infra.papermc.station;
 
-import de.sotterbeck.iumetro.app.station.MetroStationManagingInteractor;
+import de.sotterbeck.iumetro.app.station.MetroStationService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import org.bukkit.command.CommandSender;
 import org.incendo.cloud.annotation.specifier.Greedy;
@@ -10,10 +10,10 @@ import org.incendo.cloud.annotations.Permission;
 
 public class MetroStationDeleteCommand implements CloudAnnotated {
 
-    private final MetroStationManagingInteractor metroStationManagingInteractor;
+    private final MetroStationService metroStationService;
 
-    public MetroStationDeleteCommand(MetroStationManagingInteractor metroStationManagingInteractor) {
-        this.metroStationManagingInteractor = metroStationManagingInteractor;
+    public MetroStationDeleteCommand(MetroStationService metroStationService) {
+        this.metroStationService = metroStationService;
     }
 
     @Command("metrostation delete <station>")
@@ -22,7 +22,7 @@ public class MetroStationDeleteCommand implements CloudAnnotated {
             CommandSender sender,
             @Argument(value = "station", suggestions = "stationNames") @Greedy String station
     ) {
-        boolean deleted = metroStationManagingInteractor.delete(station);
+        boolean deleted = metroStationService.delete(station);
 
         if (!deleted) {
             sender.sendRichMessage("<red>Could not delete " + station + ".");

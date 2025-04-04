@@ -76,10 +76,10 @@ public class PostgresMetroStationRepository implements MetroStationRepository {
     }
 
     @Override
-    public void save(MetroStationDto station) {
+    public void save(MetroStationDto name) {
         MetroStationsRecord metroStation = create.newRecord(METRO_STATIONS)
-                .setId(station.id())
-                .setName(station.name());
+                .setId(name.id())
+                .setName(name.name());
 
         metroStation.store();
     }
@@ -141,7 +141,7 @@ public class PostgresMetroStationRepository implements MetroStationRepository {
     }
 
     @Override
-    public void deleteAliasByStationName(String stationName) {
+    public void deleteAliasByName(String stationName) {
         Optional<MetroStationsRecord> metroStation = create.fetchOptional(METRO_STATIONS, METRO_STATIONS.NAME.eq(stationName));
 
         UUID id = metroStation.map(MetroStationsRecord::getId).orElseThrow(() ->
@@ -154,7 +154,7 @@ public class PostgresMetroStationRepository implements MetroStationRepository {
     }
 
     @Override
-    public void deletePositionByStationName(String stationName) {
+    public void deletePositionByName(String stationName) {
         Optional<MetroStationsRecord> metroStation = create.fetchOptional(METRO_STATIONS, METRO_STATIONS.NAME.eq(stationName));
 
         UUID id = metroStation.map(MetroStationsRecord::getId).orElseThrow(() ->

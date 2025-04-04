@@ -15,16 +15,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class MetroStationModifyInteractorTest {
+class MetroStationModificationServiceTest {
 
     @Mock
     private MetroStationRepository repository;
 
-    private MetroStationModifyInteractor metroStationModifyInteractor;
+    private MetroStationModificationService metroStationModificationService;
 
     @BeforeEach
     void setUp() {
-        metroStationModifyInteractor = new MetroStationModifyInteractor(repository);
+        metroStationModificationService = new MetroStationModificationService(repository);
     }
 
     @Test
@@ -32,9 +32,9 @@ class MetroStationModifyInteractorTest {
         String stationName = "Station 1";
         when(repository.existsByName(stationName)).thenReturn(false);
 
-        MetroStationModifyStatus status = metroStationModifyInteractor.saveAlias(stationName, "any");
+        MetroStationModificationService.Status status = metroStationModificationService.saveAlias(stationName, "any");
 
-        assertThat(status).isEqualTo(MetroStationModifyStatus.NOT_FOUND);
+        assertThat(status).isEqualTo(MetroStationModificationService.Status.NOT_FOUND);
     }
 
     @Test
@@ -44,10 +44,10 @@ class MetroStationModifyInteractorTest {
         when(repository.existsByName(stationName)).thenReturn(true);
         when(repository.getAllAliases()).thenReturn(List.of(alias));
 
-        MetroStationModifyStatus status = metroStationModifyInteractor.saveAlias(stationName, alias);
+        MetroStationModificationService.Status status = metroStationModificationService.saveAlias(stationName, alias);
 
 
-        assertThat(status).isEqualTo(MetroStationModifyStatus.ALREADY_EXISTS);
+        assertThat(status).isEqualTo(MetroStationModificationService.Status.ALREADY_EXISTS);
     }
 
     @Test
@@ -57,10 +57,10 @@ class MetroStationModifyInteractorTest {
         when(repository.existsByName(stationName)).thenReturn(true);
         when(repository.getAllAliases()).thenReturn(Collections.emptyList());
 
-        MetroStationModifyStatus status = metroStationModifyInteractor.saveAlias(stationName, alias);
+        MetroStationModificationService.Status status = metroStationModificationService.saveAlias(stationName, alias);
 
         verify(repository).saveAlias(stationName, alias);
-        assertThat(status).isEqualTo(MetroStationModifyStatus.SUCCESS);
+        assertThat(status).isEqualTo(MetroStationModificationService.Status.SUCCESS);
     }
 
     @Test
@@ -69,9 +69,9 @@ class MetroStationModifyInteractorTest {
         PositionDto position = new PositionDto(0, 0, 0);
         when(repository.existsByName(stationName)).thenReturn(false);
 
-        MetroStationModifyStatus status = metroStationModifyInteractor.savePosition(stationName, position);
+        MetroStationModificationService.Status status = metroStationModificationService.savePosition(stationName, position);
 
-        assertThat(status).isEqualTo(MetroStationModifyStatus.NOT_FOUND);
+        assertThat(status).isEqualTo(MetroStationModificationService.Status.NOT_FOUND);
     }
 
     @Test
@@ -80,10 +80,10 @@ class MetroStationModifyInteractorTest {
         PositionDto position = new PositionDto(0, 0, 0);
         when(repository.existsByName(stationName)).thenReturn(true);
 
-        MetroStationModifyStatus status = metroStationModifyInteractor.savePosition(stationName, position);
+        MetroStationModificationService.Status status = metroStationModificationService.savePosition(stationName, position);
 
         verify(repository).savePosition(stationName, position);
-        assertThat(status).isEqualTo(MetroStationModifyStatus.SUCCESS);
+        assertThat(status).isEqualTo(MetroStationModificationService.Status.SUCCESS);
     }
 
     @Test
@@ -91,9 +91,9 @@ class MetroStationModifyInteractorTest {
         String stationName = "Station 1";
         when(repository.existsByName(stationName)).thenReturn(false);
 
-        MetroStationModifyStatus status = metroStationModifyInteractor.deleteAlias(stationName);
+        MetroStationModificationService.Status status = metroStationModificationService.deleteAlias(stationName);
 
-        assertThat(status).isEqualTo(MetroStationModifyStatus.NOT_FOUND);
+        assertThat(status).isEqualTo(MetroStationModificationService.Status.NOT_FOUND);
     }
 
     @Test
@@ -101,10 +101,10 @@ class MetroStationModifyInteractorTest {
         String stationName = "Station 1";
         when(repository.existsByName(stationName)).thenReturn(true);
 
-        MetroStationModifyStatus status = metroStationModifyInteractor.deleteAlias(stationName);
+        MetroStationModificationService.Status status = metroStationModificationService.deleteAlias(stationName);
 
-        verify(repository).deleteAliasByStationName(stationName);
-        assertThat(status).isEqualTo(MetroStationModifyStatus.SUCCESS);
+        verify(repository).deleteAliasByName(stationName);
+        assertThat(status).isEqualTo(MetroStationModificationService.Status.SUCCESS);
     }
 
     @Test
@@ -112,9 +112,9 @@ class MetroStationModifyInteractorTest {
         String stationName = "Station 1";
         when(repository.existsByName(stationName)).thenReturn(false);
 
-        MetroStationModifyStatus status = metroStationModifyInteractor.deletePosition(stationName);
+        MetroStationModificationService.Status status = metroStationModificationService.deletePosition(stationName);
 
-        assertThat(status).isEqualTo(MetroStationModifyStatus.NOT_FOUND);
+        assertThat(status).isEqualTo(MetroStationModificationService.Status.NOT_FOUND);
     }
 
     @Test
@@ -122,10 +122,10 @@ class MetroStationModifyInteractorTest {
         String stationName = "Station 1";
         when(repository.existsByName(stationName)).thenReturn(true);
 
-        MetroStationModifyStatus status = metroStationModifyInteractor.deletePosition(stationName);
+        MetroStationModificationService.Status status = metroStationModificationService.deletePosition(stationName);
 
-        verify(repository).deletePositionByStationName(stationName);
-        assertThat(status).isEqualTo(MetroStationModifyStatus.SUCCESS);
+        verify(repository).deletePositionByName(stationName);
+        assertThat(status).isEqualTo(MetroStationModificationService.Status.SUCCESS);
     }
 
 }

@@ -5,22 +5,21 @@ import de.sotterbeck.iumetro.app.common.PositionDto;
 import java.util.List;
 import java.util.UUID;
 
-public class MetroStationManagingInteractor {
+public class MetroStationService {
 
     private final MetroStationRepository metroStationRepository;
 
-    public MetroStationManagingInteractor(MetroStationRepository metroStationRepository) {
+    public MetroStationService(MetroStationRepository metroStationRepository) {
         this.metroStationRepository = metroStationRepository;
     }
 
-    public MetroStationResponseModel save(MetroStationRequestModel request) {
-        String stationName = request.name();
-        if (metroStationRepository.existsByName(stationName)) {
-            MetroStationDto metroStationDto = metroStationRepository.getByName(stationName).orElseThrow();
+    public MetroStationResponseModel save(String name) {
+        if (metroStationRepository.existsByName(name)) {
+            MetroStationDto metroStationDto = metroStationRepository.getByName(name).orElseThrow();
             return toResponseModel(metroStationDto);
         }
 
-        MetroStationDto metroStationDto = new MetroStationDto(UUID.randomUUID(), stationName);
+        MetroStationDto metroStationDto = new MetroStationDto(UUID.randomUUID(), name);
         metroStationRepository.save(metroStationDto);
         return toResponseModel(metroStationDto);
     }

@@ -9,37 +9,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class RetailTicketManagingInteractor {
+public class RetailTicketService {
 
     private final RetailTicketRepository retailTicketRepository;
     private final RetailTicketPresenter presenter;
 
-    public RetailTicketManagingInteractor(RetailTicketRepository retailTicketRepository, RetailTicketPresenter presenter) {
+    public RetailTicketService(RetailTicketRepository retailTicketRepository, RetailTicketPresenter presenter) {
         this.retailTicketRepository = retailTicketRepository;
         this.presenter = presenter;
-    }
-
-    private static @NotNull RetailTicketResponseModel toResponseModel(RetailTicketDto dto) {
-        return new RetailTicketResponseModel(dto.id().toString(),
-                dto.name(),
-                dto.description(),
-                0L, dto.usageLimit(), dto.timeLimit().toString(), dto.isActive(), dto.createdAt().toString(), dto.category()
-        );
-    }
-
-    private static @NotNull RetailTicketDto toDto(RetailTicketRequestModel retailTicket) {
-        return new RetailTicketDto(
-                UUID.fromString(retailTicket.id()),
-                retailTicket.name(),
-                retailTicket.description(),
-                0, retailTicket.usageLimit(), Duration.parse(retailTicket.timeLimit()), retailTicket.isActive(), Instant.now(), retailTicket.category()
-        );
     }
 
     List<RetailTicketResponseModel> getAll() {
         Collection<RetailTicketDto> allRetailTickets = retailTicketRepository.getAll();
         return allRetailTickets.stream()
-                .map(RetailTicketManagingInteractor::toResponseModel)
+                .map(RetailTicketService::toResponseModel)
                 .toList();
     }
 
@@ -92,6 +75,23 @@ public class RetailTicketManagingInteractor {
         );
 
         return presenter.prepareSuccessView(requestedTicket);
+    }
+
+    private static @NotNull RetailTicketDto toDto(RetailTicketRequestModel retailTicket) {
+        return new RetailTicketDto(
+                UUID.fromString(retailTicket.id()),
+                retailTicket.name(),
+                retailTicket.description(),
+                0, retailTicket.usageLimit(), Duration.parse(retailTicket.timeLimit()), retailTicket.isActive(), Instant.now(), retailTicket.category()
+        );
+    }
+
+    private static @NotNull RetailTicketResponseModel toResponseModel(RetailTicketDto dto) {
+        return new RetailTicketResponseModel(dto.id().toString(),
+                dto.name(),
+                dto.description(),
+                0L, dto.usageLimit(), dto.timeLimit().toString(), dto.isActive(), dto.createdAt().toString(), dto.category()
+        );
     }
 
 }

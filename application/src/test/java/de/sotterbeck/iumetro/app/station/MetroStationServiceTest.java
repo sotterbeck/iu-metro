@@ -15,27 +15,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class MetroStationManagingInteractorTest {
+class MetroStationServiceTest {
 
     @Mock
     private MetroStationRepository metroStationRepository;
 
-    private MetroStationManagingInteractor metroStationManagingInteractor;
+    private MetroStationService metroStationService;
 
     @BeforeEach
     void setUp() {
-        metroStationManagingInteractor = new MetroStationManagingInteractor(metroStationRepository);
+        metroStationService = new MetroStationService(metroStationRepository);
     }
 
     @Test
     void save_ShouldNotSaveNewStation_WhenStationWithSameNameExists() {
         String stationName = "Station 1";
         UUID id = UUID.fromString("755796fb-4240-4612-961d-a528ec884a7a");
-        MetroStationRequestModel request = new MetroStationRequestModel(stationName);
         when(metroStationRepository.existsByName(stationName)).thenReturn(true);
         when(metroStationRepository.getByName(stationName)).thenReturn(Optional.of(new MetroStationDto(id, stationName)));
 
-        MetroStationResponseModel reponse = metroStationManagingInteractor.save(request);
+        MetroStationResponseModel reponse = metroStationService.save(stationName);
 
         verify(metroStationRepository, never()).save(any());
         assertThat(reponse).isNotNull();
@@ -44,10 +43,9 @@ class MetroStationManagingInteractorTest {
     @Test
     void save_ShouldSaveNewStation_WhenStationWithNameDoesNotExists() {
         String stationName = "Station 1";
-        MetroStationRequestModel request = new MetroStationRequestModel(stationName);
         when(metroStationRepository.existsByName(stationName)).thenReturn(false);
 
-        MetroStationResponseModel response = metroStationManagingInteractor.save(request);
+        MetroStationResponseModel response = metroStationService.save(stationName);
 
         verify(metroStationRepository).save(any());
         assertThat(response).isNotNull();
@@ -59,7 +57,7 @@ class MetroStationManagingInteractorTest {
                 new MetroStationDto(UUID.fromString("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3"), "Station 1"),
                 new MetroStationDto(UUID.fromString("bcc38a6a-0816-473a-85be-3186560c7e5d"), "Station 2")));
 
-        List<MetroStationResponseModel> response = metroStationManagingInteractor.getAll();
+        List<MetroStationResponseModel> response = metroStationService.getAll();
 
         assertThat(response).hasSize(2);
     }
@@ -70,7 +68,7 @@ class MetroStationManagingInteractorTest {
                 new MetroStationDto(UUID.fromString("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3"), "Station 1", "ST"),
                 new MetroStationDto(UUID.fromString("bcc38a6a-0816-473a-85be-3186560c7e5d"), "Station 2", "ST2")));
 
-        List<MetroStationResponseModel> response = metroStationManagingInteractor.getAll();
+        List<MetroStationResponseModel> response = metroStationService.getAll();
         assertThat(response).containsExactlyInAnyOrder(
                 new MetroStationResponseModel("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3", "2acd6e2a / ST", "Station 1", null),
                 new MetroStationResponseModel("bcc38a6a-0816-473a-85be-3186560c7e5d", "bcc38a6a / ST2", "Station 2", null)
@@ -92,7 +90,7 @@ class MetroStationManagingInteractorTest {
                 stationWithPosition,
                 stationWithoutPosition));
 
-        List<MetroStationResponseModel> response = metroStationManagingInteractor.getAllPositioned();
+        List<MetroStationResponseModel> response = metroStationService.getAllPositioned();
 
         assertThat(response).contains(
                 new MetroStationResponseModel("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3", "2acd6e2a / ST", "Station 1", new PositionDto(0, 0, 0))
@@ -104,7 +102,7 @@ class MetroStationManagingInteractorTest {
         String stationName = "Station 1";
         when(metroStationRepository.existsByName(stationName)).thenReturn(false);
 
-        boolean deleted = metroStationManagingInteractor.delete(stationName);
+        boolean deleted = metroStationService.delete(stationName);
 
         assertThat(deleted).isFalse();
     }
@@ -114,7 +112,7 @@ class MetroStationManagingInteractorTest {
         String stationName = "Station 1";
         when(metroStationRepository.existsByName(stationName)).thenReturn(true);
 
-        boolean deleted = metroStationManagingInteractor.delete(stationName);
+        boolean deleted = metroStationService.delete(stationName);
 
         assertThat(deleted).isTrue();
     }

@@ -1,6 +1,6 @@
 package de.sotterbeck.iumetro.infra.papermc.ticket;
 
-import de.sotterbeck.iumetro.app.ticket.TicketManagingInteractor;
+import de.sotterbeck.iumetro.app.ticket.TicketIssueService;
 import de.sotterbeck.iumetro.app.ticket.TicketRequestModel;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import org.bukkit.command.CommandSender;
@@ -15,11 +15,11 @@ import java.util.UUID;
 
 public class TicketCreateCommand implements CloudAnnotated {
 
-    private final TicketManagingInteractor ticketManagingInteractor;
+    private final TicketIssueService ticketIssueService;
     private final PaperTicketPrinter ticketPrinter;
 
-    public TicketCreateCommand(TicketManagingInteractor ticketManagingInteractor, PaperTicketPrinter ticketPrinter) {
-        this.ticketManagingInteractor = ticketManagingInteractor;
+    public TicketCreateCommand(TicketIssueService ticketIssueService, PaperTicketPrinter ticketPrinter) {
+        this.ticketIssueService = ticketIssueService;
         this.ticketPrinter = ticketPrinter;
     }
 
@@ -38,7 +38,7 @@ public class TicketCreateCommand implements CloudAnnotated {
 
         var request = new TicketRequestModel(UUID.randomUUID(), name, usageLimit, Duration.ofMinutes(timeLimit));
 
-        var response = ticketManagingInteractor.create(request);
+        var response = ticketIssueService.create(request);
 
         if (response == null) {
             player.sendMessage("A error occurred while creating a ticket.");

@@ -13,37 +13,37 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class FareGateProtectionInteractorTest {
+class FareGateProtectionServiceTest {
 
     @Mock
     private FareGateSignRepository fareGateSignRepository;
 
-    private FareGateProtectionInteractor fareGateProtectionInteractor;
+    private FareGateProtectionService fareGateProtectionService;
 
     @BeforeEach
     void setUp() {
-        fareGateProtectionInteractor = new FareGateProtectionInteractor(fareGateSignRepository);
+        fareGateProtectionService = new FareGateProtectionService(fareGateSignRepository);
     }
 
     @Test
     void canOpenGate_ShouldReturnTrue_WhenGateHasNoFareGateSign() {
-        GateRequestModel gate = new GateRequestModel(165, 70, 148, "west");
+        FareGateProtectionService.Request gate = new FareGateProtectionService.Request(165, 70, 148, "west");
         PositionDto signPosition = new PositionDto(166, 71, 149);
         when(fareGateSignRepository.findAt(signPosition)).thenReturn(Optional.empty());
 
-        boolean result = fareGateProtectionInteractor.canOpenGate(gate);
+        boolean result = fareGateProtectionService.canOpenGate(gate);
 
         assertThat(result).isTrue();
     }
 
     @Test
     void canOpenGate_ShouldReturnFalse_WhenGateHasFareGateSign() {
-        GateRequestModel gate = new GateRequestModel(165, 70, 148, "west");
+        FareGateProtectionService.Request gate = new FareGateProtectionService.Request(165, 70, 148, "west");
         PositionDto signPosition = new PositionDto(166, 71, 149);
         FareGateDto fareGateDto = new FareGateDto(signPosition, "entry", "station");
         when(fareGateSignRepository.findAt(signPosition)).thenReturn(Optional.of(fareGateDto));
 
-        boolean result = fareGateProtectionInteractor.canOpenGate(gate);
+        boolean result = fareGateProtectionService.canOpenGate(gate);
 
         assertThat(result).isFalse();
     }

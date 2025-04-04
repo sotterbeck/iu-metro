@@ -3,13 +3,14 @@ package de.sotterbeck.iumetro.app.faregate;
 import de.sotterbeck.iumetro.app.common.PositionDto;
 import de.sotterbeck.iumetro.domain.common.Orientation;
 import de.sotterbeck.iumetro.domain.common.Position;
+import de.sotterbeck.iumetro.domain.reader.FareGates;
 
-public class FareGateControlInteractor {
+public class FareGateControlService {
 
     private final GateRepository gateRepository;
     private final GateControlAdapter gateControlAdapter;
 
-    public FareGateControlInteractor(GateRepository gateRepository, GateControlAdapter gateControlAdapter) {
+    public FareGateControlService(GateRepository gateRepository, GateControlAdapter gateControlAdapter) {
         this.gateRepository = gateRepository;
         this.gateControlAdapter = gateControlAdapter;
     }

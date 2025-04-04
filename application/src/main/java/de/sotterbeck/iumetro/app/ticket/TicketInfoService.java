@@ -7,21 +7,19 @@ import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.UUID;
 
-public class TicketInfoInteractorImpl implements TicketInfoInteractor {
+public class TicketInfoService {
 
     private final TicketRepository ticketRepository;
 
-    public TicketInfoInteractorImpl(TicketRepository ticketRepository) {
+    public TicketInfoService(TicketRepository ticketRepository) {
         this.ticketRepository = ticketRepository;
     }
 
-    @Override
     public boolean exists(String ticketId) {
         UUID id = UUID.fromString(ticketId);
         return ticketRepository.existsById(id);
     }
 
-    @Override
     public List<UsageResponseModel> usages(UUID id) {
         return ticketRepository.getTicketUsages(id).stream()
                 .map(dto -> new UsageResponseModel(

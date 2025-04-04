@@ -3,10 +3,10 @@ package de.sotterbeck.iumetro.infra.papermc.station;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.multibindings.ProvidesIntoSet;
-import de.sotterbeck.iumetro.app.station.MetroStationManagingInteractor;
-import de.sotterbeck.iumetro.app.station.MetroStationModifyInteractor;
+import de.sotterbeck.iumetro.app.station.MetroStationModificationService;
 import de.sotterbeck.iumetro.app.station.MetroStationRepository;
-import de.sotterbeck.iumetro.app.station.MetroStationTeleportInteractor;
+import de.sotterbeck.iumetro.app.station.MetroStationService;
+import de.sotterbeck.iumetro.app.station.MetroStationTeleportService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import de.sotterbeck.iumetro.infra.papermc.station.web.MetroStationRouting;
@@ -27,44 +27,44 @@ public class MetroStationModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static MetroStationManagingInteractor provideMetroStationManagingInteractor(MetroStationRepository metroStationRepository) {
-        return new MetroStationManagingInteractor(metroStationRepository);
+    static MetroStationService provideMetroStationManagingInteractor(MetroStationRepository metroStationRepository) {
+        return new MetroStationService(metroStationRepository);
     }
 
     @Provides
     @Singleton
-    static MetroStationModifyInteractor provideMetroStationModifyInteractor(MetroStationRepository metroStationRepository) {
-        return new MetroStationModifyInteractor(metroStationRepository);
+    static MetroStationModificationService provideMetroStationModifyInteractor(MetroStationRepository metroStationRepository) {
+        return new MetroStationModificationService(metroStationRepository);
     }
 
     @Provides
     @Singleton
-    static MetroStationTeleportInteractor provideMetroStationTeleportInteractor(MetroStationRepository metroStationRepository) {
-        return new MetroStationTeleportInteractor(metroStationRepository);
+    static MetroStationTeleportService provideMetroStationTeleportInteractor(MetroStationRepository metroStationRepository) {
+        return new MetroStationTeleportService(metroStationRepository);
     }
 
     @ProvidesIntoSet
-    static CloudAnnotated provideMetroStationListCommand(MetroStationManagingInteractor metroStationManagingInteractor) {
-        return new MetroStationListCommand(metroStationManagingInteractor);
+    static CloudAnnotated provideMetroStationListCommand(MetroStationService metroStationService) {
+        return new MetroStationListCommand(metroStationService);
     }
 
     @ProvidesIntoSet
-    static CloudAnnotated provideMetroStationDeleteCommand(MetroStationManagingInteractor metroStationManagingInteractor) {
-        return new MetroStationDeleteCommand(metroStationManagingInteractor);
+    static CloudAnnotated provideMetroStationDeleteCommand(MetroStationService metroStationService) {
+        return new MetroStationDeleteCommand(metroStationService);
     }
 
     @ProvidesIntoSet
-    static CloudAnnotated provideMetroStationModifyCommand(MetroStationManagingInteractor metroStationManagingInteractor, MetroStationModifyInteractor metroStationModifyInteractor) {
-        return new MetroStationModifyCommand(metroStationManagingInteractor, metroStationModifyInteractor);
+    static CloudAnnotated provideMetroStationModifyCommand(MetroStationService metroStationService, MetroStationModificationService metroStationModificationService) {
+        return new MetroStationModifyCommand(metroStationService, metroStationModificationService);
     }
 
     @ProvidesIntoSet
-    static CloudAnnotated provideMetroStationTpCommand(MetroStationTeleportInteractor metroStationTeleportInteractor, JavaPlugin plugin) {
-        return new MetroStationTpCommand(metroStationTeleportInteractor, plugin);
+    static CloudAnnotated provideMetroStationTpCommand(MetroStationTeleportService metroStationTeleportService, JavaPlugin plugin) {
+        return new MetroStationTpCommand(metroStationTeleportService, plugin);
     }
 
     @ProvidesIntoSet
-    static Routing provideMetroStationRouting(Javalin javalin, MetroStationManagingInteractor metroStationManagingInteractor) {
-        return new MetroStationRouting(javalin, metroStationManagingInteractor);
+    static Routing provideMetroStationRouting(Javalin javalin, MetroStationService metroStationService) {
+        return new MetroStationRouting(javalin, metroStationService);
     }
 }

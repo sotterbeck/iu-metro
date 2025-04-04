@@ -15,16 +15,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class MetroStationTeleportInteractorTest {
+class MetroStationTeleportServiceTest {
 
     @Mock
     private MetroStationRepository metroStationRepository;
 
-    private MetroStationTeleportInteractor metroStationTeleportInteractor;
+    private MetroStationTeleportService metroStationTeleportService;
 
     @BeforeEach
     void setUp() {
-        metroStationTeleportInteractor = new MetroStationTeleportInteractor(metroStationRepository);
+        metroStationTeleportService = new MetroStationTeleportService(metroStationRepository);
     }
 
     @Test
@@ -40,7 +40,7 @@ class MetroStationTeleportInteractorTest {
                 stationWithPosition,
                 stationWithoutPosition));
 
-        List<String> response = metroStationTeleportInteractor.getAllTeleportableStationNames();
+        List<String> response = metroStationTeleportService.getAllTeleportableStationNames();
 
         assertThat(response).containsOnly(stationWithPosition.name());
     }
@@ -50,7 +50,7 @@ class MetroStationTeleportInteractorTest {
         String stationName = "Station 1";
         when(metroStationRepository.getByName(stationName)).thenReturn(Optional.empty());
 
-        boolean teleportable = metroStationTeleportInteractor.isTeleportable(stationName);
+        boolean teleportable = metroStationTeleportService.isTeleportable(stationName);
 
         assertThat(teleportable).isFalse();
     }
@@ -63,7 +63,7 @@ class MetroStationTeleportInteractorTest {
                 "ST2");
         when(metroStationRepository.getByName(stationName)).thenReturn(Optional.of(stationWithoutPosition));
 
-        boolean teleportable = metroStationTeleportInteractor.isTeleportable(stationName);
+        boolean teleportable = metroStationTeleportService.isTeleportable(stationName);
 
         assertThat(teleportable).isFalse();
     }
@@ -77,7 +77,7 @@ class MetroStationTeleportInteractorTest {
                 new PositionDto(0, 0, 0));
         when(metroStationRepository.getByName(stationName)).thenReturn(Optional.of(stationWithPosition));
 
-        boolean teleportable = metroStationTeleportInteractor.isTeleportable(stationName);
+        boolean teleportable = metroStationTeleportService.isTeleportable(stationName);
 
         assertThat(teleportable).isTrue();
     }
@@ -90,7 +90,7 @@ class MetroStationTeleportInteractorTest {
                 "ST2");
         when(metroStationRepository.getByName(stationName)).thenReturn(Optional.of(stationWithoutPosition));
 
-        Optional<PositionDto> position = metroStationTeleportInteractor.getPosition(stationName);
+        Optional<PositionDto> position = metroStationTeleportService.getPosition(stationName);
 
         assertThat(position).isEmpty();
     }
@@ -105,7 +105,7 @@ class MetroStationTeleportInteractorTest {
                 stationPosition);
         when(metroStationRepository.getByName(stationName)).thenReturn(Optional.of(stationWithPosition));
 
-        Optional<PositionDto> position = metroStationTeleportInteractor.getPosition(stationName);
+        Optional<PositionDto> position = metroStationTeleportService.getPosition(stationName);
 
         assertThat(position).hasValue(stationPosition);
     }
