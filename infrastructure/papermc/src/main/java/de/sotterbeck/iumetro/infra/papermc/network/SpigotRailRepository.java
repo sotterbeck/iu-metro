@@ -18,11 +18,11 @@ public class SpigotRailRepository implements RailRepository {
     public RailShape findRailAt(PositionDto position) {
         BlockData blockData = world.getBlockData(position.x(), position.y(), position.z());
 
-        if (!(blockData instanceof Rail)) {
+        if (!(blockData instanceof Rail rail)) {
             return RailShape.NONE;
         }
 
-        return toDto(((Rail) blockData).getShape());
+        return toDto(rail.getShape());
     }
 
     private RailShape toDto(Rail.Shape railShape) {

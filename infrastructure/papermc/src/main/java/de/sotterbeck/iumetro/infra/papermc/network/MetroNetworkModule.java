@@ -5,12 +5,13 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import de.sotterbeck.iumetro.app.common.CommonPresenter;
-import de.sotterbeck.iumetro.app.network.graph.MetroNetworkGraphService;
-import de.sotterbeck.iumetro.app.network.graph.MetroNetworkRepository;
-import de.sotterbeck.iumetro.app.network.graph.RailRepository;
+import de.sotterbeck.iumetro.app.network.graph.*;
 import de.sotterbeck.iumetro.app.network.line.LineService;
+import de.sotterbeck.iumetro.app.station.MetroStationRepository;
+import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import de.sotterbeck.iumetro.infra.postgres.network.PostgresMetroNetworkRepository;
+import de.sotterbeck.iumetro.infra.postgres.network.PostgresStationMarkerRepository;
 import io.javalin.Javalin;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,7 +28,7 @@ public class MetroNetworkModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static MetroNetworkGraphService provideMetroNetworkGraphInteractor(MetroNetworkRepository metroNetworkRepository) {
+    static MetroNetworkGraphService provideNetworkGraphService(MetroNetworkRepository metroNetworkRepository) {
         return new MetroNetworkGraphService(metroNetworkRepository);
     }
 
@@ -39,8 +40,17 @@ public class MetroNetworkModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static LineService provideLineManagingInteractor(MetroNetworkRepository metroNetworkRepository, CommonPresenter linePresenter) {
+    static LineService provideLineService(MetroNetworkRepository metroNetworkRepository, CommonPresenter linePresenter) {
         return new LineService(metroNetworkRepository, linePresenter);
+    }
+
+    @Provides
+    @Singleton
+    static StationMarkerService provideStationMarkerService(RailRepository railRepository,
+                                                            StationMarkerRepository markerRepository,
+                                                            MetroStationRepository metroStationRepository,
+                                                            MarkerHighlighter highlighter) {
+        return new StationMarkerService(railRepository, markerRepository, metroStationRepository, highlighter);
     }
 
     @Provides
@@ -48,6 +58,24 @@ public class MetroNetworkModule extends AbstractModule {
     static RailRepository provideRailRepository(JavaPlugin plugin) {
         World world = plugin.getServer().getWorlds().getFirst();
         return new SpigotRailRepository(world);
+    }
+
+    @Provides
+    @Singleton
+    static StationMarkerRepository provideStationMarkerRepository(DataSource dataSource) {
+        return new PostgresStationMarkerRepository(dataSource);
+    }
+
+    @Provides
+    @Singleton
+    static MarkerHighlighter provideMarkerHighlighter(JavaPlugin plugin) {
+        var world = plugin.getServer().getWorlds().getFirst();
+        return new SpigotMarkerHighlighter(plugin, world);
+    }
+
+    @ProvidesIntoSet
+    static CloudAnnotated provideMetroStationMarkerCommand(StationMarkerService stationMarkerService) {
+        return new MetroStationMarkerCommand(stationMarkerService);
     }
 
     @ProvidesIntoSet
