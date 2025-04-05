@@ -40,8 +40,9 @@ public class MetroStationMarkerCommand implements CloudAnnotated {
 
         switch (response) {
             case SUCCESS ->
-                    player.sendRichMessage("<yellow>Successfully marked " + position + "as a station rail. Showing marked rails for 10 seconds.");
-            case UNKNOWN_STATION -> player.sendRichMessage("<red>Unknown station name.");
+                    player.sendRichMessage("<yellow>Successfully marked " + position + " as a station rail. Showing marked rails for 10 seconds.");
+            case SUCCESS_ADDED_STATION ->
+                    player.sendRichMessage("<yellow>Successfully marked " + position + " as a station rail and created new station " + station + ". Showing marked rails for 10 seconds.");
             case INVALID_BLOCK ->
                     player.sendRichMessage("<red>Invalid block. Only straight rails can be mark as a station rail.");
             case ALREADY_MARKED -> player.sendRichMessage("<red>That station has been marked.");

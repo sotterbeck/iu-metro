@@ -36,21 +36,9 @@ class StationMarkerServiceTest {
     }
 
     @Test
-    void add_ShouldNotAdd_WhenStationDoesNotExist() {
-        var position = new PositionDto(0, 0, 0);
-        var name = "Station";
-        when(metroStationRepository.existsByName(name)).thenReturn(false);
-
-        var response = stationMarkerService.add(name, position);
-
-        assertThat(response).isEqualTo(StationMarkerService.Response.UNKNOWN_STATION);
-    }
-
-    @Test
     void add_ShouldNotAdd_WhenBlockIsInvalid() {
         var position = new PositionDto(0, 0, 0);
         var name = "Station";
-        when(metroStationRepository.existsByName(any())).thenReturn(true);
         when(railRepository.findRailAt(position)).thenReturn(RailRepository.RailShape.NORTH_EAST);
 
         var response = stationMarkerService.add(name, position);
@@ -62,12 +50,28 @@ class StationMarkerServiceTest {
     void add_ShouldNotAdd_WhenAlreadyMarked() {
         var position = new PositionDto(0, 0, 0);
         var name = "Station";
-        when(metroStationRepository.existsByName(any())).thenReturn(true);
         when(markerRepository.existsByPosition(position)).thenReturn(true);
 
         var response = stationMarkerService.add(name, position);
 
         assertThat(response).isEqualTo(StationMarkerService.Response.ALREADY_MARKED);
+    }
+
+    @Test
+    void add_ShouldAddCreateStationAndHighlight_WhenStationDoesNotExist() {
+        var position = new PositionDto(0, 0, 0);
+        var name = "Station";
+        when(metroStationRepository.existsByName(any())).thenReturn(false);
+        when(markerRepository.existsByPosition(position)).thenReturn(false);
+        when(markerRepository.findAllByStation(name)).thenReturn(List.of(new MarkerDto(name, position)));
+        when(railRepository.findRailAt(position)).thenReturn(RailRepository.RailShape.NORTH_SOUTH);
+
+        var response = stationMarkerService.add(name, position);
+
+        verify(metroStationRepository).save(any());
+        verify(markerRepository).save(name, position);
+        verify(highlighter).highlight(any());
+        assertThat(response).isEqualTo(StationMarkerService.Response.SUCCESS_ADDED_STATION);
     }
 
     @Test

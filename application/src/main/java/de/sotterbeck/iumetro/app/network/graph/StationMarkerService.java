@@ -1,7 +1,10 @@
 package de.sotterbeck.iumetro.app.network.graph;
 
 import de.sotterbeck.iumetro.app.common.PositionDto;
+import de.sotterbeck.iumetro.app.station.MetroStationDto;
 import de.sotterbeck.iumetro.app.station.MetroStationRepository;
+
+import java.util.UUID;
 
 public class StationMarkerService {
 
@@ -21,9 +24,6 @@ public class StationMarkerService {
     }
 
     public Response add(String station, PositionDto position) {
-        if (!metroStationRepository.existsByName(station)) {
-            return Response.UNKNOWN_STATION;
-        }
 
         if (markerRepository.existsByPosition(position)) {
             return Response.ALREADY_MARKED;
@@ -34,11 +34,20 @@ public class StationMarkerService {
             return Response.INVALID_BLOCK;
         }
 
+        if (!metroStationRepository.existsByName(station)) {
+            metroStationRepository.save(new MetroStationDto(UUID.randomUUID(), station));
+            addMarkerAndHightlight(station, position);
+            return Response.SUCCESS_ADDED_STATION;
+        }
+
+        addMarkerAndHightlight(station, position);
+        return Response.SUCCESS;
+    }
+
+    private void addMarkerAndHightlight(String station, PositionDto position) {
         markerRepository.save(station, position);
         var markers = markerRepository.findAllByStation(station);
         highlighter.highlight(markers);
-
-        return Response.SUCCESS;
     }
 
     public boolean remove(PositionDto position) {
@@ -68,7 +77,7 @@ public class StationMarkerService {
 
     public enum Response {
         SUCCESS,
-        UNKNOWN_STATION,
+        SUCCESS_ADDED_STATION,
         INVALID_BLOCK,
         ALREADY_MARKED,
     }
