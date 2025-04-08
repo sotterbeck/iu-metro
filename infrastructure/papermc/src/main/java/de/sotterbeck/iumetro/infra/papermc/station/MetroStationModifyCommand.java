@@ -24,7 +24,7 @@ public class MetroStationModifyCommand implements CloudAnnotated {
         this.metroStationModificationService = metroStationModificationService;
     }
 
-    @Command("metrostation modify <station> set alias <alias>")
+    @Command("metro station modify <station> set alias <alias>")
     @Permission("iumetro.metrostation.modify")
     public void metroStationModifySetAlias(
             CommandSender sender,
@@ -39,7 +39,7 @@ public class MetroStationModifyCommand implements CloudAnnotated {
         }
     }
 
-    @Command("metrostation modify <station> set position <position>")
+    @Command("metro station modify <station> set position <position>")
     @Permission("iumetro.metrostation.modify")
     public void metroStationModifySetPosition(
             CommandSender sender,
@@ -57,7 +57,7 @@ public class MetroStationModifyCommand implements CloudAnnotated {
         sender.sendRichMessage("<green>Set position for station " + station + " to " + positionDto + ".");
     }
 
-    @Command("metrostation modify <station> delete <property>")
+    @Command("metro station modify <station> delete <property>")
     @Permission("iumetro.metrostation.modify")
     public void metroStationModifyDelete(
             CommandSender sender,

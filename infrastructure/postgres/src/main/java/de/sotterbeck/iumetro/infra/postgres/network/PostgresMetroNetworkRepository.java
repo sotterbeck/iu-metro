@@ -3,10 +3,9 @@ package de.sotterbeck.iumetro.infra.postgres.network;
 import de.sotterbeck.iumetro.app.network.graph.ConnectionDto;
 import de.sotterbeck.iumetro.app.network.graph.MetroNetworkDto;
 import de.sotterbeck.iumetro.app.network.graph.MetroNetworkRepository;
-import de.sotterbeck.iumetro.app.network.line.LineConnectionDto;
+import de.sotterbeck.iumetro.app.network.graph.StationNodeDto;
 import de.sotterbeck.iumetro.app.network.line.LineDto;
 import de.sotterbeck.iumetro.app.station.MetroStationDto;
-import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.MetroConnectionsRecord;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.MetroLinesRecord;
 import de.sotterbeck.iumetro.infra.postgres.station.MetroStationDtoRecordMapper;
 import org.jooq.DSLContext;
@@ -66,6 +65,38 @@ public class PostgresMetroNetworkRepository implements MetroNetworkRepository {
     }
 
     @Override
+    public void saveNetwork(Map<String, StationNodeDto> graph) {
+        create.transaction(connection -> {
+            var tx = DSL.using(connection);
+            tx.deleteFrom(METRO_CONNECTION_LINES).execute();
+            tx.deleteFrom(METRO_CONNECTIONS).execute();
+
+            var insertSteps = graph.entrySet().stream()
+                    .flatMap(entry -> {
+                        UUID fromStationId = tx.select(METRO_STATIONS.ID)
+                                .from(METRO_STATIONS)
+                                .where(METRO_STATIONS.NAME.eq(entry.getKey()))
+                                .fetchOne(METRO_STATIONS.ID);
+
+                        return entry.getValue().neighbors().entrySet().stream()
+                                .map(neighbor -> tx.insertInto(METRO_CONNECTIONS,
+                                                METRO_CONNECTIONS.FROM_STATION_ID,
+                                                METRO_CONNECTIONS.TO_STATION_ID,
+                                                METRO_CONNECTIONS.DISTANCE)
+                                        .values(
+                                                fromStationId,
+                                                tx.select(METRO_STATIONS.ID)
+                                                        .from(METRO_STATIONS)
+                                                        .where(METRO_STATIONS.NAME.eq(neighbor.getKey()))
+                                                        .fetchOne(METRO_STATIONS.ID),
+                                                neighbor.getValue()
+                                        ));
+                    }).toList();
+            tx.batch(insertSteps).execute();
+        });
+    }
+
+    @Override
     public void saveLine(String name, int color) {
         MetroLinesRecord metroLinesRecord = create.fetchOne(METRO_LINES, METRO_LINES.NAME.eq(name));
         if (metroLinesRecord == null) {
@@ -112,102 +143,5 @@ public class PostgresMetroNetworkRepository implements MetroNetworkRepository {
                 ));
     }
 
-    @Override
-    public void saveConnection(UUID station1Id, UUID station2Id, int distance, List<LineConnectionDto> lines) {
-        create.transaction(configuration -> {
-            DSLContext ctx = DSL.using(configuration);
-
-            Map.Entry<UUID, UUID> sortedIds = sortStationIds(station1Id, station2Id);
-            UUID fromStationId = sortedIds.getKey();
-            UUID toStationId = sortedIds.getValue();
-
-            MetroConnectionsRecord metroConnectionsRecord = ctx.fetchOne(METRO_CONNECTIONS,
-                    METRO_CONNECTIONS.FROM_STATION_ID.eq(fromStationId)
-                            .and(METRO_CONNECTIONS.TO_STATION_ID.eq(toStationId)));
-
-            if (metroConnectionsRecord == null) {
-                metroConnectionsRecord = ctx.newRecord(METRO_CONNECTIONS)
-                        .setFromStationId(fromStationId)
-                        .setToStationId(toStationId);
-            }
-
-            metroConnectionsRecord
-                    .setDistance(distance)
-                    .store();
-
-            Long connectionId = metroConnectionsRecord.getId();
-
-            List<String> existingLines = ctx.select(METRO_LINES.NAME)
-                    .from(METRO_CONNECTION_LINES)
-                    .join(METRO_LINES).on(METRO_CONNECTION_LINES.LINE_ID.eq(METRO_LINES.ID))
-                    .where(METRO_CONNECTION_LINES.CONNECTION_ID.eq(connectionId))
-                    .fetch(rec -> rec.get(METRO_LINES.NAME));
-
-            List<String> newLineNames = lines.stream()
-                    .map(LineConnectionDto::name)
-                    .toList();
-
-            List<String> linesToRemove = existingLines.stream()
-                    .filter(lineId -> !newLineNames.contains(lineId))
-                    .toList();
-
-            if (!linesToRemove.isEmpty()) {
-                ctx.deleteFrom(METRO_CONNECTION_LINES)
-                        .where(METRO_CONNECTION_LINES.CONNECTION_ID.eq(connectionId))
-                        .and(METRO_CONNECTION_LINES.LINE_ID.in(linesToRemove))
-                        .execute();
-            }
-
-            for (LineConnectionDto line : lines) {
-                MetroLinesRecord metroLinesRecord = ctx.fetchOne(METRO_LINES, METRO_LINES.NAME.eq(line.name()));
-
-                if (metroLinesRecord == null) {
-                    return;
-                }
-                long lineId = metroLinesRecord.getId();
-
-                ctx.insertInto(METRO_CONNECTION_LINES)
-                        .set(METRO_CONNECTION_LINES.LINE_ID, lineId)
-                        .set(METRO_CONNECTION_LINES.CONNECTION_ID, connectionId)
-                        .set(METRO_CONNECTION_LINES.SEQUENCE_NUMBER, line.sequenceNumber())
-                        .onDuplicateKeyUpdate().set(METRO_CONNECTION_LINES.SEQUENCE_NUMBER, line.sequenceNumber())
-                        .execute();
-            }
-        });
-    }
-
-    @Override
-    public void removeConnection(UUID station1Id, UUID station2Id) {
-        Map.Entry<UUID, UUID> sortedIds = sortStationIds(station1Id, station2Id);
-        UUID fromStationId = sortedIds.getKey();
-        UUID toStationId = sortedIds.getValue();
-
-        MetroConnectionsRecord metroConnectionsRecord = create.fetchOne(METRO_CONNECTIONS,
-                METRO_CONNECTIONS.FROM_STATION_ID.eq(fromStationId)
-                        .and(METRO_CONNECTIONS.TO_STATION_ID.eq(toStationId)));
-
-        if (metroConnectionsRecord != null) {
-            metroConnectionsRecord.delete();
-        }
-    }
-
-    @Override
-    public boolean existsConnection(UUID station1Id, UUID station2Id) {
-        Map.Entry<UUID, UUID> sortedIds = sortStationIds(station1Id, station2Id);
-        UUID fromStationId = sortedIds.getKey();
-        UUID toStationId = sortedIds.getValue();
-
-        return create.fetchOne(METRO_CONNECTIONS,
-                METRO_CONNECTIONS.FROM_STATION_ID.eq(fromStationId)
-                        .and(METRO_CONNECTIONS.TO_STATION_ID.eq(toStationId))) != null;
-    }
-
-    private Map.Entry<UUID, UUID> sortStationIds(UUID station1Id, UUID station2Id) {
-        if (station1Id.compareTo(station2Id) <= 0) {
-            return Map.entry(station1Id, station2Id);
-        } else {
-            return Map.entry(station2Id, station1Id);
-        }
-    }
 
 }

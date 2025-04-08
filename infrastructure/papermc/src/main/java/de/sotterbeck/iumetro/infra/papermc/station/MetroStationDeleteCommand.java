@@ -16,7 +16,7 @@ public class MetroStationDeleteCommand implements CloudAnnotated {
         this.metroStationService = metroStationService;
     }
 
-    @Command("metrostation delete <station>")
+    @Command("metro station delete <station>")
     @Permission("iumetro.metrostation.delete")
     public void metroStationDelete(
             CommandSender sender,

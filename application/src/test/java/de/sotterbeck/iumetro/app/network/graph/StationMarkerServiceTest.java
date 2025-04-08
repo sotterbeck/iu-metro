@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -139,4 +140,20 @@ class StationMarkerServiceTest {
         assertThat(response).isTrue();
     }
 
+    @Test
+    void list_ShouldReturnAllMarkers() {
+        var markers = Map.of(
+                "Station 1", List.of(new MarkerDto("Station 1", new PositionDto(0, 0, 0))),
+                "Station 2", List.of(new MarkerDto("Station 2", new PositionDto(0, 0, 1)))
+        );
+        when(markerRepository.findAll()).thenReturn(markers);
+
+        var result = stationMarkerService.list();
+
+        assertThat(result).isEqualTo(Map.of(
+                "Station 1", List.of(new PositionDto(0, 0, 0)),
+                "Station 2", List.of(new PositionDto(0, 0, 1)))
+        );
+
+    }
 }

@@ -17,7 +17,7 @@ public class MetroStationListCommand implements CloudAnnotated {
         this.metroStationService = metroStationService;
     }
 
-    @Command("metrostation list")
+    @Command("metro station list")
     @Permission("iumetro.metrostation.list")
     public void metroStationList(CommandSender sender) {
         List<MetroStationResponseModel> stations = metroStationService.getAll();

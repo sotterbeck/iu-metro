@@ -2,7 +2,7 @@ package de.sotterbeck.iumetro.app.network.graph;
 
 import de.sotterbeck.iumetro.app.common.PositionDto;
 
-public interface RailRepository {
+public interface RailRepository extends AutoCloseable {
 
     /**
      * Finds the rail shape at the given position.

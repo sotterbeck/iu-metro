@@ -28,7 +28,7 @@ public class MetroStationTpCommand implements CloudAnnotated {
         this.plugin = plugin;
     }
 
-    @Command("metrostation tp <station>")
+    @Command("metro station tp <station>")
     @Permission("iumetro.metrostation.tp")
     public void metroStationTp(
             CommandSender sender,

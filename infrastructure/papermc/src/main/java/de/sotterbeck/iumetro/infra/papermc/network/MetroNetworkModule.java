@@ -55,9 +55,29 @@ public class MetroNetworkModule extends AbstractModule {
 
     @Provides
     @Singleton
+    static StationGraphBuilderService provideStationGraphBuilderService(StationGraphBuilder stationGraphBuilder,
+                                                                        StationMarkerRepository markerRepository,
+                                                                        MetroNetworkRepository metroNetworkRepository) {
+        return new StationGraphBuilderService(stationGraphBuilder, markerRepository, metroNetworkRepository);
+    }
+
+    @Provides
+    @Singleton
+    static StationGraphBuilder provideGraphBuilder(RailConnectionScanner railConnectionScanner) {
+        return new BFSStationGraphBuilder(railConnectionScanner);
+    }
+
+    @Provides
+    @Singleton
+    static RailConnectionScanner provideRailConnectionScanner(RailRepository railRepository) {
+        return new RailConnectionScanner(railRepository);
+    }
+
+    @Provides
+    @Singleton
     static RailRepository provideRailRepository(JavaPlugin plugin) {
         World world = plugin.getServer().getWorlds().getFirst();
-        return new SpigotRailRepository(world);
+        return new SpigotRailRepository(plugin, world);
     }
 
     @Provides
@@ -76,6 +96,11 @@ public class MetroNetworkModule extends AbstractModule {
     @ProvidesIntoSet
     static CloudAnnotated provideMetroStationMarkerCommand(StationMarkerService stationMarkerService) {
         return new MetroStationMarkerCommand(stationMarkerService);
+    }
+
+    @ProvidesIntoSet
+    static CloudAnnotated provideMetroNetworkBuildCommand(StationGraphBuilderService metroStationService) {
+        return new MetroNetworkBuildCommand(metroStationService);
     }
 
     @ProvidesIntoSet

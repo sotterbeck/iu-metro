@@ -10,6 +10,8 @@ import org.incendo.cloud.annotations.Argument;
 import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.Permission;
 
+import java.util.List;
+
 public class MetroStationMarkerCommand implements CloudAnnotated {
 
     public static final int MAX_DISTANCE = 6;
@@ -19,7 +21,7 @@ public class MetroStationMarkerCommand implements CloudAnnotated {
         this.stationMarkerService = stationMarkerService;
     }
 
-    @Command("metrostation marker add <station>")
+    @Command("metro station marker add <station>")
     @Permission("iumetro.metrostation.marker.add")
     public void metroStationMarkerAdd(
             CommandSender sender,
@@ -49,7 +51,7 @@ public class MetroStationMarkerCommand implements CloudAnnotated {
         }
     }
 
-    @Command("metrostation marker remove")
+    @Command("metro station marker remove")
     @Permission("iumetro.metrostation.marker.remove")
     public void metroStationMarkerRemove(CommandSender sender) {
         if (!(sender instanceof Player player)) {
@@ -74,7 +76,7 @@ public class MetroStationMarkerCommand implements CloudAnnotated {
         sender.sendRichMessage("<yellow>Successfully removed marking at position " + position + ".");
     }
 
-    @Command("metrostation marker show <station>")
+    @Command("metro station marker show <station>")
     @Permission("iumetro.metrostation.marker.show")
     public void metroStationMarkerShow(
             CommandSender sender,
@@ -93,4 +95,27 @@ public class MetroStationMarkerCommand implements CloudAnnotated {
         sender.sendRichMessage("<yellow>Highlighting all markers for station " + station + " for 10 seconds.");
     }
 
+    @Command("metro station marker list")
+    @Permission("iumetro.metrostation.marker.list")
+    public void metroStationMarkerList(CommandSender sender) {
+        var markers = stationMarkerService.list();
+        if (markers.isEmpty()) {
+            sender.sendRichMessage("<red>There are no markers.");
+            return;
+        }
+
+        var markerCount = markers.values().stream()
+                .mapToInt(List::size)
+                .sum();
+
+        sender.sendRichMessage("Markers (%d):".formatted(markerCount));
+        for (var entry : markers.entrySet()) {
+            String station = entry.getKey();
+            var positions = String.join(", ", entry.getValue().stream()
+                    .map(PositionDto::toString)
+                    .toList());
+
+            sender.sendRichMessage("- %s (%d): %s".formatted(station, entry.getValue().size(), positions));
+        }
+    }
 }

@@ -71,6 +71,7 @@ public class RailConnectionScanner {
                     continue;
                 }
 
+                // TODO: fix multiple ascending rails UP, they only work downwards.
                 var lowerShapeDirection = RAIL_CONNECTIONS.get(lowerShape).getFirst();
                 if (lowerShapeDirection != null && lowerShapeDirection == direction) {
                     neighbors.add(lowerPosDto);

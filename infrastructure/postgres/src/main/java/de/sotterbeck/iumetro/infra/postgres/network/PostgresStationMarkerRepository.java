@@ -12,8 +12,7 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
 import javax.sql.DataSource;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.METRO_STATIONS;
 import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.METRO_STATION_RAIL_MARKERS;
@@ -43,6 +42,15 @@ public class PostgresStationMarkerRepository implements StationMarkerRepository 
     }
 
     @Override
+    public boolean existsForAllStations() {
+        return create.select()
+                .from(METRO_STATIONS)
+                .leftJoin(METRO_STATION_RAIL_MARKERS).on(METRO_STATIONS.ID.eq(METRO_STATION_RAIL_MARKERS.STATION_ID))
+                .where(METRO_STATION_RAIL_MARKERS.STATION_ID.isNull())
+                .fetch().isEmpty();
+    }
+
+    @Override
     public void save(String stationName, PositionDto position) {
         MetroStationsRecord station = create.fetchOne(METRO_STATIONS, METRO_STATIONS.NAME.eq(stationName));
         if (station == null) {
@@ -55,6 +63,37 @@ public class PostgresStationMarkerRepository implements StationMarkerRepository 
                 .setPosY(position.y())
                 .setPosZ(position.z())
                 .store();
+    }
+
+    @Override
+    public Map<String, List<MarkerDto>> findAll() {
+        var groups = create.select(
+                        METRO_STATIONS.NAME,
+                        METRO_STATION_RAIL_MARKERS.STATION_ID,
+                        METRO_STATION_RAIL_MARKERS.POS_X,
+                        METRO_STATION_RAIL_MARKERS.POS_Y,
+                        METRO_STATION_RAIL_MARKERS.POS_Z
+                )
+                .from(METRO_STATIONS)
+                .leftJoin(METRO_STATION_RAIL_MARKERS).on(METRO_STATIONS.ID.eq(METRO_STATION_RAIL_MARKERS.STATION_ID))
+                .orderBy(METRO_STATIONS.NAME.asc())
+                .fetchGroups(
+                        rec -> rec.get(METRO_STATIONS.NAME),
+                        rec -> rec.get(METRO_STATION_RAIL_MARKERS.STATION_ID) != null ? new MarkerDto(
+                                rec.get(METRO_STATIONS.NAME),
+                                new PositionDto(
+                                        rec.get(METRO_STATION_RAIL_MARKERS.POS_X),
+                                        rec.get(METRO_STATION_RAIL_MARKERS.POS_Y),
+                                        rec.get(METRO_STATION_RAIL_MARKERS.POS_Z)
+                                )
+                        ) : null
+                );
+
+        groups.replaceAll((station, markers) -> markers.stream()
+                .filter(Objects::nonNull)
+                .toList());
+
+        return groups;
     }
 
     @Override
@@ -97,6 +136,18 @@ public class PostgresStationMarkerRepository implements StationMarkerRepository 
         }
 
         marker.delete();
+    }
+
+    @Override
+    public Map<String, Integer> countMarkersByStation() {
+        return create.select()
+                .from(METRO_STATIONS)
+                .leftJoin(METRO_STATION_RAIL_MARKERS).on(METRO_STATIONS.ID.eq(METRO_STATION_RAIL_MARKERS.STATION_ID))
+                .groupBy(METRO_STATIONS.NAME)
+                .fetchMap(
+                        METRO_STATIONS.NAME,
+                        DSL.count()
+                );
     }
 
 }

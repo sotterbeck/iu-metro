@@ -4,7 +4,10 @@ import de.sotterbeck.iumetro.app.common.PositionDto;
 import de.sotterbeck.iumetro.app.station.MetroStationDto;
 import de.sotterbeck.iumetro.app.station.MetroStationRepository;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class StationMarkerService {
 
@@ -74,6 +77,15 @@ public class StationMarkerService {
 
         return true;
     }
+
+    public Map<String, List<PositionDto>> list() {
+        return markerRepository.findAll().entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .map(MarkerDto::position)
+                                .toList()));
+    }
+
 
     public enum Response {
         SUCCESS,
