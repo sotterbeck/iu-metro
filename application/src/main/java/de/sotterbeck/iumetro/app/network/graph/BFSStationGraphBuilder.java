@@ -3,43 +3,45 @@ package de.sotterbeck.iumetro.app.network.graph;
 import de.sotterbeck.iumetro.app.common.PositionDto;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class BFSStationGraphBuilder implements StationGraphBuilder {
 
-    private final RailConnectionScanner railConnectionScanner;
+    private final Supplier<RailRepository> railRepositoryFactory;
 
-    public BFSStationGraphBuilder(RailConnectionScanner railConnectionScanner) {
-        this.railConnectionScanner = railConnectionScanner;
+    public BFSStationGraphBuilder(Supplier<RailRepository> railRepositoryFactory) {
+        this.railRepositoryFactory = railRepositoryFactory;
     }
 
     @Override
     public Map<String, StationNodeDto> buildGraph(Map<String, List<MarkerDto>> markers) {
-        System.out.println("Building graph using BFS algorithm");
         var graph = new HashMap<String, StationNodeDto>();
-        Map<PositionDto, String> targets = markers.entrySet().stream()
-                .flatMap(entry -> entry.getValue().stream()
-                        .map(marker -> new AbstractMap.SimpleEntry<>(marker.position(), entry.getKey())))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
+        try (var railRepository = railRepositoryFactory.get()) {
+            var railConnectionScanner = new RailConnectionScanner(railRepository);
 
-        for (var entry : markers.entrySet()) {
-            var name = entry.getKey();
-            var markerPositions = entry.getValue().stream()
-                    .map(MarkerDto::position)
-                    .toList();
+            Map<PositionDto, String> targets = getTargetPositions(markers);
 
-            System.out.println("Running BFS for station: " + name);
-            var distances = bfs(markerPositions, targets);
+            for (var entry : markers.entrySet()) {
+                var name = entry.getKey();
+                var markerPositions = entry.getValue().stream()
+                        .map(MarkerDto::position)
+                        .toList();
 
-            graph.put(entry.getKey(), new StationNodeDto(name, distances));
+                var distances = bfs(railConnectionScanner, markerPositions, targets);
+
+                graph.put(entry.getKey(), new StationNodeDto(name, distances));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error while building graph", e);
         }
 
-        System.out.println("Finished building graph");
         return graph;
     }
 
-    private Map<String, Integer> bfs(Iterable<PositionDto> sources, Map<PositionDto, String> targets) {
+    private Map<String, Integer> bfs(RailConnectionScanner railScanner, Iterable<PositionDto> sources, Map<PositionDto, String> targets) {
         Queue<Node> queue = new LinkedList<>();
         Set<PositionDto> visited = new HashSet<>();
 
@@ -53,7 +55,7 @@ public class BFSStationGraphBuilder implements StationGraphBuilder {
         while (!queue.isEmpty()) {
             Node current = queue.poll();
 
-            var neighbors = railConnectionScanner.getConnectingRails(current.position());
+            var neighbors = railScanner.getConnectingRails(current.position());
             for (PositionDto neighbor : neighbors) {
                 if (visited.contains(neighbor)) {
                     continue;
@@ -70,6 +72,13 @@ public class BFSStationGraphBuilder implements StationGraphBuilder {
             }
         }
         return distances;
+    }
+
+    private Map<PositionDto, String> getTargetPositions(Map<String, List<MarkerDto>> markers) {
+        return markers.entrySet().stream()
+                .flatMap(entry -> entry.getValue().stream()
+                        .map(marker -> new AbstractMap.SimpleEntry<>(marker.position(), entry.getKey())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private record Node(PositionDto position, int distance) {

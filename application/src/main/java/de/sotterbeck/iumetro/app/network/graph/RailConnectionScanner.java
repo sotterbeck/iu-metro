@@ -47,8 +47,8 @@ public class RailConnectionScanner {
     }
 
     public List<PositionDto> getConnectingRails(PositionDto position) {
+        List<PositionDto> neighbors = new ArrayList<>();
         var shape = railRepository.findRailAt(position);
-        var neighbors = new ArrayList<PositionDto>();
         var pos = new Position(position.x(), position.y(), position.z());
 
         if (shape == RailRepository.RailShape.NONE) {

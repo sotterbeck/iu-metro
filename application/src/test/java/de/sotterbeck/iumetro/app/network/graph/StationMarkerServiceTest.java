@@ -33,7 +33,7 @@ class StationMarkerServiceTest {
 
     @BeforeEach
     void setUp() {
-        stationMarkerService = new StationMarkerService(railRepository, markerRepository, metroStationRepository, highlighter);
+        stationMarkerService = new StationMarkerService(() -> railRepository, markerRepository, metroStationRepository, highlighter);
     }
 
     @Test

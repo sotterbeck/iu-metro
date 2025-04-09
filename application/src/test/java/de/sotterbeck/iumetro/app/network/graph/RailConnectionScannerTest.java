@@ -22,7 +22,7 @@ class RailConnectionScannerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new RailConnectionScanner(railRepository);
+        underTest = new RailConnectionScanner(() -> railRepository);
         when(railRepository.findRailAt(any())).thenReturn(NONE);
     }
 

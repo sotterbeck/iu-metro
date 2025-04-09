@@ -17,6 +17,7 @@ import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.sql.DataSource;
+import java.util.function.Supplier;
 
 public class MetroNetworkModule extends AbstractModule {
 
@@ -46,11 +47,11 @@ public class MetroNetworkModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static StationMarkerService provideStationMarkerService(RailRepository railRepository,
+    static StationMarkerService provideStationMarkerService(Supplier<RailRepository> railRepositoryFactory,
                                                             StationMarkerRepository markerRepository,
                                                             MetroStationRepository metroStationRepository,
                                                             MarkerHighlighter highlighter) {
-        return new StationMarkerService(railRepository, markerRepository, metroStationRepository, highlighter);
+        return new StationMarkerService(railRepositoryFactory, markerRepository, metroStationRepository, highlighter);
     }
 
     @Provides
@@ -63,21 +64,15 @@ public class MetroNetworkModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static StationGraphBuilder provideGraphBuilder(RailConnectionScanner railConnectionScanner) {
-        return new BFSStationGraphBuilder(railConnectionScanner);
+    static StationGraphBuilder provideGraphBuilder(Supplier<RailRepository> railRepositoryFactory) {
+        return new BFSStationGraphBuilder(railRepositoryFactory);
     }
 
     @Provides
     @Singleton
-    static RailConnectionScanner provideRailConnectionScanner(RailRepository railRepository) {
-        return new RailConnectionScanner(railRepository);
-    }
-
-    @Provides
-    @Singleton
-    static RailRepository provideRailRepository(JavaPlugin plugin) {
+    static Supplier<RailRepository> provideRailRepositoryFactory(JavaPlugin plugin) {
         World world = plugin.getServer().getWorlds().getFirst();
-        return new SpigotRailRepository(plugin, world);
+        return () -> new SpigotRailRepository(plugin, world);
     }
 
     @Provides
