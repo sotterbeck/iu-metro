@@ -3,10 +3,11 @@ package de.sotterbeck.iumetro.app.network.graph;
 import de.sotterbeck.iumetro.app.common.PositionDto;
 import de.sotterbeck.iumetro.domain.common.Position;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
+
+import static de.sotterbeck.iumetro.domain.common.Position.Direction.*;
 
 /**
  * RailConnectionScanner is responsible for scanning the rail connections in a given position.
@@ -16,28 +17,24 @@ import java.util.Set;
  */
 public class RailConnectionScanner {
 
-    /**
-     * A map of rail shapes to their possible connections. The keys are the rail shapes, and the values are lists of
-     * directions that can be connected to the rail shape.
-     */
-    private static final Map<RailRepository.RailShape, List<Position.Direction>> RAIL_CONNECTIONS = Map.of(
-            RailRepository.RailShape.ASCENDING_NORTH, List.of(Position.Direction.SOUTH),
-            RailRepository.RailShape.ASCENDING_EAST, List.of(Position.Direction.WEST),
-            RailRepository.RailShape.ASCENDING_SOUTH, List.of(Position.Direction.NORTH),
-            RailRepository.RailShape.ASCENDING_WEST, List.of(Position.Direction.WEST),
-            RailRepository.RailShape.EAST_WEST, List.of(Position.Direction.EAST, Position.Direction.WEST),
-            RailRepository.RailShape.NORTH_EAST, List.of(Position.Direction.NORTH, Position.Direction.EAST),
-            RailRepository.RailShape.NORTH_SOUTH, List.of(Position.Direction.NORTH, Position.Direction.SOUTH),
-            RailRepository.RailShape.NORTH_WEST, List.of(Position.Direction.NORTH, Position.Direction.WEST),
-            RailRepository.RailShape.SOUTH_EAST, List.of(Position.Direction.SOUTH, Position.Direction.EAST),
-            RailRepository.RailShape.SOUTH_WEST, List.of(Position.Direction.SOUTH, Position.Direction.WEST)
-    );
+    private record Connection(Position.Direction direction, int heightOffset) {
 
-    private static final Set<RailRepository.RailShape> ASCENDING_RAIL_SHAPES = Set.of(
-            RailRepository.RailShape.ASCENDING_NORTH,
-            RailRepository.RailShape.ASCENDING_EAST,
-            RailRepository.RailShape.ASCENDING_SOUTH,
-            RailRepository.RailShape.ASCENDING_WEST
+    }
+
+    /**
+     * A map of rail shapes to their possible connections.
+     */
+    private static final Map<RailRepository.RailShape, List<Connection>> RAIL_CONNECTIONS = Map.of(
+            RailRepository.RailShape.ASCENDING_NORTH, List.of(new Connection(SOUTH, 0), new Connection(NORTH, 1), new Connection(SOUTH, -1)),
+            RailRepository.RailShape.ASCENDING_EAST, List.of(new Connection(WEST, 0), new Connection(EAST, 1), new Connection(WEST, -1)),
+            RailRepository.RailShape.ASCENDING_SOUTH, List.of(new Connection(NORTH, 0), new Connection(SOUTH, 1), new Connection(NORTH, -1)),
+            RailRepository.RailShape.ASCENDING_WEST, List.of(new Connection(EAST, 0), new Connection(WEST, 1), new Connection(EAST, -1)),
+            RailRepository.RailShape.EAST_WEST, List.of(new Connection(EAST, 0), new Connection(WEST, 0)),
+            RailRepository.RailShape.NORTH_EAST, List.of(new Connection(NORTH, 0), new Connection(EAST, 0)),
+            RailRepository.RailShape.NORTH_SOUTH, List.of(new Connection(NORTH, 0), new Connection(SOUTH, 0)),
+            RailRepository.RailShape.NORTH_WEST, List.of(new Connection(NORTH, 0), new Connection(WEST, 0)),
+            RailRepository.RailShape.SOUTH_EAST, List.of(new Connection(SOUTH, 0), new Connection(EAST, 0)),
+            RailRepository.RailShape.SOUTH_WEST, List.of(new Connection(SOUTH, 0), new Connection(WEST, 0))
     );
 
     private final RailRepository railRepository;
@@ -47,7 +44,6 @@ public class RailConnectionScanner {
     }
 
     public List<PositionDto> getConnectingRails(PositionDto position) {
-        List<PositionDto> neighbors = new ArrayList<>();
         var shape = railRepository.findRailAt(position);
         var pos = new Position(position.x(), position.y(), position.z());
 
@@ -55,34 +51,48 @@ public class RailConnectionScanner {
             return List.of();
         }
 
-        var directions = RAIL_CONNECTIONS.get(shape);
+        var possibleConnections = RAIL_CONNECTIONS.get(shape);
 
-        for (Position.Direction direction : directions) {
-            var newPos = pos.translate(direction, 1);
-            var newPosDto = new PositionDto(newPos.x(), newPos.y(), newPos.z());
-            var newShape = railRepository.findRailAt(newPosDto);
-
-            if (newShape == RailRepository.RailShape.NONE) {
-                var lowerPos = newPos.translate(0, -1, 0);
-                var lowerPosDto = new PositionDto(lowerPos.x(), lowerPos.y(), lowerPos.z());
-                var lowerShape = railRepository.findRailAt(lowerPosDto);
-
-                if (lowerShape == RailRepository.RailShape.NONE || !ASCENDING_RAIL_SHAPES.contains(lowerShape)) {
-                    continue;
-                }
-
-                // TODO: fix multiple ascending rails UP, they only work downwards.
-                var lowerShapeDirection = RAIL_CONNECTIONS.get(lowerShape).getFirst();
-                if (lowerShapeDirection != null && lowerShapeDirection == direction) {
-                    neighbors.add(lowerPosDto);
-                    continue;
-                }
-            }
-
-            neighbors.add(newPosDto);
-        }
-
-        return neighbors;
+        return possibleConnections.stream()
+                .map(connection -> resolveConnection(pos, connection))
+                .filter(Objects::nonNull)
+                .distinct()
+                .map(this::toPosDto)
+                .toList();
     }
 
+    private Position resolveConnection(Position from, Connection connection) {
+        var targetPos = from.translate(connection.direction(), 1).translate(0, connection.heightOffset(), 0);
+        var targetShape = railRepository.findRailAt(toPosDto(targetPos));
+
+        if (targetShape != RailRepository.RailShape.NONE) {
+            return targetPos;
+        }
+
+        return resolveDescendingConnection(targetPos, connection);
+    }
+
+    private Position resolveDescendingConnection(Position targetPos, Connection connection) {
+        var dir = connection.direction();
+        var lower = targetPos.translate(0, -1, 0);
+        var lowerShape = railRepository.findRailAt(toPosDto(lower));
+
+        if (!isAscendingRail(lowerShape)) {
+            return null;
+        }
+
+        var ascendingDir = RAIL_CONNECTIONS.get(lowerShape).getFirst().direction();
+        return (ascendingDir == dir) ? lower : null;
+    }
+
+    private boolean isAscendingRail(RailRepository.RailShape shape) {
+        return shape == RailRepository.RailShape.ASCENDING_NORTH ||
+                shape == RailRepository.RailShape.ASCENDING_EAST ||
+                shape == RailRepository.RailShape.ASCENDING_SOUTH ||
+                shape == RailRepository.RailShape.ASCENDING_WEST;
+    }
+
+    private PositionDto toPosDto(Position targetPos) {
+        return new PositionDto(targetPos.x(), targetPos.y(), targetPos.z());
+    }
 }

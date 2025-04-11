@@ -22,7 +22,7 @@ class RailConnectionScannerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new RailConnectionScanner(() -> railRepository);
+        underTest = new RailConnectionScanner(railRepository);
         when(railRepository.findRailAt(any())).thenReturn(NONE);
     }
 
@@ -68,7 +68,6 @@ class RailConnectionScannerTest {
                 new PositionDto(0, 0, -1),
                 new PositionDto(0, 0, 1)
         );
-
     }
 
     @Test
@@ -83,7 +82,20 @@ class RailConnectionScannerTest {
                 new PositionDto(0, -1, -1),
                 new PositionDto(0, -1, 1)
         );
+    }
 
+    @Test
+    void getConnectingRails_ShouldReturnAscendingRails_WhenRailsConnectOnDifferentLevelsInBothDirections() {
+        when(railRepository.findRailAt(new PositionDto(0, 0, 0))).thenReturn(ASCENDING_NORTH);
+        when(railRepository.findRailAt(new PositionDto(0, -1, 1))).thenReturn(ASCENDING_NORTH);
+        when(railRepository.findRailAt(new PositionDto(0, 1, -1))).thenReturn(ASCENDING_NORTH);
+
+        var result = underTest.getConnectingRails(new PositionDto(0, 0, 0));
+
+        assertThat(result).containsExactlyInAnyOrder(
+                new PositionDto(0, -1, 1),
+                new PositionDto(0, 1, -1)
+        );
     }
 
 }
