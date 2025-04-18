@@ -3,7 +3,6 @@ package de.sotterbeck.iumetro.app.network;
 import de.sotterbeck.iumetro.app.common.CommonPresenter;
 import de.sotterbeck.iumetro.app.network.graph.MetroNetworkRepository;
 import de.sotterbeck.iumetro.app.network.line.LineDto;
-import de.sotterbeck.iumetro.app.network.line.LineRequestModel;
 import de.sotterbeck.iumetro.app.network.line.LineResponseModel;
 import de.sotterbeck.iumetro.app.network.line.LineService;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,15 +35,15 @@ class LineServiceTest {
     @Test
     void getAll_ShouldReturnAllLinesFromRepository() {
         when(metroNetworkRepository.getAllLines()).thenReturn(List.of(
-                new LineDto("M1", 0x0284c7, List.of()),
-                new LineDto("M2", 0xdc2626, List.of())
+                new LineDto("M1", 0x0284c7),
+                new LineDto("M2", 0xdc2626)
         ));
 
         List<LineResponseModel> response = lineService.getAllLines();
 
         assertThat(response).containsExactly(
-                new LineResponseModel("M1", "#0284c7", List.of()),
-                new LineResponseModel("M2", "#dc2626", List.of())
+                new LineResponseModel("M1", "#0284c7"),
+                new LineResponseModel("M2", "#dc2626")
         );
     }
 
@@ -52,7 +51,7 @@ class LineServiceTest {
     void createLine_ShouldPresentFailView_WhenLineNameAlreadyExists() {
         String lineName = "M1";
         when(metroNetworkRepository.existsLineByName(lineName)).thenReturn(true);
-        LineRequestModel request = new LineRequestModel(lineName, "#0284c7");
+        LineService.LineRequestModel request = new LineService.LineRequestModel(lineName, "#0284c7");
 
         lineService.createLine(request);
 
@@ -64,7 +63,7 @@ class LineServiceTest {
     void createLine_ShouldPresentFailView_WhenColorIsInvalid() {
         String lineName = "M1";
         when(metroNetworkRepository.existsLineByName(lineName)).thenReturn(false);
-        LineRequestModel request = new LineRequestModel(lineName, "");
+        LineService.LineRequestModel request = new LineService.LineRequestModel(lineName, "");
 
         lineService.createLine(request);
 
@@ -75,7 +74,7 @@ class LineServiceTest {
     void createLine_ShouldSaveLine_WhenLineDoesNotExist() {
         String lineName = "M1";
         when(metroNetworkRepository.existsLineByName(lineName)).thenReturn(false);
-        LineRequestModel request = new LineRequestModel(lineName, "#0284c7");
+        LineService.LineRequestModel request = new LineService.LineRequestModel(lineName, "#0284c7");
 
         lineService.createLine(request);
 

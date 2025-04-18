@@ -13,12 +13,10 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
 import javax.sql.DataSource;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.*;
+import static org.jooq.impl.DSL.inline;
 
 public class PostgresMetroStationRepository implements MetroStationRepository {
 
@@ -119,6 +117,45 @@ public class PostgresMetroStationRepository implements MetroStationRepository {
                 .setPosZ(position.z());
 
         positionRecord.store();
+    }
+
+    @Override
+    public void saveLines(String stationName, List<String> lines) {
+        create.transaction(configuration -> {
+            DSLContext tx = configuration.dsl();
+
+            UUID stationId = tx.select(METRO_STATIONS.ID)
+                    .from(METRO_STATIONS)
+                    .where(METRO_STATIONS.NAME.eq(stationName))
+                    .fetchOne(METRO_STATIONS.ID);
+
+            if (stationId == null) {
+                throw new IllegalArgumentException("Station '" + stationName + "' does not exist");
+            }
+
+            tx.deleteFrom(METRO_STATION_LINES)
+                    .where(METRO_STATION_LINES.METRO_STATION_ID.eq(stationId))
+                    .execute();
+
+            if (lines.isEmpty()) {
+                return;
+            }
+
+            tx.insertInto(
+                            METRO_STATION_LINES,
+                            METRO_STATION_LINES.METRO_STATION_ID,
+                            METRO_STATION_LINES.LINE_ID
+                    )
+                    .select(
+                            tx.select(
+                                            inline(stationId),
+                                            METRO_LINES.ID
+                                    )
+                                    .from(METRO_LINES)
+                                    .where(METRO_LINES.NAME.in(lines))
+                    )
+                    .execute();
+        });
     }
 
     @Override

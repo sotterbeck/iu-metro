@@ -27,13 +27,13 @@ public class MetroStationModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static MetroStationService provideMetroStationManagingInteractor(MetroStationRepository metroStationRepository) {
+    static MetroStationService provideMetroStationService(MetroStationRepository metroStationRepository) {
         return new MetroStationService(metroStationRepository);
     }
 
     @Provides
     @Singleton
-    static MetroStationModificationService provideMetroStationModifyInteractor(MetroStationRepository metroStationRepository) {
+    static MetroStationModificationService provideMetroStationModificationService(MetroStationRepository metroStationRepository) {
         return new MetroStationModificationService(metroStationRepository);
     }
 
@@ -64,7 +64,7 @@ public class MetroStationModule extends AbstractModule {
     }
 
     @ProvidesIntoSet
-    static Routing provideMetroStationRouting(Javalin javalin, MetroStationService metroStationService) {
-        return new MetroStationRouting(javalin, metroStationService);
+    static Routing provideMetroStationRouting(Javalin javalin, MetroStationService metroStationService, MetroStationModificationService metroStationModificationService) {
+        return new MetroStationRouting(javalin, metroStationService, metroStationModificationService);
     }
 }

@@ -9,6 +9,8 @@ public interface MetroNetworkRepository {
 
     MetroNetworkDto getEntireNetwork();
 
+    Map<String, StationNodeDto> getGraph();
+
     void saveNetwork(Map<String, StationNodeDto> graph);
 
     void saveLine(String name, int color);

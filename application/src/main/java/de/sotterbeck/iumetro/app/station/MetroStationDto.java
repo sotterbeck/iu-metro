@@ -1,7 +1,9 @@
 package de.sotterbeck.iumetro.app.station;
 
 import de.sotterbeck.iumetro.app.common.PositionDto;
+import de.sotterbeck.iumetro.app.network.line.LineDto;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,20 +14,26 @@ public final class MetroStationDto {
     private final String name;
     private final String alias;
     private final PositionDto position;
+    private final List<LineDto> lines;
 
-    public MetroStationDto(UUID id, String name, String alias, PositionDto position) {
+    public MetroStationDto(UUID id, String name, String alias, PositionDto position, List<LineDto> lines) {
         this.id = id;
         this.name = name;
         this.alias = alias;
         this.position = position;
+        this.lines = lines;
     }
 
-    public MetroStationDto(UUID id, String stationName, String alias) {
-        this(id, stationName, alias, null);
+    public MetroStationDto(UUID uuid, String name, String alias, PositionDto position) {
+        this(uuid, name, alias, position, List.of());
     }
 
-    public MetroStationDto(UUID id, String stationName) {
-        this(id, stationName, null, null);
+    public MetroStationDto(UUID id, String name, String alias) {
+        this(id, name, alias, null, List.of());
+    }
+
+    public MetroStationDto(UUID id, String name) {
+        this(id, name, null, null, List.of());
     }
 
     public UUID id() {
@@ -44,17 +52,20 @@ public final class MetroStationDto {
         return Optional.ofNullable(position);
     }
 
+    public List<LineDto> lines() {
+        return lines;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MetroStationDto that = (MetroStationDto) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(alias, that.alias) && Objects.equals(position, that.position);
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, alias, position);
+        return Objects.hashCode(id);
     }
 
     @Override
@@ -64,6 +75,7 @@ public final class MetroStationDto {
                 ", name='" + name + '\'' +
                 ", alias='" + alias + '\'' +
                 ", position=" + position +
+                ", lines=" + lines +
                 ']';
     }
 

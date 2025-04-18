@@ -1,6 +1,5 @@
 package de.sotterbeck.iumetro.infra.papermc.network;
 
-import de.sotterbeck.iumetro.app.network.line.LineRequestModel;
 import de.sotterbeck.iumetro.app.network.line.LineService;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import io.javalin.Javalin;
@@ -20,7 +19,7 @@ public class LineRouting implements Routing {
     public void bindRoutes() {
         javalin.get("/api/lines", ctx -> ctx.json(lineService.getAllLines()));
         javalin.post("api/lines", ctx -> {
-            LineRequestModel data = ctx.bodyAsClass(LineRequestModel.class);
+            LineService.LineRequestModel data = ctx.bodyAsClass(LineService.LineRequestModel.class);
             lineService.createLine(data);
             ctx.status(HttpStatus.CREATED);
         });

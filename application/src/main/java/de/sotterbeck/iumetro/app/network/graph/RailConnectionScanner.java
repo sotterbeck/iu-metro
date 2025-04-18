@@ -43,6 +43,12 @@ public class RailConnectionScanner {
         this.railRepository = railRepository;
     }
 
+    /**
+     * Gets the connecting rails for a given position.
+     *
+     * @param position the position to check
+     * @return a list of rail positions that are connected to the given position
+     */
     public List<PositionDto> getConnectingRails(PositionDto position) {
         var shape = railRepository.findRailAt(position);
         var pos = new Position(position.x(), position.y(), position.z());
@@ -61,6 +67,17 @@ public class RailConnectionScanner {
                 .toList();
     }
 
+    /**
+     * Resolves the connection for a given position and connection.
+     * A rail connects to another rail if the rail points to any rail.
+     * This is the exact same behavior Minecarts traveling over rails.
+     * <p>
+     * If there were a check, whether the rail connects back to the original rail, the behavior would be different.
+     *
+     * @param from       the starting position
+     * @param connection the connection to resolve
+     * @return the target position if a valid connection is found, null otherwise
+     */
     private Position resolveConnection(Position from, Connection connection) {
         var targetPos = from.translate(connection.direction(), 1).translate(0, connection.heightOffset(), 0);
         var targetShape = railRepository.findRailAt(toPosDto(targetPos));

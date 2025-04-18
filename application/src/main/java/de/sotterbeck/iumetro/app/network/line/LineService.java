@@ -5,7 +5,6 @@ import de.sotterbeck.iumetro.app.network.graph.MetroNetworkRepository;
 import de.sotterbeck.iumetro.domain.common.Color;
 
 import java.util.List;
-import java.util.UUID;
 
 public class LineService {
 
@@ -50,13 +49,13 @@ public class LineService {
     }
 
     private static LineResponseModel toResponseModel(LineDto dto) {
-        List<String> ids = dto.metroStationIds().stream()
-                .map(UUID::toString)
-                .toList();
-
         Color color = Color.ofValue(dto.color());
 
-        return new LineResponseModel(dto.name(), color.hex(), ids);
+        return new LineResponseModel(dto.name(), color.hex());
+    }
+
+    public record LineRequestModel(String name, String color) {
+
     }
 
 }

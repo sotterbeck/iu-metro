@@ -32,7 +32,7 @@ class MetroStationModificationServiceTest {
         String stationName = "Station 1";
         when(repository.existsByName(stationName)).thenReturn(false);
 
-        MetroStationModificationService.Status status = metroStationModificationService.saveAlias(stationName, "any");
+        var status = metroStationModificationService.saveAlias(stationName, "any");
 
         assertThat(status).isEqualTo(MetroStationModificationService.Status.NOT_FOUND);
     }
@@ -44,7 +44,7 @@ class MetroStationModificationServiceTest {
         when(repository.existsByName(stationName)).thenReturn(true);
         when(repository.getAllAliases()).thenReturn(List.of(alias));
 
-        MetroStationModificationService.Status status = metroStationModificationService.saveAlias(stationName, alias);
+        var status = metroStationModificationService.saveAlias(stationName, alias);
 
 
         assertThat(status).isEqualTo(MetroStationModificationService.Status.ALREADY_EXISTS);
@@ -57,7 +57,7 @@ class MetroStationModificationServiceTest {
         when(repository.existsByName(stationName)).thenReturn(true);
         when(repository.getAllAliases()).thenReturn(Collections.emptyList());
 
-        MetroStationModificationService.Status status = metroStationModificationService.saveAlias(stationName, alias);
+        var status = metroStationModificationService.saveAlias(stationName, alias);
 
         verify(repository).saveAlias(stationName, alias);
         assertThat(status).isEqualTo(MetroStationModificationService.Status.SUCCESS);
@@ -69,7 +69,7 @@ class MetroStationModificationServiceTest {
         PositionDto position = new PositionDto(0, 0, 0);
         when(repository.existsByName(stationName)).thenReturn(false);
 
-        MetroStationModificationService.Status status = metroStationModificationService.savePosition(stationName, position);
+        var status = metroStationModificationService.savePosition(stationName, position);
 
         assertThat(status).isEqualTo(MetroStationModificationService.Status.NOT_FOUND);
     }
@@ -80,7 +80,7 @@ class MetroStationModificationServiceTest {
         PositionDto position = new PositionDto(0, 0, 0);
         when(repository.existsByName(stationName)).thenReturn(true);
 
-        MetroStationModificationService.Status status = metroStationModificationService.savePosition(stationName, position);
+        var status = metroStationModificationService.savePosition(stationName, position);
 
         verify(repository).savePosition(stationName, position);
         assertThat(status).isEqualTo(MetroStationModificationService.Status.SUCCESS);
@@ -91,7 +91,7 @@ class MetroStationModificationServiceTest {
         String stationName = "Station 1";
         when(repository.existsByName(stationName)).thenReturn(false);
 
-        MetroStationModificationService.Status status = metroStationModificationService.deleteAlias(stationName);
+        var status = metroStationModificationService.deleteAlias(stationName);
 
         assertThat(status).isEqualTo(MetroStationModificationService.Status.NOT_FOUND);
     }
@@ -101,7 +101,7 @@ class MetroStationModificationServiceTest {
         String stationName = "Station 1";
         when(repository.existsByName(stationName)).thenReturn(true);
 
-        MetroStationModificationService.Status status = metroStationModificationService.deleteAlias(stationName);
+        var status = metroStationModificationService.deleteAlias(stationName);
 
         verify(repository).deleteAliasByName(stationName);
         assertThat(status).isEqualTo(MetroStationModificationService.Status.SUCCESS);
@@ -112,7 +112,7 @@ class MetroStationModificationServiceTest {
         String stationName = "Station 1";
         when(repository.existsByName(stationName)).thenReturn(false);
 
-        MetroStationModificationService.Status status = metroStationModificationService.deletePosition(stationName);
+        var status = metroStationModificationService.deletePosition(stationName);
 
         assertThat(status).isEqualTo(MetroStationModificationService.Status.NOT_FOUND);
     }
@@ -122,10 +122,31 @@ class MetroStationModificationServiceTest {
         String stationName = "Station 1";
         when(repository.existsByName(stationName)).thenReturn(true);
 
-        MetroStationModificationService.Status status = metroStationModificationService.deletePosition(stationName);
+        var status = metroStationModificationService.deletePosition(stationName);
 
         verify(repository).deletePositionByName(stationName);
         assertThat(status).isEqualTo(MetroStationModificationService.Status.SUCCESS);
     }
 
+    @Test
+    void saveLines_ShouldReturnNotFound_WhenStationDoesNotExist() {
+        String stationName = "Station 1";
+        when(repository.existsByName(stationName)).thenReturn(false);
+
+        var status = metroStationModificationService.saveLines(stationName, List.of());
+
+        assertThat(status).isEqualTo(MetroStationModificationService.Status.NOT_FOUND);
+    }
+
+    @Test
+    void saveLines_ShouldSaveLinesAndReturnSuccess_WhenStationExists() {
+        String stationName = "Station 1";
+        List<String> lines = List.of("M1", "M2");
+        when(repository.existsByName(stationName)).thenReturn(true);
+
+        var status = metroStationModificationService.saveLines(stationName, lines);
+
+        verify(repository).saveLines(stationName, lines);
+        assertThat(status).isEqualTo(MetroStationModificationService.Status.SUCCESS);
+    }
 }

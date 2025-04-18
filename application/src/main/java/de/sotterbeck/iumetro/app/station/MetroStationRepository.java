@@ -3,6 +3,7 @@ package de.sotterbeck.iumetro.app.station;
 import de.sotterbeck.iumetro.app.common.PositionDto;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,6 +24,8 @@ public interface MetroStationRepository {
     void saveAlias(String stationName, String alias);
 
     void savePosition(String stationName, PositionDto position);
+
+    void saveLines(String stationName, List<String> lines);
 
     boolean existsById(UUID id);
 

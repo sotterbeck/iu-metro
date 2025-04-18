@@ -15,20 +15,17 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
 import javax.sql.DataSource;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.*;
-import static org.jooq.impl.DSL.arrayAgg;
-import static org.jooq.impl.DSL.arrayRemove;
 
 public class PostgresMetroNetworkRepository implements MetroNetworkRepository {
 
     private final DSLContext create;
 
-    private static final RecordMapper<Record, MetroStationDto> METRO_STATION_MAPPER = new MetroStationDtoRecordMapper();
+    private static final RecordMapper<Record, MetroStationDto> MAPPER = new MetroStationDtoRecordMapper();
 
     public PostgresMetroNetworkRepository(DataSource dataSource) {
         this.create = DSL.using(dataSource, SQLDialect.POSTGRES);
@@ -36,39 +33,59 @@ public class PostgresMetroNetworkRepository implements MetroNetworkRepository {
 
     @Override
     public MetroNetworkDto getEntireNetwork() {
-        List<MetroStationDto> metroStations = create.select()
+        List<MetroStationDto> metroStations = create.select(
+                        METRO_STATIONS.ID,
+                        METRO_STATIONS.NAME,
+                        METRO_STATION_ALIASES.ALIAS,
+                        METRO_STATION_POSITIONS.POS_X,
+                        METRO_STATION_POSITIONS.POS_Y,
+                        METRO_STATION_POSITIONS.POS_Z,
+                        DSL.arrayAgg(METRO_LINES.NAME).filterWhere(METRO_LINES.NAME.isNotNull()).as("lines"),
+                        DSL.arrayAgg(METRO_LINES.COLOR).filterWhere(METRO_LINES.COLOR.isNotNull()).as("colors")
+                )
                 .from(METRO_STATIONS)
                 .leftJoin(METRO_STATION_ALIASES).on(METRO_STATIONS.ID.eq(METRO_STATION_ALIASES.METRO_STATION_ID))
                 .leftJoin(METRO_STATION_POSITIONS).on(METRO_STATIONS.ID.eq(METRO_STATION_POSITIONS.METRO_STATION_ID))
+                .leftJoin(METRO_STATION_LINES).on(METRO_STATIONS.ID.eq(METRO_STATION_LINES.METRO_STATION_ID))
+                .leftJoin(METRO_LINES).on(METRO_STATION_LINES.LINE_ID.eq(METRO_LINES.ID))
+                .groupBy(
+                        METRO_STATIONS.ID,
+                        METRO_STATIONS.NAME,
+                        METRO_STATION_ALIASES.ALIAS,
+                        METRO_STATION_POSITIONS.POS_X,
+                        METRO_STATION_POSITIONS.POS_Y,
+                        METRO_STATION_POSITIONS.POS_Z
+                )
                 .fetch()
                 .sortAsc(METRO_STATIONS.NAME)
-                .map(METRO_STATION_MAPPER);
+                .map(MAPPER);
 
         List<ConnectionDto> connections = create.select(
-                        METRO_CONNECTIONS.FROM_STATION_ID.as("metro_station1_id"),
-                        METRO_CONNECTIONS.TO_STATION_ID.as("metro_station2_id"),
-                        arrayRemove(arrayAgg(METRO_LINES.NAME), (String) null).as("line_names")
+                        METRO_CONNECTIONS.FROM_STATION_ID,
+                        METRO_CONNECTIONS.TO_STATION_ID,
+                        METRO_CONNECTIONS.DISTANCE
                 )
                 .from(METRO_CONNECTIONS)
-                .leftJoin(METRO_CONNECTION_LINES).on(METRO_CONNECTIONS.ID.eq(METRO_CONNECTION_LINES.CONNECTION_ID))
-                .leftJoin(METRO_LINES).on(METRO_CONNECTION_LINES.LINE_ID.eq(METRO_LINES.ID))
-                .groupBy(METRO_CONNECTIONS.FROM_STATION_ID, METRO_CONNECTIONS.TO_STATION_ID)
+                .groupBy(METRO_CONNECTIONS.FROM_STATION_ID, METRO_CONNECTIONS.TO_STATION_ID, METRO_CONNECTIONS.DISTANCE)
                 .fetch(rec -> new ConnectionDto(
-                        rec.get("metro_station1_id", UUID.class),
-                        rec.get("metro_station2_id", UUID.class),
-                        Arrays.asList(rec.get("line_names", String[].class))
+                        rec.get(METRO_CONNECTIONS.FROM_STATION_ID, UUID.class),
+                        rec.get(METRO_CONNECTIONS.TO_STATION_ID, UUID.class),
+                        rec.get(METRO_CONNECTIONS.DISTANCE)
                 ));
 
-        List<LineDto> lines = getAllLines();
+        return new MetroNetworkDto(metroStations, connections);
+    }
 
-        return new MetroNetworkDto(metroStations, connections, lines);
+    @Override
+    public Map<String, StationNodeDto> getGraph() {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
     public void saveNetwork(Map<String, StationNodeDto> graph) {
         create.transaction(connection -> {
             var tx = DSL.using(connection);
-            tx.deleteFrom(METRO_CONNECTION_LINES).execute();
+            tx.deleteFrom(METRO_STATION_LINES).execute();
             tx.deleteFrom(METRO_CONNECTIONS).execute();
 
             var insertSteps = graph.entrySet().stream()
@@ -125,21 +142,13 @@ public class PostgresMetroNetworkRepository implements MetroNetworkRepository {
     public List<LineDto> getAllLines() {
         return create.select(
                         METRO_LINES.NAME,
-                        METRO_LINES.COLOR,
-                        arrayRemove(arrayAgg(METRO_CONNECTIONS.FROM_STATION_ID)
-                                .orderBy(METRO_CONNECTION_LINES.SEQUENCE_NUMBER), (UUID) null).as("metro_station_ids")
+                        METRO_LINES.COLOR
                 )
                 .from(METRO_LINES)
-                .leftJoin(METRO_CONNECTION_LINES)
-                .on(METRO_LINES.ID.eq(METRO_CONNECTION_LINES.LINE_ID))
-                .leftJoin(METRO_CONNECTIONS)
-                .on(METRO_CONNECTION_LINES.CONNECTION_ID.eq(METRO_CONNECTIONS.ID))
-                .groupBy(METRO_LINES.ID, METRO_LINES.NAME, METRO_LINES.COLOR)
                 .orderBy(METRO_LINES.NAME)
                 .fetch(rec -> new LineDto(
                         rec.get(METRO_LINES.NAME),
-                        rec.get(METRO_LINES.COLOR),
-                        Arrays.asList(rec.get("metro_station_ids", UUID[].class))
+                        rec.get(METRO_LINES.COLOR)
                 ));
     }
 

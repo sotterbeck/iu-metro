@@ -2,6 +2,8 @@ package de.sotterbeck.iumetro.app.station;
 
 import de.sotterbeck.iumetro.app.common.PositionDto;
 
+import java.util.List;
+
 public class MetroStationModificationService {
 
     private final MetroStationRepository repository;
@@ -30,6 +32,16 @@ public class MetroStationModificationService {
         }
 
         repository.savePosition(stationName, positionDto);
+
+        return Status.SUCCESS;
+    }
+
+    public Status saveLines(String stationName, List<String> lines) {
+        if (!repository.existsByName(stationName)) {
+            return Status.NOT_FOUND;
+        }
+
+        repository.saveLines(stationName, lines);
 
         return Status.SUCCESS;
     }
