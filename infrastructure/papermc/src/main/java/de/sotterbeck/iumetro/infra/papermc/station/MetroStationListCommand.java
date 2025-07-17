@@ -8,6 +8,7 @@ import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.Permission;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MetroStationListCommand implements CloudAnnotated {
 
@@ -28,8 +29,14 @@ public class MetroStationListCommand implements CloudAnnotated {
 
         sender.sendRichMessage("Stations (" + stations.size() + "):");
         for (MetroStationResponseModel station : stations) {
-            String position = station.position().map(pos -> "at " + pos).orElse("");
-            sender.sendRichMessage("- " + station.name() + " (" + station.displayId() + ") " + position);
+            String position = station.position().map(pos -> " at " + pos).orElse("");
+
+            String lines = station.lines().stream()
+                    .sorted((l1, l2) -> l1.name().compareToIgnoreCase(l2.name()))
+                    .map(l -> "<" + l.color() + ">" + l.name() + "</" + l.color() + ">")
+                    .collect(Collectors.joining(", "));
+
+            sender.sendRichMessage("- " + station.name() + " (" + station.displayId() + ")" + position + " (" + lines + ")");
         }
 
     }
