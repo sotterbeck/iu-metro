@@ -6,16 +6,15 @@ import de.sotterbeck.iumetro.app.station.MetroStationRepository;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.MetroStationAliasesRecord;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.MetroStationPositionsRecord;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.MetroStationsRecord;
-import org.jooq.DSLContext;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.RecordMapper;
-import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 
 import javax.sql.DataSource;
 import java.util.*;
 
 import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.*;
+import static org.jooq.impl.DSL.arrayAgg;
 import static org.jooq.impl.DSL.inline;
 
 public class PostgresMetroStationRepository implements MetroStationRepository {
@@ -29,13 +28,9 @@ public class PostgresMetroStationRepository implements MetroStationRepository {
 
     @Override
     public Collection<MetroStationDto> getAll() {
-        return create.select()
-                .from(METRO_STATIONS)
-                .leftJoin(METRO_STATION_ALIASES).on(METRO_STATIONS.ID.eq(METRO_STATION_ALIASES.METRO_STATION_ID))
-                .leftJoin(METRO_STATION_POSITIONS).on(METRO_STATIONS.ID.eq(METRO_STATION_POSITIONS.METRO_STATION_ID))
-                .fetch()
-                .sortAsc(METRO_STATIONS.NAME)
-                .map(MAPPER);
+        return selectAndJoinStations()
+                .groupBy(METRO_STATIONS.ID, METRO_STATION_POSITIONS.METRO_STATION_ID, METRO_STATION_ALIASES.METRO_STATION_ID)
+                .fetch(MAPPER);
     }
 
     @Override
@@ -53,24 +48,37 @@ public class PostgresMetroStationRepository implements MetroStationRepository {
 
     @Override
     public Optional<MetroStationDto> getByName(String name) {
-        return create.select()
-                .from(METRO_STATIONS)
-                .leftJoin(METRO_STATION_ALIASES).on(METRO_STATIONS.ID.eq(METRO_STATION_ALIASES.METRO_STATION_ID))
-                .leftJoin(METRO_STATION_POSITIONS).on(METRO_STATIONS.ID.eq(METRO_STATION_POSITIONS.METRO_STATION_ID))
+        return selectAndJoinStations()
                 .where(METRO_STATIONS.NAME.eq(name))
+                .groupBy(METRO_STATIONS.ID, METRO_STATION_POSITIONS.METRO_STATION_ID, METRO_STATION_ALIASES.METRO_STATION_ID)
                 .fetchOptional()
                 .map(MAPPER);
     }
 
     @Override
     public Optional<MetroStationDto> getById(UUID id) {
-        return create.select()
+        return selectAndJoinStations()
+                .where(METRO_STATIONS.ID.eq(id))
+                .groupBy(METRO_STATIONS.ID, METRO_STATION_POSITIONS.METRO_STATION_ID, METRO_STATION_ALIASES.METRO_STATION_ID)
+                .fetchOptional()
+                .map(MAPPER);
+    }
+
+    private SelectOnConditionStep<Record> selectAndJoinStations() {
+        return create.select(
+                        METRO_STATIONS.asterisk(),
+                        METRO_STATION_POSITIONS.POS_X,
+                        METRO_STATION_POSITIONS.POS_Y,
+                        METRO_STATION_POSITIONS.POS_Z,
+                        METRO_STATION_ALIASES.ALIAS,
+                        arrayAgg(METRO_LINES.NAME).filterWhere(METRO_LINES.NAME.isNotNull()).as("lines"),
+                        arrayAgg(METRO_LINES.COLOR).filterWhere(METRO_LINES.COLOR.isNotNull()).as("colors")
+                )
                 .from(METRO_STATIONS)
                 .leftJoin(METRO_STATION_ALIASES).on(METRO_STATIONS.ID.eq(METRO_STATION_ALIASES.METRO_STATION_ID))
                 .leftJoin(METRO_STATION_POSITIONS).on(METRO_STATIONS.ID.eq(METRO_STATION_POSITIONS.METRO_STATION_ID))
-                .where(METRO_STATIONS.ID.eq(id))
-                .fetchOptional()
-                .map(MAPPER);
+                .leftJoin(METRO_STATION_LINES).on(METRO_STATIONS.ID.eq(METRO_STATION_LINES.METRO_STATION_ID))
+                .leftJoin(METRO_LINES).on(METRO_STATION_LINES.LINE_ID.eq(METRO_LINES.ID));
     }
 
     @Override
