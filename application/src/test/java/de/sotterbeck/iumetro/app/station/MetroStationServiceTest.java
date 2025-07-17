@@ -70,8 +70,8 @@ class MetroStationServiceTest {
 
         List<MetroStationResponseModel> response = metroStationService.getAll();
         assertThat(response).containsExactlyInAnyOrder(
-                new MetroStationResponseModel("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3", "2acd6e2a / ST", "Station 1", null),
-                new MetroStationResponseModel("bcc38a6a-0816-473a-85be-3186560c7e5d", "bcc38a6a / ST2", "Station 2", null)
+                new MetroStationResponseModel("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3", "2acd6e2a / ST", "Station 1", null, List.of()),
+                new MetroStationResponseModel("bcc38a6a-0816-473a-85be-3186560c7e5d", "bcc38a6a / ST2", "Station 2", null, List.of())
 
         );
     }
@@ -93,7 +93,7 @@ class MetroStationServiceTest {
         List<MetroStationResponseModel> response = metroStationService.getAllPositioned();
 
         assertThat(response).contains(
-                new MetroStationResponseModel("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3", "2acd6e2a / ST", "Station 1", new PositionDto(0, 0, 0))
+                new MetroStationResponseModel("2acd6e2a-b4da-4aa4-b19f-92805c14a1a3", "2acd6e2a / ST", "Station 1", new PositionDto(0, 0, 0), List.of())
         );
     }
 
