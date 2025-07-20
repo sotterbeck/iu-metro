@@ -6,6 +6,9 @@ postgres:
   password: password
   schema: public
 
+web:
+  port: 4556
+
 signs:
   material: acacia_sign
   lines:

@@ -69,8 +69,14 @@ public class IuMetroPlugin extends JavaPlugin {
 
     private void setUpWebServer() {
         routes.forEach(Routing::bindRoutes);
+        var port = getConfig().getInt("web.port");
 
-        javalin.start();
+        if (port == 0) {
+            getLogger().warning("No port configured for web server. Disabling web server.");
+            return;
+        }
+
+        javalin.start(port);
     }
 
     private void registerEvents() {
