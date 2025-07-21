@@ -104,18 +104,20 @@ public class MetroStationMarkerCommand implements CloudAnnotated {
             return;
         }
 
-        var markerCount = markers.values().stream()
+        var totalMarkerCount = markers.values().stream()
                 .mapToInt(List::size)
                 .sum();
 
-        sender.sendRichMessage("Markers (%d):".formatted(markerCount));
+        sender.sendRichMessage("Markers (%d):".formatted(totalMarkerCount));
         for (var entry : markers.entrySet()) {
             String station = entry.getKey();
             var positions = String.join(", ", entry.getValue().stream()
                     .map(PositionDto::toString)
                     .toList());
 
-            sender.sendRichMessage("- %s (%d): %s".formatted(station, entry.getValue().size(), positions));
+            var markerCount = entry.getValue().size();
+            var color = markerCount > 1 ? "<red>" : "<green>";
+            sender.sendRichMessage("%s - %s (%d): %s".formatted(color, station, markerCount, positions));
         }
     }
 }
