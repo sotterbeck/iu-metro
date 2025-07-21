@@ -3,6 +3,7 @@ package de.sotterbeck.iumetro.infra.papermc.network;
 import de.sotterbeck.iumetro.app.common.PositionDto;
 import de.sotterbeck.iumetro.app.network.graph.StationMarkerService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.annotation.specifier.Greedy;
@@ -116,8 +117,11 @@ public class MetroStationMarkerCommand implements CloudAnnotated {
                     .toList());
 
             var markerCount = entry.getValue().size();
-            var color = markerCount > 1 ? "<red>" : "<green>";
-            sender.sendRichMessage("%s - %s (%d): %s".formatted(color, station, markerCount, positions));
+            var component = Component.text(" - %s (%d)".formatted(station, markerCount))
+                    .color(markerCount == 0 ? net.kyori.adventure.text.format.NamedTextColor.RED : net.kyori.adventure.text.format.NamedTextColor.GREEN)
+                    .hoverEvent(Component.text(positions));
+
+            sender.sendMessage(component);
         }
     }
 }
