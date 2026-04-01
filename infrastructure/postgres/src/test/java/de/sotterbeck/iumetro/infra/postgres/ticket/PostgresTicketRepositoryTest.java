@@ -8,9 +8,11 @@ import de.sotterbeck.iumetro.app.ticket.TicketRepository;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.enums.TicketUsageType;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.TicketsRecord;
+import org.assertj.db.type.AssertDbConnectionFactory;
 import org.assertj.db.type.Table;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,10 +50,11 @@ class PostgresTicketRepositoryTest {
         dataSource.setUrl(postgres.getJdbcUrl());
         dataSource.setUser(postgres.getUsername());
         dataSource.setPassword(postgres.getPassword());
+        var assertDbConnection = AssertDbConnectionFactory.of(dataSource).create();
 
-        ticketTable = new Table(dataSource, "tickets");
-        ticketUsagesTable = new Table(dataSource, "ticket_usages");
-        metroStationTable = new Table(dataSource, "metro_stations");
+        ticketTable = assertDbConnection.table("tickets").build();
+        ticketUsagesTable = assertDbConnection.table("ticket_usages").build();
+        metroStationTable = assertDbConnection.table("metro_stations").build();
 
         Flyway flyway = Flyway.configure()
                 .dataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())
@@ -142,6 +145,48 @@ class PostgresTicketRepositoryTest {
                 .map(TicketDto::config)
                 .map(TicketConfig.Config::constraints)
                 .isNotNull();
+    }
+
+    @Test
+    void get_ShouldReturnConstraints_WhenConfigContainsUsageAndTimeLimits() {
+        UUID id = UUID.fromString("1d80ac80-59f1-4b7e-8332-0e029e3931b0");
+        insertTicketWithConfig(id,
+                "{\"constraints\":[{\"type\":\"usage_limit\",\"maxUsages\":2},{\"type\":\"time_limit\",\"duration\":\"PT30M\"}]}"
+        );
+
+        Optional<TicketDto> ticket = underTest.get(id);
+
+        assertThat(ticket).isPresent();
+        assertThat(ticket.get().config().constraints()).containsExactly(
+                new TicketConfig.UsageLimit(2),
+                new TicketConfig.TimeLimit("PT30M")
+        );
+    }
+
+    @Test
+    void getAll_ShouldReturnConstraints_ForEachTicket() {
+        UUID usageLimitId = UUID.fromString("b1d44cb7-feca-4abf-9d15-5af8f616a744");
+        UUID timeLimitId = UUID.fromString("b839cb04-a85c-4a28-9077-56ecb94c065b");
+        insertTicketWithConfig(usageLimitId,
+                "{\"constraints\":[{\"type\":\"usage_limit\",\"maxUsages\":5}]}"
+        );
+        insertTicketWithConfig(timeLimitId,
+                "{\"constraints\":[{\"type\":\"time_limit\",\"duration\":\"PT2H\"}]}"
+        );
+
+        List<TicketDto> tickets = underTest.getAll();
+
+        assertThat(tickets).hasSize(2);
+        assertThat(tickets)
+                .filteredOn(ticket -> ticket.id().equals(usageLimitId))
+                .singleElement()
+                .satisfies(ticket -> assertThat(ticket.config().constraints())
+                        .containsExactly(new TicketConfig.UsageLimit(5)));
+        assertThat(tickets)
+                .filteredOn(ticket -> ticket.id().equals(timeLimitId))
+                .singleElement()
+                .satisfies(ticket -> assertThat(ticket.config().constraints())
+                        .containsExactly(new TicketConfig.TimeLimit("PT2H")));
     }
 
     @Test
@@ -241,6 +286,14 @@ class PostgresTicketRepositoryTest {
                 .setId(id)
                 .setName("Ticket")
                 .setConfig(org.jooq.JSONB.valueOf("{}"));
+        ticket.store();
+    }
+
+    private void insertTicketWithConfig(UUID id, String configJson) {
+        TicketsRecord ticket = create.newRecord(Tables.TICKETS)
+                .setId(id)
+                .setName("Ticket")
+                .setConfig(JSONB.valueOf(configJson));
         ticket.store();
     }
 

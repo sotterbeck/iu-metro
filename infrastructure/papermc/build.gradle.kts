@@ -13,6 +13,7 @@ repositories {
 }
 
 dependencies {
+    testImplementation(platform(libs.junit.bom))
     implementation(project(":application"))
     implementation(project(":infrastructure:postgres"))
     implementation(libs.guice)
@@ -34,6 +35,7 @@ dependencies {
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.junit)
     testImplementation(libs.mockbukkit)
+    testImplementation(libs.junit.platform.launcher)
     testImplementation(libs.paper)
 }
 

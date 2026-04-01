@@ -16,6 +16,7 @@ dependencies {
     implementation(libs.jackson.datatype.jdk8)
     compileOnly("org.jetbrains:annotations:24.0.1")
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.platform.launcher)
     testImplementation(libs.assertj.core)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.junit)

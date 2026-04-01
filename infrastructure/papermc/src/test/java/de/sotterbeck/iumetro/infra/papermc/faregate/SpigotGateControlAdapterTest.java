@@ -1,7 +1,5 @@
 package de.sotterbeck.iumetro.infra.papermc.faregate;
 
-import be.seeseemelk.mockbukkit.MockBukkit;
-import be.seeseemelk.mockbukkit.block.BlockMock;
 import de.sotterbeck.iumetro.app.common.PositionDto;
 import de.sotterbeck.iumetro.app.faregate.GateControlAdapter;
 import org.bukkit.Material;
@@ -11,6 +9,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockbukkit.mockbukkit.MockBukkit;
+import org.mockbukkit.mockbukkit.block.BlockMock;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 

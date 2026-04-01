@@ -13,10 +13,10 @@ cloud = "2.0.0"
 cloud-paper = "2.0.0-beta.10"
 paper = "1.21.11-R0.1-SNAPSHOT"
 junit = "5.10.3"
-assertj-core = "3.26.3"
-assertj-db = "2.0.2"
-mockito = "5.12.0"
-mockbukkit = "3.98.0"
+assertj-core = "3.27.7"
+assertj-db = "3.0.2"
+mockito = "5.23.0"
+mockbukkit = "4.108.0"
 testcontainers = "1.20.0"
 
 [libraries]
@@ -38,10 +38,12 @@ cloud-paper = { module = "org.incendo:cloud-paper", version.ref = "cloud-paper" 
 paper = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
 
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj-core" }
 assertj-db = { module = "org.assertj:assertj-db", version.ref = "assertj-db" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
-mockbukkit = { module = "com.github.seeseemelk:MockBukkit-v1.21", version.ref = "mockbukkit" }
+mockbukkit = { module = "org.mockbukkit.mockbukkit:mockbukkit-v1.21", version.ref = "mockbukkit" }
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
