@@ -33,7 +33,7 @@ class TicketIssueServiceTest {
     @Test
     void create_ShouldSaveTicket() {
         TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket",
-                new TicketConfig.Config(List.of()));
+                new TicketConfig(List.of()));
         underTest = new TicketIssueService(ticketRepository, ticketPresenter);
 
         underTest.create(ticketRequestModel);
@@ -44,7 +44,7 @@ class TicketIssueServiceTest {
     @Test
     void create_ShouldPrepareSuccessView() {
         TicketRequestModel ticketRequestModel = new TicketRequestModel(UUID.randomUUID(), "Single-Use Ticket",
-                new TicketConfig.Config(List.of()));
+                new TicketConfig(List.of()));
         underTest = new TicketIssueService(ticketRepository, ticketPresenter);
 
         underTest.create(ticketRequestModel);
@@ -55,7 +55,7 @@ class TicketIssueServiceTest {
     @Test
     void delete_ShouldDeleteTicketAndPrepareSuccessView_WhenTicketExits() {
         UUID id = UUID.fromString("1ed0a79e-f95e-4347-bd74-3f6c4ef3dc12");
-        TicketDto ticketDto = new TicketDto(id, "Single-use Ticket", new TicketConfig.Config(List.of()));
+        TicketDto ticketDto = new TicketDto(id, "Single-use Ticket", new TicketConfig(List.of()));
 
         when(ticketRepository.existsById(id)).thenReturn(true);
         when(ticketRepository.get(id)).thenReturn(Optional.of(ticketDto));

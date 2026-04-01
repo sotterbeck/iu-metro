@@ -9,14 +9,14 @@ public record RetailTicketRequestModel(
         String name,
         String description,
         long priceCents,
-        TicketConfig.Config config,
+        TicketConfig config,
         boolean isActive,
         String category
 ) {
 
     public RetailTicketRequestModel {
         if (config == null) {
-            config = new TicketConfig.Config(List.of());
+            config = new TicketConfig(List.of());
         }
     }
 

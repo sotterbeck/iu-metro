@@ -89,7 +89,7 @@ class PostgresTicketRepositoryTest {
     @Test
     void save_ShouldInsertTicketIntoDatabase_WhenIdDoesNotExist() {
         UUID id = UUID.fromString("855513e4-563f-42bb-b442-8e551434311c");
-        TicketDto ticket = new TicketDto(id, "Single-use Ticket", new TicketConfig.Config(List.of()));
+        TicketDto ticket = new TicketDto(id, "Single-use Ticket", new TicketConfig(List.of()));
 
         underTest.save(ticket);
 
@@ -100,7 +100,7 @@ class PostgresTicketRepositoryTest {
     void save_ShouldInsertTicketWithConfig_WhenConstraintsExist() {
         UUID id = UUID.fromString("855513e4-563f-42bb-b442-8e551434311c");
         TicketDto ticket = new TicketDto(id, "Single-use Ticket",
-                new TicketConfig.Config(List.of(new TicketConfig.UsageLimit(1))));
+                new TicketConfig(List.of(new TicketConfig.UsageLimit(1))));
 
         underTest.save(ticket);
 
@@ -111,10 +111,10 @@ class PostgresTicketRepositoryTest {
     void save_ShouldInsertTicket_WhenDuplicateConstraintsExist() {
         TicketDto ticketOne = new TicketDto(UUID.fromString("855513e4-563f-42bb-b442-8e551434311c"),
                 "Single-use Ticket",
-                new TicketConfig.Config(List.of(new TicketConfig.TimeLimit("PT3H"))));
+                new TicketConfig(List.of(new TicketConfig.TimeLimit("PT3H"))));
         TicketDto ticketTwo = new TicketDto(UUID.fromString("8262d47a-3336-4148-a006-dd3044f0e281"),
                 "Single-use Ticket 2",
-                new TicketConfig.Config(List.of(new TicketConfig.TimeLimit("PT3H"))));
+                new TicketConfig(List.of(new TicketConfig.TimeLimit("PT3H"))));
 
         underTest.save(ticketOne);
 
@@ -143,7 +143,7 @@ class PostgresTicketRepositoryTest {
         assertThat(ticket).map(TicketDto::config).isNotNull();
         assertThat(ticket)
                 .map(TicketDto::config)
-                .map(TicketConfig.Config::constraints)
+                .map(TicketConfig::constraints)
                 .isNotNull();
     }
 

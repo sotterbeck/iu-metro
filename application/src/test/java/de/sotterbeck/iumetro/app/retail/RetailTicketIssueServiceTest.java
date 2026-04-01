@@ -97,7 +97,7 @@ class RetailTicketIssueServiceTest {
         String ticketName = "Day Pass";
         String ticketId = "7fe89139-6d9f-4f21-84f7-10a6301d33a6";
         RetailTicketDto dto = new RetailTicketDto(UUID.fromString(ticketId), ticketName, "", 0,
-                new TicketConfig.Config(List.of()), false, Instant.EPOCH, "");
+                new TicketConfig(List.of()), false, Instant.EPOCH, "");
         when(retailTicketRepository.getById(UUID.fromString(ticketId))).thenReturn(Optional.of(dto));
         RetailTicketRequestModel request = createRetailTicketWithoutConstraints(ticketId, ticketName);
 
@@ -108,7 +108,7 @@ class RetailTicketIssueServiceTest {
     }
 
     private static RetailTicketRequestModel createRetailTicketWithoutConstraints(String ticketId, String ticketName) {
-        return new RetailTicketRequestModel(ticketId, ticketName, "", 0L, new TicketConfig.Config(List.of()), false, "");
+        return new RetailTicketRequestModel(ticketId, ticketName, "", 0L, new TicketConfig(List.of()), false, "");
     }
 
 }

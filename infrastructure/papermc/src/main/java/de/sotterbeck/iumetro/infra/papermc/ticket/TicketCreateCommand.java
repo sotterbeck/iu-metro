@@ -42,7 +42,7 @@ public class TicketCreateCommand implements CloudAnnotated {
         }
 
         var constraints = createConstraints(usageLimit, timeLimit);
-        var config = new TicketConfig.Config(constraints);
+        var config = new TicketConfig(constraints);
         var request = new TicketRequestModel(UUID.randomUUID(), name, config);
 
         var response = ticketIssueService.create(request);

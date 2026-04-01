@@ -11,9 +11,9 @@ import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.TICKETS
 
 final class TicketRecordMapper implements RecordMapper<Record, TicketDto> {
 
-    private final Converter<JSONB, TicketConfig.Config> converter;
+    private final Converter<JSONB, TicketConfig> converter;
 
-    TicketRecordMapper(Converter<JSONB, TicketConfig.Config> converter) {
+    TicketRecordMapper(Converter<JSONB, TicketConfig> converter) {
         this.converter = converter;
     }
 

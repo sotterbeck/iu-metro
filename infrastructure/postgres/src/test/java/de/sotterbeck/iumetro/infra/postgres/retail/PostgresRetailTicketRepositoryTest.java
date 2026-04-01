@@ -70,7 +70,7 @@ class PostgresRetailTicketRepositoryTest {
                 "Weekly Pass",
                 "Unlimited rides",
                 1999,
-                new TicketConfig.Config(List.of(
+                new TicketConfig(List.of(
                         new TicketConfig.UsageLimit(10),
                         new TicketConfig.TimeLimit("PT7D")
                 )),
@@ -105,7 +105,7 @@ class PostgresRetailTicketRepositoryTest {
                 name,
                 "Unlimited rides",
                 999,
-                new TicketConfig.Config(List.of(new TicketConfig.UsageLimit(5))),
+                new TicketConfig(List.of(new TicketConfig.UsageLimit(5))),
                 true,
                 Instant.parse("2024-01-01T00:00:00Z"),
                 "Pass"

@@ -5,14 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.List;
 
-public final class TicketConfig {
-
-    private TicketConfig() {
-    }
-
-    public record Config(List<Constraint> constraints) {
-
-    }
+public record TicketConfig(List<Constraint> constraints) {
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
     @JsonSubTypes({

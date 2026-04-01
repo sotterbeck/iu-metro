@@ -9,7 +9,7 @@ public record RetailTicketResponseModel(
         String name,
         String description,
         long priceCents,
-        TicketConfig.Config config,
+        TicketConfig config,
         boolean isActive,
         String createdAt,
         String category
@@ -17,7 +17,7 @@ public record RetailTicketResponseModel(
 
     public RetailTicketResponseModel {
         if (config == null) {
-            config = new TicketConfig.Config(List.of());
+            config = new TicketConfig(List.of());
         }
     }
 

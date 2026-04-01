@@ -22,13 +22,13 @@ public class PostgresRetailTicketRepository implements RetailTicketRepository {
 
     public final RecordMapper<Record, RetailTicketDto> mapper;
     private final DSLContext create;
-    private final Converter<JSONB, TicketConfig.Config> configConverter;
+    private final Converter<JSONB, TicketConfig> configConverter;
 
     public PostgresRetailTicketRepository(DataSource dataSource) {
         this.create = DSL.using(dataSource, SQLDialect.POSTGRES);
         var objectMapper = new ObjectMapper();
         var type = objectMapper.getTypeFactory()
-                .constructType(TicketConfig.Config.class);
+                .constructType(TicketConfig.class);
 
         this.configConverter = new JsonbConverter<>(objectMapper, type);
         this.mapper = new RetailTicketDtoRecordMapper(configConverter);
@@ -120,7 +120,7 @@ public class PostgresRetailTicketRepository implements RetailTicketRepository {
         if (ticket.config() != null) {
             return ticket;
         }
-        return new RetailTicketDto(ticket.id(), ticket.name(), ticket.description(), ticket.priceCents(), new TicketConfig.Config(List.of()),
+        return new RetailTicketDto(ticket.id(), ticket.name(), ticket.description(), ticket.priceCents(), new TicketConfig(List.of()),
                 ticket.isActive(), ticket.createdAt(), ticket.category());
     }
 

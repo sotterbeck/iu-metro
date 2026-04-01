@@ -11,7 +11,7 @@ public record RetailTicketDto(
         String name,
         String description,
         long priceCents,
-        TicketConfig.Config config,
+        TicketConfig config,
         boolean isActive,
         Instant createdAt,
         String category
@@ -19,7 +19,7 @@ public record RetailTicketDto(
 
     public RetailTicketDto {
         if (config == null) {
-            config = new TicketConfig.Config(List.of());
+            config = new TicketConfig(List.of());
         }
     }
 

@@ -12,9 +12,9 @@ import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.TICKET_
 
 final class RetailTicketDtoRecordMapper implements RecordMapper<Record, RetailTicketDto> {
 
-    private final Converter<JSONB, TicketConfig.Config> converter;
+    private final Converter<JSONB, TicketConfig> converter;
 
-    RetailTicketDtoRecordMapper(Converter<JSONB, TicketConfig.Config> converter) {
+    RetailTicketDtoRecordMapper(Converter<JSONB, TicketConfig> converter) {
         this.converter = converter;
     }
 

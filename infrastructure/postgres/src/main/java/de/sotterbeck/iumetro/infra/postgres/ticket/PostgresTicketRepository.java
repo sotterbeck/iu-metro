@@ -28,14 +28,14 @@ public class PostgresTicketRepository implements TicketRepository {
     private final DSLContext create;
 
     private final RecordMapper<Record, TicketDto> ticketMapper;
-    private final Converter<JSONB, TicketConfig.Config> configConverter;
+    private final Converter<JSONB, TicketConfig> configConverter;
 
     public PostgresTicketRepository(DataSource dataSource) {
         create = DSL.using(dataSource, SQLDialect.POSTGRES);
 
         var objectMapper = new ObjectMapper();
         var type = objectMapper.getTypeFactory()
-                .constructType(TicketConfig.Config.class);
+                .constructType(TicketConfig.class);
 
         this.configConverter = new JsonbConverter<>(objectMapper, type);
         this.ticketMapper = new TicketRecordMapper(configConverter);
@@ -73,7 +73,7 @@ public class PostgresTicketRepository implements TicketRepository {
         if (ticket.config() != null) {
             return ticket;
         }
-        return new TicketDto(ticket.id(), ticket.name(), new TicketConfig.Config(List.of()));
+        return new TicketDto(ticket.id(), ticket.name(), new TicketConfig(List.of()));
     }
 
     @Override

@@ -20,7 +20,7 @@ class TicketResponseFormatterTest {
     @Test
     void shouldFormatShortId() {
         String id = "d83f09f4-8275-441e-96e5-b290f55a8bf8";
-        var ticket = new TicketRequestModel(UUID.fromString(id), "Ticket", new TicketConfig.Config(List.of()));
+        var ticket = new TicketRequestModel(UUID.fromString(id), "Ticket", new TicketConfig(List.of()));
 
         TicketResponseModel formattedResponse = underTest.prepareSuccessView(ticket);
 
