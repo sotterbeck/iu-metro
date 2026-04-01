@@ -1,17 +1,19 @@
 package de.sotterbeck.iumetro.infra.postgres.ticket;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.sotterbeck.iumetro.app.faregate.UsageDto;
 import de.sotterbeck.iumetro.app.faregate.UsageType;
+import de.sotterbeck.iumetro.app.ticket.TicketConfig;
 import de.sotterbeck.iumetro.app.ticket.TicketDto;
 import de.sotterbeck.iumetro.app.ticket.TicketRepository;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.enums.TicketUsageType;
-import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.*;
-import org.jooq.DSLContext;
+import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.MetroStationsRecord;
+import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.TicketUsagesRecord;
+import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.TicketsRecord;
+import de.sotterbeck.iumetro.infra.postgres.json.JsonbConverter;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.RecordMapper;
-import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-import org.jooq.types.YearToSecond;
 
 import javax.sql.DataSource;
 import java.time.OffsetDateTime;
@@ -24,73 +26,54 @@ import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.*;
 public class PostgresTicketRepository implements TicketRepository {
 
     private final DSLContext create;
-    private final RecordMapper<Record, TicketDto> ticketMapper = r ->
-            new TicketDto(
-                    r.get(TICKETS.ID),
-                    r.get(TICKETS.NAME),
-                    r.get(TICKET_USAGE_LIMITS.MAX_USAGES),
-                    r.get(TICKET_TIME_LIMITS.TIME_LIMIT).toDuration());
+
+    private final RecordMapper<Record, TicketDto> ticketMapper;
+    private final Converter<JSONB, TicketConfig.Config> configConverter;
 
     public PostgresTicketRepository(DataSource dataSource) {
         create = DSL.using(dataSource, SQLDialect.POSTGRES);
 
+        var objectMapper = new ObjectMapper();
+        var type = objectMapper.getTypeFactory()
+                .constructType(TicketConfig.Config.class);
+
+        this.configConverter = new JsonbConverter<>(objectMapper, type);
+        this.ticketMapper = new TicketRecordMapper(configConverter);
     }
 
     @Override
     public void save(TicketDto ticket) {
-        create.transaction(trx -> {
-            DSLContext c = trx.dsl();
-            TicketTimeLimitsRecord timeLimitRecord = insertTimeLimit(c, ticket);
-            TicketUsageLimitsRecord usageLimitRecord = insertUsageLimit(c, ticket);
-
-            TicketsRecord ticketsRecord = c.newRecord(TICKETS)
-                    .setId(ticket.id())
-                    .setName(ticket.name())
-                    .setUsageLimitId(usageLimitRecord.get(TICKET_USAGE_LIMITS.ID))
-                    .setTimeLimitId(timeLimitRecord.get(TICKET_TIME_LIMITS.ID));
-            ticketsRecord.store();
-        });
-    }
-
-    private static TicketUsageLimitsRecord insertUsageLimit(DSLContext dslContext, TicketDto ticket) {
-        TicketUsageLimitsRecord usageLimitRecord = dslContext.fetchOne(TICKET_USAGE_LIMITS,
-                TICKET_USAGE_LIMITS.MAX_USAGES.eq(ticket.usageLimit()));
-        if (usageLimitRecord == null) {
-            usageLimitRecord = dslContext.newRecord(TICKET_USAGE_LIMITS)
-                    .setMaxUsages(ticket.usageLimit());
-            usageLimitRecord.store();
-        }
-        return usageLimitRecord;
-    }
-
-    private static TicketTimeLimitsRecord insertTimeLimit(DSLContext dslContext, TicketDto ticket) {
-        TicketTimeLimitsRecord timeLimitRecord = dslContext.fetchOne(TICKET_TIME_LIMITS,
-                TICKET_TIME_LIMITS.TIME_LIMIT.eq(YearToSecond.valueOf(ticket.timeLimit())));
-        if (timeLimitRecord == null) {
-            timeLimitRecord = dslContext.newRecord(TICKET_TIME_LIMITS)
-                    .setTimeLimit(YearToSecond.valueOf(ticket.timeLimit()));
-            timeLimitRecord.store();
-        }
-        return timeLimitRecord;
+        TicketsRecord ticketsRecord = create.newRecord(TICKETS)
+                .setId(ticket.id())
+                .setName(ticket.name())
+                .setConfig(configConverter.to(ticket.config()));
+        ticketsRecord.store();
     }
 
     @Override
     public Optional<TicketDto> get(UUID id) {
-        return create.select()
+        return create.select(TICKETS.ID, TICKETS.NAME, TICKETS.CONFIG)
                 .from(TICKETS)
-                .join(TICKET_USAGE_LIMITS).on(TICKETS.USAGE_LIMIT_ID.eq(TICKET_USAGE_LIMITS.ID))
-                .join(TICKET_TIME_LIMITS).on(TICKETS.TIME_LIMIT_ID.eq(TICKET_TIME_LIMITS.ID))
                 .where(TICKETS.ID.eq(id))
-                .fetchOptional(ticketMapper);
+                .fetchOptional(ticketMapper)
+                .map(PostgresTicketRepository::ensureConfigDefaults);
     }
 
     @Override
     public List<TicketDto> getAll() {
-        return create.select()
+        return create.select(TICKETS.ID, TICKETS.NAME, TICKETS.CONFIG)
                 .from(TICKETS)
-                .join(TICKET_USAGE_LIMITS).on(TICKETS.USAGE_LIMIT_ID.eq(TICKET_USAGE_LIMITS.ID))
-                .join(TICKET_TIME_LIMITS).on(TICKETS.TIME_LIMIT_ID.eq(TICKET_TIME_LIMITS.ID))
-                .fetch(ticketMapper);
+                .fetch(ticketMapper)
+                .stream()
+                .map(PostgresTicketRepository::ensureConfigDefaults)
+                .toList();
+    }
+
+    private static TicketDto ensureConfigDefaults(TicketDto ticket) {
+        if (ticket.config() != null) {
+            return ticket;
+        }
+        return new TicketDto(ticket.id(), ticket.name(), new TicketConfig.Config(List.of()));
     }
 
     @Override

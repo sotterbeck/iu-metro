@@ -1,6 +1,7 @@
 module iumetro.application {
     requires org.jetbrains.annotations;
     requires iumetro.domain;
+    requires com.fasterxml.jackson.annotation;
     exports de.sotterbeck.iumetro.app.ticket;
     exports de.sotterbeck.iumetro.app.faregate;
     exports de.sotterbeck.iumetro.app.station;

@@ -2,19 +2,17 @@ package de.sotterbeck.iumetro.infra.postgres.ticket;
 
 import de.sotterbeck.iumetro.app.faregate.UsageDto;
 import de.sotterbeck.iumetro.app.faregate.UsageType;
+import de.sotterbeck.iumetro.app.ticket.TicketConfig;
 import de.sotterbeck.iumetro.app.ticket.TicketDto;
 import de.sotterbeck.iumetro.app.ticket.TicketRepository;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.enums.TicketUsageType;
-import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.TicketTimeLimitsRecord;
-import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.TicketUsageLimitsRecord;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.TicketsRecord;
 import org.assertj.db.type.Table;
 import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-import org.jooq.types.YearToSecond;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.postgresql.ds.PGSimpleDataSource;
@@ -22,7 +20,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -39,8 +36,6 @@ class PostgresTicketRepositoryTest {
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15.4-alpine");
     private Table ticketTable;
-    private Table ticketTimeLimitTable;
-    private Table ticketUsageLimitTable;
     private Table ticketUsagesTable;
     private Table metroStationTable;
 
@@ -55,8 +50,6 @@ class PostgresTicketRepositoryTest {
         dataSource.setPassword(postgres.getPassword());
 
         ticketTable = new Table(dataSource, "tickets");
-        ticketTimeLimitTable = new Table(dataSource, "ticket_time_limits");
-        ticketUsageLimitTable = new Table(dataSource, "ticket_usage_limits");
         ticketUsagesTable = new Table(dataSource, "ticket_usages");
         metroStationTable = new Table(dataSource, "metro_stations");
 
@@ -93,7 +86,7 @@ class PostgresTicketRepositoryTest {
     @Test
     void save_ShouldInsertTicketIntoDatabase_WhenIdDoesNotExist() {
         UUID id = UUID.fromString("855513e4-563f-42bb-b442-8e551434311c");
-        TicketDto ticket = new TicketDto(id, "Single-use Ticket");
+        TicketDto ticket = new TicketDto(id, "Single-use Ticket", new TicketConfig.Config(List.of()));
 
         underTest.save(ticket);
 
@@ -101,26 +94,24 @@ class PostgresTicketRepositoryTest {
     }
 
     @Test
-    void save_ShouldInsertTicketAndTicketLimits_WhenUsageLimits() {
+    void save_ShouldInsertTicketWithConfig_WhenConstraintsExist() {
         UUID id = UUID.fromString("855513e4-563f-42bb-b442-8e551434311c");
-        TicketDto ticket = new TicketDto(id, "Single-use Ticket", 1, Duration.ofHours(3));
+        TicketDto ticket = new TicketDto(id, "Single-use Ticket",
+                new TicketConfig.Config(List.of(new TicketConfig.UsageLimit(1))));
 
         underTest.save(ticket);
 
-        assertThat(ticketUsageLimitTable).hasNumberOfRows(1);
-        assertThat(ticketTimeLimitTable).hasNumberOfRows(1);
+        assertThat(ticketTable).hasNumberOfRows(1);
     }
 
     @Test
-    void save_ShouldInsertTicketAndTicketLimits_WhenDuplicateUsageLimits() {
+    void save_ShouldInsertTicket_WhenDuplicateConstraintsExist() {
         TicketDto ticketOne = new TicketDto(UUID.fromString("855513e4-563f-42bb-b442-8e551434311c"),
                 "Single-use Ticket",
-                1,
-                Duration.ofHours(3));
+                new TicketConfig.Config(List.of(new TicketConfig.TimeLimit("PT3H"))));
         TicketDto ticketTwo = new TicketDto(UUID.fromString("8262d47a-3336-4148-a006-dd3044f0e281"),
                 "Single-use Ticket 2",
-                1,
-                Duration.ofHours(3));
+                new TicketConfig.Config(List.of(new TicketConfig.TimeLimit("PT3H"))));
 
         underTest.save(ticketOne);
 
@@ -139,15 +130,18 @@ class PostgresTicketRepositoryTest {
     }
 
     @Test
-    void get_ShouldTicketGetWithUsageLimits_WhenTicketIdIsInDatabase() {
+    void get_ShouldTicketGetWithConstraints_WhenTicketIdIsInDatabase() {
         UUID id = UUID.fromString("855513e4-563f-42bb-b442-8e551434311c");
         insertTicket(id);
 
         Optional<TicketDto> ticket = underTest.get(id);
 
         assertThat(ticket).isNotEmpty();
-        assertThat(ticket).map(TicketDto::timeLimit).isNotEmpty();
-        assertThat(ticket).map(TicketDto::usageLimit).isNotEmpty();
+        assertThat(ticket).map(TicketDto::config).isNotNull();
+        assertThat(ticket)
+                .map(TicketDto::config)
+                .map(TicketConfig.Config::constraints)
+                .isNotNull();
     }
 
     @Test
@@ -243,19 +237,10 @@ class PostgresTicketRepositoryTest {
     }
 
     private void insertTicket(UUID id) {
-        TicketUsageLimitsRecord usageLimit = create.newRecord(Tables.TICKET_USAGE_LIMITS)
-                .setMaxUsages(0);
-        int usageLimitId = usageLimit.store();
-
-        TicketTimeLimitsRecord timeLimit = create.newRecord(Tables.TICKET_TIME_LIMITS)
-                .setTimeLimit(YearToSecond.valueOf(Duration.ZERO));
-        int timeLimitId = timeLimit.store();
-
         TicketsRecord ticket = create.newRecord(Tables.TICKETS)
                 .setId(id)
                 .setName("Ticket")
-                .setUsageLimitId((long) usageLimitId)
-                .setTimeLimitId((long) timeLimitId);
+                .setConfig(org.jooq.JSONB.valueOf("{}"));
         ticket.store();
     }
 

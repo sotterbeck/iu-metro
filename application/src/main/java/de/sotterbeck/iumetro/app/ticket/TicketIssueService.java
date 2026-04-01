@@ -40,15 +40,13 @@ public class TicketIssueService {
     private TicketRequestModel toRequestModel(TicketDto ticket) {
         return new TicketRequestModel(ticket.id(),
                 ticket.name(),
-                ticket.usageLimit(),
-                ticket.timeLimit());
+                ticket.config());
     }
 
     @NotNull
     private TicketDto toDto(TicketRequestModel ticketRequestModel) {
         return new TicketDto(ticketRequestModel.id(),
                 ticketRequestModel.name(),
-                ticketRequestModel.usageLimit(),
-                ticketRequestModel.timeLimit());
+                ticketRequestModel.config());
     }
 }

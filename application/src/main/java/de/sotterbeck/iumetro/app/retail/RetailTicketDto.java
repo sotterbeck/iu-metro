@@ -1,7 +1,9 @@
 package de.sotterbeck.iumetro.app.retail;
 
-import java.time.Duration;
+import de.sotterbeck.iumetro.app.ticket.TicketConfig;
+
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record RetailTicketDto(
@@ -9,11 +11,16 @@ public record RetailTicketDto(
         String name,
         String description,
         long priceCents,
-        int usageLimit,
-        Duration timeLimit,
+        TicketConfig.Config config,
         boolean isActive,
         Instant createdAt,
         String category
 ) {
+
+    public RetailTicketDto {
+        if (config == null) {
+            config = new TicketConfig.Config(List.of());
+        }
+    }
 
 }

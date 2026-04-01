@@ -14,8 +14,7 @@ public class WebRetailTicketPresenter implements RetailTicketPresenter {
                 retailTicket.name(),
                 retailTicket.description(),
                 retailTicket.priceCents(),
-                retailTicket.usageLimit(),
-                retailTicket.timeLimit(),
+                retailTicket.config(),
                 retailTicket.isActive(),
                 "",
                 retailTicket.category()

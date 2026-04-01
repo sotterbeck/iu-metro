@@ -11,6 +11,9 @@ repositories {
 
 dependencies {
     implementation(project(":domain"))
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.17.2")
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.datatype.jdk8)
     compileOnly("org.jetbrains:annotations:24.0.1")
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.assertj.core)
