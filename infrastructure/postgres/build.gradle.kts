@@ -27,6 +27,7 @@ dependencies {
     testImplementation(libs.assertj.core)
     testImplementation(libs.assertj.db)
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.platform.launcher)
 }
 
 java {

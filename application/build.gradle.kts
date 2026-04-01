@@ -26,6 +26,8 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get()))
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks {
+    test {
+        useJUnitPlatform()
+    }
 }
