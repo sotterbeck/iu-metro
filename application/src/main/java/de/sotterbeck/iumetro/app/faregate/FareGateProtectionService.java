@@ -3,7 +3,7 @@ package de.sotterbeck.iumetro.app.faregate;
 import de.sotterbeck.iumetro.app.common.PositionDto;
 import de.sotterbeck.iumetro.domain.common.Orientation;
 import de.sotterbeck.iumetro.domain.common.Position;
-import de.sotterbeck.iumetro.domain.reader.FareGates;
+import de.sotterbeck.iumetro.domain.faregate.FareGates;
 
 public class FareGateProtectionService {
 
