@@ -7,6 +7,8 @@ import com.google.inject.multibindings.ProvidesIntoSet;
 import com.google.inject.multibindings.StringMapKey;
 import de.sotterbeck.iumetro.app.faregate.*;
 import de.sotterbeck.iumetro.app.station.MetroStationService;
+import de.sotterbeck.iumetro.app.ticket.TicketItemRepository;
+import de.sotterbeck.iumetro.app.ticket.TicketRepository;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.infra.papermc.common.IuMetroConfig;
 import de.sotterbeck.iumetro.infra.papermc.common.sign.SignClickHandler;
@@ -60,8 +62,11 @@ public class FareGateModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static FareGateControlService provideFareGateControlInteractor(GateRepository gateRepository, GateControlAdapter gateControlAdapter) {
-        return new FareGateControlService(gateRepository, gateControlAdapter);
+    static FareGateControlService provideFareGateControlInteractor(GateRepository gateRepository,
+                                                                   GateControlAdapter gateControlAdapter,
+                                                                   TicketRepository ticketRepository,
+                                                                   TicketItemRepository ticketItemRepository) {
+        return new FareGateControlService(gateRepository, gateControlAdapter, ticketRepository, ticketItemRepository);
     }
 
     @Provides
@@ -72,8 +77,8 @@ public class FareGateModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static FareGateSignClickHandler provideFareGateSignClickHandler(FareGateControlService fareGateControlService, FareGateKeyFactory fareGateKeyFactory) {
-        return new FareGateSignClickHandler(fareGateControlService, fareGateKeyFactory);
+    static FareGateSignClickHandler provideFareGateSignClickHandler(FareGateControlService fareGateControlService, FareGateKeyFactory fareGateKeyFactory, TicketItemRepository ticketItemRepository) {
+        return new FareGateSignClickHandler(fareGateControlService, fareGateKeyFactory, ticketItemRepository);
     }
 
     @ProvidesIntoSet

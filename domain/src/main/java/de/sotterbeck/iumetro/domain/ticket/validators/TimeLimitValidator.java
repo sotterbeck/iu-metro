@@ -3,7 +3,7 @@ package de.sotterbeck.iumetro.domain.ticket.validators;
 import de.sotterbeck.iumetro.domain.ticket.*;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 public class TimeLimitValidator implements TicketValidator {
@@ -29,7 +29,7 @@ public class TimeLimitValidator implements TicketValidator {
             return ValidationResult.allowAndRecord();
         }
 
-        LocalDateTime expiry = firstUsage.get().time().plus(timeLimit);
+        ZonedDateTime expiry = firstUsage.get().time().plus(timeLimit);
         boolean expired = expiry.isBefore(context.attemptedUsage().time());
         if (!expired) {
             return ValidationResult.allowAndRecord();

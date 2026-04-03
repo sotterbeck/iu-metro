@@ -1,12 +1,11 @@
 package de.sotterbeck.iumetro.domain.ticket;
 
-import de.sotterbeck.iumetro.domain.station.SimpleStation;
 import de.sotterbeck.iumetro.domain.ticket.validators.TimeLimitValidator;
 import de.sotterbeck.iumetro.domain.ticket.validators.UsageLimitValidator;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,7 +18,7 @@ class TicketValidationTest {
     @Test
     void validate_ShouldAllow_WhenNoConstraints() {
         Ticket ticket = new SimpleTicket("Employee Ticket", UUID.randomUUID(), List.of());
-        TicketUsage attemptedUsage = usageAt(LocalDateTime.now(), UsageType.ENTRY);
+        TicketUsage attemptedUsage = usageAt(ZonedDateTime.now(), UsageType.ENTRY);
         ValidationResult result = ticket.validate(new ValidationContext(List.of(), attemptedUsage));
 
         assertThat(result.allowGate()).isTrue();
@@ -45,7 +44,7 @@ class TicketValidationTest {
 
     @Test
     void timeLimit_ShouldAllow_WhenWithinLimit() {
-        LocalDateTime start = LocalDateTime.now();
+        ZonedDateTime start = ZonedDateTime.now();
         TicketUsage entry = usageAt(start, UsageType.ENTRY);
         TicketUsage attemptedUsage = usageAt(start.plusHours(1), UsageType.ENTRY);
         Ticket ticket = new SimpleTicket("4-Hour Ticket", UUID.randomUUID(),
@@ -60,7 +59,7 @@ class TicketValidationTest {
 
     @Test
     void timeLimit_ShouldDenyEntry_WhenExpired() {
-        LocalDateTime start = LocalDateTime.now();
+        ZonedDateTime start = ZonedDateTime.now();
         TicketUsage entry = usageAt(start, UsageType.ENTRY);
         TicketUsage attemptedUsage = usageAt(start.plusHours(5), UsageType.ENTRY);
         Ticket ticket = new SimpleTicket("4-Hour Ticket", UUID.randomUUID(),
@@ -76,7 +75,7 @@ class TicketValidationTest {
 
     @Test
     void timeLimit_ShouldAllowExitAndRemove_WhenExpired() {
-        LocalDateTime start = LocalDateTime.now();
+        ZonedDateTime start = ZonedDateTime.now();
         TicketUsage entry = usageAt(start, UsageType.ENTRY);
         TicketUsage attemptedUsage = usageAt(start.plusHours(5), UsageType.EXIT);
         Ticket ticket = new SimpleTicket("4-Hour Ticket", UUID.randomUUID(),
@@ -92,8 +91,8 @@ class TicketValidationTest {
 
     @Test
     void usageLimit_ShouldDenyEntry_WhenLimitReached() {
-        TicketUsage entry = usageAt(LocalDateTime.now(), UsageType.ENTRY);
-        TicketUsage attemptedUsage = usageAt(LocalDateTime.now().plusMinutes(1), UsageType.ENTRY);
+        TicketUsage entry = usageAt(ZonedDateTime.now(), UsageType.ENTRY);
+        TicketUsage attemptedUsage = usageAt(ZonedDateTime.now().plusMinutes(1), UsageType.ENTRY);
         Ticket ticket = new SimpleTicket("Single-use Ticket", UUID.randomUUID(),
                 List.of(new UsageLimitValidator(1)));
 
@@ -107,8 +106,8 @@ class TicketValidationTest {
 
     @Test
     void usageLimit_ShouldAllowExitAndRemove_WhenLimitReached() {
-        TicketUsage entry = usageAt(LocalDateTime.now(), UsageType.ENTRY);
-        TicketUsage attemptedUsage = usageAt(LocalDateTime.now().plusMinutes(1), UsageType.EXIT);
+        TicketUsage entry = usageAt(ZonedDateTime.now(), UsageType.ENTRY);
+        TicketUsage attemptedUsage = usageAt(ZonedDateTime.now().plusMinutes(1), UsageType.EXIT);
         Ticket ticket = new SimpleTicket("Single-use Ticket", UUID.randomUUID(),
                 List.of(new UsageLimitValidator(1)));
 
@@ -120,8 +119,8 @@ class TicketValidationTest {
         assertThat(result.reason()).isEqualTo("usage_limit_reached");
     }
 
-    private TicketUsage usageAt(LocalDateTime time, UsageType usageType) {
-        return new TicketUsage(new SimpleStation("any"), time, usageType);
+    private TicketUsage usageAt(ZonedDateTime time, UsageType usageType) {
+        return new TicketUsage(time, usageType);
     }
 
 }
