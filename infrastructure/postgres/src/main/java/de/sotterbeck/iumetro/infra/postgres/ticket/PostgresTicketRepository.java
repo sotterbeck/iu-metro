@@ -55,6 +55,7 @@ public class PostgresTicketRepository implements TicketRepository {
         return create.select(TICKETS.ID, TICKETS.NAME, TICKETS.CONFIG)
                 .from(TICKETS)
                 .where(TICKETS.ID.eq(id))
+                .and(TICKETS.DELETED_AT.isNull())
                 .fetchOptional(ticketMapper)
                 .map(PostgresTicketRepository::ensureConfigDefaults);
     }
@@ -63,6 +64,7 @@ public class PostgresTicketRepository implements TicketRepository {
     public List<TicketDto> getAll() {
         return create.select(TICKETS.ID, TICKETS.NAME, TICKETS.CONFIG)
                 .from(TICKETS)
+                .where(TICKETS.DELETED_AT.isNull())
                 .fetch(ticketMapper)
                 .stream()
                 .map(PostgresTicketRepository::ensureConfigDefaults)
@@ -78,15 +80,21 @@ public class PostgresTicketRepository implements TicketRepository {
 
     @Override
     public boolean existsById(UUID id) {
-        return create.fetchOne(TICKETS, TICKETS.ID.eq(id)) != null;
+        return create.fetchExists(
+                create.selectOne()
+                        .from(TICKETS)
+                        .where(TICKETS.ID.eq(id))
+                        .and(TICKETS.DELETED_AT.isNull())
+        );
     }
 
     @Override
     public void deleteById(UUID id) {
-        TicketsRecord ticket = create.fetchOne(TICKETS, TICKETS.ID.eq(id));
-        if (ticket != null) {
-            ticket.delete();
-        }
+        create.update(TICKETS)
+                .set(TICKETS.DELETED_AT, OffsetDateTime.now())
+                .where(TICKETS.ID.eq(id))
+                .and(TICKETS.DELETED_AT.isNull())
+                .execute();
     }
 
     @Override

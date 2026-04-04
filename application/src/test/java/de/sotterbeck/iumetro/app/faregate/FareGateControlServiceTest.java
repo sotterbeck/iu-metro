@@ -1,7 +1,6 @@
 package de.sotterbeck.iumetro.app.faregate;
 
 import de.sotterbeck.iumetro.app.common.PositionDto;
-import de.sotterbeck.iumetro.app.station.MetroStationRepository;
 import de.sotterbeck.iumetro.app.ticket.TicketConfig;
 import de.sotterbeck.iumetro.app.ticket.TicketDto;
 import de.sotterbeck.iumetro.app.ticket.TicketItemRepository;
@@ -38,10 +37,6 @@ class FareGateControlServiceTest {
 
     @Mock
     private TicketItemRepository ticketItemRepository;
-
-    @Mock
-    private MetroStationRepository metroStationRepository;
-
 
     @Mock
     private GateControlAdapter gateControlAdapter;
@@ -101,6 +96,7 @@ class FareGateControlServiceTest {
         verify(gateControlAdapter).openGate(GATE_POSITION);
         verify(ticketRepository).saveTicketUsage(TICKET_ID, new UsageDto(STATION, REQUESTED_AT, UsageType.ENTRY));
         verify(ticketItemRepository, never()).deleteTicket(PLAYER_ID, TICKET_ID);
+        verify(ticketRepository, never()).deleteById(TICKET_ID);
     }
 
     @Test
@@ -115,6 +111,7 @@ class FareGateControlServiceTest {
         verify(gateControlAdapter, never()).openGate(GATE_POSITION);
         verify(ticketRepository, never()).saveTicketUsage(TICKET_ID, new UsageDto(STATION, REQUESTED_AT, UsageType.ENTRY));
         verify(ticketItemRepository, never()).deleteTicket(PLAYER_ID, TICKET_ID);
+        verify(ticketRepository, never()).deleteById(TICKET_ID);
     }
 
     @Test
@@ -133,6 +130,7 @@ class FareGateControlServiceTest {
         verify(ticketRepository)
                 .saveTicketUsage(TICKET_ID, new UsageDto(STATION, REQUESTED_AT.plusMinutes(1), UsageType.EXIT));
         verify(ticketItemRepository).deleteTicket(PLAYER_ID, TICKET_ID);
+        verify(ticketRepository).deleteById(TICKET_ID);
     }
 
 }

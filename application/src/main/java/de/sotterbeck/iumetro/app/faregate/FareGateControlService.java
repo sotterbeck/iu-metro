@@ -56,6 +56,7 @@ public class FareGateControlService {
 
         if (result.removeTicket()) {
             ticketItemRepository.deleteTicket(request.usage().playerId(), ticketId.get());
+            ticketRepository.deleteById(ticketId.get());
         }
 
         return new ResponseModel("Gate opened.");

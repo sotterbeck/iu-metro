@@ -31,6 +31,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.db.api.Assertions.assertThat;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
 
 @Testcontainers
 class PostgresTicketRepositoryTest {
@@ -201,13 +203,37 @@ class PostgresTicketRepositoryTest {
     }
 
     @Test
-    void deleteById_ShouldDeleteTicket_WhenTicketIdIsInDatabase() {
+    void deleteById_ShouldSoftDeleteTicket_WhenTicketIdIsInDatabase() {
         UUID id = UUID.fromString("855513e4-563f-42bb-b442-8e551434311c");
         insertTicket(id);
 
         underTest.deleteById(id);
 
-        assertThat(ticketTable).isEmpty();
+        assertThat(ticketTable).hasNumberOfRows(1);
+        assertThat(underTest.existsById(id)).isFalse();
+        assertThat(underTest.get(id)).isEmpty();
+        assertThat(underTest.getAll()).isEmpty();
+    }
+
+    @Test
+    void deleteById_ShouldSoftDeleteTicket_WhenTicketHasUsages() {
+        UUID ticketId = UUID.fromString("855513e4-563f-42bb-b442-8e551434311c");
+        UUID metroStationId = UUID.fromString("9b107ae4-f3b3-4e5d-8e72-9d3149aec77a");
+        insertTicket(ticketId);
+        insertMetroStation(metroStationId);
+        insertTicketUsage(ticketId, metroStationId, TicketUsageType.ENTER);
+
+        Throwable thrown = catchThrowable(() -> underTest.deleteById(ticketId));
+
+        assertThat(thrown).isNull();
+        assertThat(ticketTable).hasNumberOfRows(1);
+        assertThat(ticketUsagesTable).hasNumberOfRows(1);
+        OffsetDateTime deletedAt = create.select(field(name("deleted_at"), OffsetDateTime.class))
+                .from(Tables.TICKETS)
+                .where(Tables.TICKETS.ID.eq(ticketId))
+                .fetchOne(field(name("deleted_at"), OffsetDateTime.class));
+        assertThat(deletedAt).isNotNull();
+        assertThat(underTest.existsById(ticketId)).isFalse();
     }
 
     @Test
