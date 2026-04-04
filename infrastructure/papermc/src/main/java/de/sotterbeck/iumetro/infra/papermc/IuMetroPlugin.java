@@ -55,14 +55,14 @@ public class IuMetroPlugin extends JavaPlugin {
                 new MetroNetworkModule()
         );
 
+        injector.injectMembers(this);
+
         registerCommands();
         registerEvents();
 
         migrator.migrate();
 
         setUpWebServer();
-
-        injector.injectMembers(this);
     }
 
     private void setUpWebServer() {
@@ -99,7 +99,9 @@ public class IuMetroPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        javalin.stop();
+        if (javalin != null) {
+            javalin.stop();
+        }
     }
 
 }

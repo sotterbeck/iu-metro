@@ -31,7 +31,6 @@ public class FareGateControlService {
     }
 
     public ResponseModel controlGate(FareGateControlRequestModel request) {
-        // TODO: improve the handling of Optional.
         var ticketId = ticketItemRepository.findCurrentTicket(request.usage().playerId());
         if (ticketId.isEmpty() || !ticketRepository.existsById(ticketId.get())) {
             return new ResponseModel("No ticket found.");
@@ -59,7 +58,6 @@ public class FareGateControlService {
             ticketItemRepository.deleteTicket(request.usage().playerId(), ticketId.get());
         }
 
-        // TODO: build the message dynamically from the validators.
         return new ResponseModel("Gate opened.");
     }
 

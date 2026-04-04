@@ -44,7 +44,8 @@ public class FareGateSignClickHandler implements SignClickHandler {
         UsageRequestModel usageRequest = createUsageRequest(event);
         FareGateControlRequestModel request = new FareGateControlRequestModel(position, orientation, usageRequest);
 
-        fareGateControlService.controlGate(request);
+        var response = fareGateControlService.controlGate(request);
+        event.player().sendActionBar(Components.mm(response.message()));
     }
 
     @Override
