@@ -69,7 +69,8 @@ public class FareGateSignClickHandler implements SignClickHandler {
         String typeStr = container.get(fareGateKeyFactory.getFareGateTypeKey(), PersistentDataType.STRING);
         String station = container.get(fareGateKeyFactory.getStationKey(), PersistentDataType.STRING);
 
-        UsageType type = Objects.equals(typeStr, "entry") ? UsageType.ENTRY : UsageType.EXIT;
+        assert typeStr != null;
+        UsageType type = Objects.equals(typeStr.toLowerCase(), "entry") ? UsageType.ENTRY : UsageType.EXIT;
 
         return new UsageRequestModel(playerId, station, ZonedDateTime.now(), type);
     }
