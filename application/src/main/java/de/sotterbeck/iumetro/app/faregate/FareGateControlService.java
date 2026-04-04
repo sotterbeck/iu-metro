@@ -11,6 +11,8 @@ import de.sotterbeck.iumetro.domain.ticket.TicketUsage;
 import de.sotterbeck.iumetro.domain.ticket.UsageType;
 import de.sotterbeck.iumetro.domain.ticket.ValidationContext;
 
+import java.util.Objects;
+
 public class FareGateControlService {
 
     private final GateRepository gateRepository;
@@ -18,16 +20,25 @@ public class FareGateControlService {
     private final TicketRepository ticketRepository;
     private final TicketItemRepository ticketItemRepository;
 
-    private final DomainTicketFactory ticketFactory = new DomainTicketFactory();
+    private final DomainTicketFactory ticketFactory;
 
     public FareGateControlService(GateRepository gateRepository,
                                   GateControlAdapter gateControlAdapter,
                                   TicketRepository ticketRepository,
                                   TicketItemRepository ticketItemRepository) {
+        this(gateRepository, gateControlAdapter, ticketRepository, ticketItemRepository, new DomainTicketFactory());
+    }
+
+    FareGateControlService(GateRepository gateRepository,
+                           GateControlAdapter gateControlAdapter,
+                           TicketRepository ticketRepository,
+                           TicketItemRepository ticketItemRepository,
+                           DomainTicketFactory ticketFactory) {
         this.gateRepository = gateRepository;
         this.gateControlAdapter = gateControlAdapter;
         this.ticketRepository = ticketRepository;
         this.ticketItemRepository = ticketItemRepository;
+        this.ticketFactory = Objects.requireNonNull(ticketFactory);
     }
 
     public ResponseModel controlGate(FareGateControlRequestModel request) {
