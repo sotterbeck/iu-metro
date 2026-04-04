@@ -4,7 +4,7 @@ import de.sotterbeck.iumetro.app.station.MetroStationResponseModel;
 import de.sotterbeck.iumetro.app.station.MetroStationService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.infra.papermc.faregate.sign.FareGateSignItemCreator;
-import org.bukkit.command.CommandSender;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.incendo.cloud.annotation.specifier.Greedy;
@@ -28,10 +28,11 @@ public class FareGateCreateCommand implements CloudAnnotated {
     @Command("faregate create <type> <station>")
     @Permission("iumetro.faregate.create")
     public void fareGateCreate(
-            CommandSender sender,
+            CommandSourceStack source,
             @Argument(value = "type") FareGateType type,
             @Argument(value = "station", suggestions = "stationNames") @Greedy String stationName
     ) {
+        var sender = source.getSender();
         if (!(sender instanceof Player player)) {
             sender.sendRichMessage("<red>You must be a player to use this command.");
             return;

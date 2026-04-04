@@ -2,7 +2,7 @@ package de.sotterbeck.iumetro.infra.papermc.network;
 
 import de.sotterbeck.iumetro.app.network.graph.StationGraphBuilderService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
-import org.bukkit.command.CommandSender;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.Permission;
 
@@ -16,7 +16,8 @@ public class MetroNetworkBuildCommand implements CloudAnnotated {
 
     @Command("metro network build")
     @Permission("iumetro.metronetwork.build")
-    void metroNetworkBuild(CommandSender sender) {
+    void metroNetworkBuild(CommandSourceStack source) {
+        var sender = source.getSender();
         sender.sendRichMessage("<green>Metro network build started.");
 
         var response = metroStationService.discoverConnections();

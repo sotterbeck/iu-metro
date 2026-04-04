@@ -4,8 +4,8 @@ import de.sotterbeck.iumetro.app.common.PositionDto;
 import de.sotterbeck.iumetro.app.station.MetroStationModificationService;
 import de.sotterbeck.iumetro.app.station.MetroStationService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.Location;
-import org.bukkit.command.CommandSender;
 import org.incendo.cloud.annotation.specifier.Quoted;
 import org.incendo.cloud.annotations.Argument;
 import org.incendo.cloud.annotations.Command;
@@ -27,10 +27,11 @@ public class MetroStationModifyCommand implements CloudAnnotated {
     @Command("metro station modify <station> set alias <alias>")
     @Permission("iumetro.metrostation.modify")
     public void metroStationModifySetAlias(
-            CommandSender sender,
+            CommandSourceStack source,
             @Argument(value = "station", suggestions = "stationNamesQuoted") @Quoted String station,
             @Argument(value = "alias") String alias // TODO: check valid characters
     ) {
+        var sender = source.getSender();
         MetroStationModificationService.Status status = metroStationModificationService.saveAlias(station, alias);
         switch (status) {
             case NOT_FOUND -> sender.sendRichMessage("<red>Metro station " + station + " not found.");
@@ -42,10 +43,11 @@ public class MetroStationModifyCommand implements CloudAnnotated {
     @Command("metro station modify <station> set position <position>")
     @Permission("iumetro.metrostation.modify")
     public void metroStationModifySetPosition(
-            CommandSender sender,
+            CommandSourceStack source,
             @Argument(value = "station", suggestions = "stationNamesQuoted") @Quoted String station,
             @Argument(value = "position") Location position
     ) {
+        var sender = source.getSender();
         PositionDto positionDto = new PositionDto(position.getBlockX(), position.getBlockY(), position.getBlockZ());
 
         MetroStationModificationService.Status status = metroStationModificationService.savePosition(station, positionDto);
@@ -60,10 +62,11 @@ public class MetroStationModifyCommand implements CloudAnnotated {
     @Command("metro station modify <station> delete <property>")
     @Permission("iumetro.metrostation.modify")
     public void metroStationModifyDelete(
-            CommandSender sender,
+            CommandSourceStack source,
             @Argument(value = "station", suggestions = "stationNamesQuoted") @Quoted String station,
             @Argument(value = "property") MetroStationProperty property
     ) {
+        var sender = source.getSender();
         MetroStationModificationService.Status status = switch (property) {
             case ALIAS -> metroStationModificationService.deleteAlias(station);
             case POSITION -> metroStationModificationService.deletePosition(station);

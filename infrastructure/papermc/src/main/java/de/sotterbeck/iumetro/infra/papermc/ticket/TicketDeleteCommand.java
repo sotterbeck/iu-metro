@@ -3,7 +3,7 @@ package de.sotterbeck.iumetro.infra.papermc.ticket;
 import de.sotterbeck.iumetro.app.ticket.TicketInfoService;
 import de.sotterbeck.iumetro.app.ticket.TicketIssueService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
-import org.bukkit.command.CommandSender;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.incendo.cloud.annotations.Argument;
 import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.Permission;
@@ -29,8 +29,9 @@ public class TicketDeleteCommand implements CloudAnnotated {
 
     @Command("ticket delete <uuid>")
     @Permission("iumetro.ticket.delete")
-    public void deleteCommand(CommandSender sender,
+    public void deleteCommand(CommandSourceStack source,
                               @Argument(value = "uuid", suggestions = "ticketId") String id) {
+        var sender = source.getSender();
 
         if (!UUID_REGEX.matcher(id).matches()) {
             sender.sendRichMessage("<red>Invalid UUID");
@@ -47,7 +48,7 @@ public class TicketDeleteCommand implements CloudAnnotated {
     }
 
     @Suggestions("ticketId")
-    public Iterable<Suggestion> suggestions(CommandContext<CommandSender> context, String input) {
+    public Iterable<Suggestion> suggestions(CommandContext<CommandSourceStack> context, String input) {
         return ticketIssueService.getAllIds().stream()
                 .map(Suggestion::suggestion)
                 .toList();
