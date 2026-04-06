@@ -1,14 +1,14 @@
 package de.sotterbeck.iumetro.infra.papermc.faregate;
 
 import de.sotterbeck.iumetro.app.common.PositionDto;
-import de.sotterbeck.iumetro.app.faregate.PlayerRepository;
+import de.sotterbeck.iumetro.app.faregate.PlayerAdapter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public final class SpigotPlayerRepository implements PlayerRepository {
+public final class SpigotPlayerAdapter implements PlayerAdapter {
 
     @Override
     public Optional<PositionDto> findPosition(UUID playerId) {
@@ -29,7 +29,14 @@ public final class SpigotPlayerRepository implements PlayerRepository {
         }
 
         var world = player.getWorld();
-        var location = new Location(world, position.x(), position.y(), position.z());
+        var oldLocation = player.getLocation();
+        var location = new Location(world,
+                position.x() + 0.5,
+                position.y(),
+                position.z() + 0.5,
+                oldLocation.getYaw(),
+                oldLocation.getPitch()
+        );
         player.teleport(location);
     }
 

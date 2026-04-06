@@ -10,17 +10,17 @@ import org.mockbukkit.mockbukkit.ServerMock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SpigotPlayerRepositoryTest {
+class SpigotPlayerAdapterTest {
 
     private Player player;
-    private SpigotPlayerRepository underTest;
+    private SpigotPlayerAdapter underTest;
 
     @BeforeEach
     void setUp() {
         ServerMock server = MockBukkit.mock();
         server.addSimpleWorld("world");
         player = server.addPlayer();
-        underTest = new SpigotPlayerRepository();
+        underTest = new SpigotPlayerAdapter();
     }
 
     @AfterEach

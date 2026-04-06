@@ -5,7 +5,7 @@ import de.sotterbeck.iumetro.app.common.PositionDto;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface PlayerRepository {
+public interface PlayerAdapter {
 
     Optional<PositionDto> findPosition(UUID playerId);
 

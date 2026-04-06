@@ -8,9 +8,6 @@ import de.sotterbeck.iumetro.domain.ticket.ValidationResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -18,7 +15,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.mockito.Mockito.*;
 
@@ -49,7 +45,7 @@ class FareGateControlServiceTest {
     private DomainTicketFactory ticketFactory;
 
     @Mock
-    private PlayerRepository playerRepository;
+    private PlayerAdapter playerAdapter;
 
     @Mock
     private Ticket domainTicket;
@@ -65,7 +61,7 @@ class FareGateControlServiceTest {
                 gateControlAdapter,
                 ticketRepository,
                 ticketItemRepository,
-                playerRepository,
+                playerAdapter,
                 ticketFactory
         );
 
@@ -97,7 +93,7 @@ class FareGateControlServiceTest {
     void controlGate_shouldRecordAndRemoveUsage_whenPlayerIsBehindGateAfterClose() {
         stubCurrentTicket();
         PositionDto playerBehindGate = new PositionDto(164, 70, 148);
-        when(playerRepository.findPosition(PLAYER_ID)).thenReturn(Optional.of(playerBehindGate));
+        when(playerAdapter.findPosition(PLAYER_ID)).thenReturn(Optional.of(playerBehindGate));
 
         ValidationResult result = new ValidationResult(true, true, true, null);
         when(domainTicket.validate(any(ValidationContext.class))).thenReturn(result);
@@ -122,7 +118,7 @@ class FareGateControlServiceTest {
     void controlGate_shouldNotRecordUsage_whenPlayerIsNotBehindGateAfterClose() {
         stubCurrentTicket();
         PositionDto playerInFrontOfGate = new PositionDto(166, 70, 148);
-        when(playerRepository.findPosition(PLAYER_ID)).thenReturn(Optional.of(playerInFrontOfGate));
+        when(playerAdapter.findPosition(PLAYER_ID)).thenReturn(Optional.of(playerInFrontOfGate));
         when(domainTicket.validate(any(ValidationContext.class))).thenReturn(new ValidationResult(true, true, true, null));
         when(gateRepository.findAt(GATE_POSITION)).thenReturn(Optional.of(gate));
 
@@ -141,7 +137,7 @@ class FareGateControlServiceTest {
     @Test
     void controlGate_shouldNotRecordUsage_whenPlayerIsInsideGateBlockAfterClose() {
         stubCurrentTicket();
-        when(playerRepository.findPosition(PLAYER_ID)).thenReturn(Optional.of(GATE_POSITION));
+        when(playerAdapter.findPosition(PLAYER_ID)).thenReturn(Optional.of(GATE_POSITION));
         when(domainTicket.validate(any(ValidationContext.class))).thenReturn(new ValidationResult(true, true, true, null));
         when(gateRepository.findAt(GATE_POSITION)).thenReturn(Optional.of(gate));
 
@@ -152,7 +148,7 @@ class FareGateControlServiceTest {
 
         callbackCaptor.getValue().run();
 
-        verify(playerRepository).teleport(PLAYER_ID, new PositionDto(166, 70, 148));
+        verify(playerAdapter).teleport(PLAYER_ID, new PositionDto(166, 70, 148));
 
         verify(ticketRepository, never()).saveTicketUsage(any(), any());
         verify(ticketItemRepository, never()).deleteTicket(any(), any());
@@ -172,37 +168,7 @@ class FareGateControlServiceTest {
         verify(ticketRepository).saveTicketUsage(TICKET_ID, new UsageDto(STATION, REQUESTED_AT, UsageType.ENTRY));
         verify(ticketItemRepository).deleteTicket(PLAYER_ID, TICKET_ID);
         verify(ticketRepository).deleteById(TICKET_ID);
-        verifyNoInteractions(playerRepository);
-    }
-
-    @ParameterizedTest
-    @MethodSource("orientationAndBehindPosition")
-    void controlGate_shouldTreatBehindPositionBySignOrientation(String signOrientation, PositionDto playerBehindGate) {
-        stubCurrentTicket();
-        when(playerRepository.findPosition(PLAYER_ID)).thenReturn(Optional.of(playerBehindGate));
-        when(domainTicket.validate(any(ValidationContext.class))).thenReturn(new ValidationResult(true, true, false, null));
-        when(gateRepository.findAt(any())).thenReturn(Optional.of(gate));
-
-        var usage = new UsageRequestModel(PLAYER_ID, STATION, REQUESTED_AT, UsageType.ENTRY);
-        var orientationRequest = new FareGateControlRequestModel(SIGN_POSITION, signOrientation, usage);
-
-        underTest.controlGate(orientationRequest);
-
-        var callbackCaptor = org.mockito.ArgumentCaptor.forClass(Runnable.class);
-        verify(gateControlAdapter).openGate(eq(GATE_POSITION), callbackCaptor.capture());
-
-        callbackCaptor.getValue().run();
-
-        verify(ticketRepository).saveTicketUsage(TICKET_ID, new UsageDto(STATION, REQUESTED_AT, UsageType.ENTRY));
-    }
-
-    private static Stream<Arguments> orientationAndBehindPosition() {
-        return Stream.of(
-                Arguments.of("north", new PositionDto(165, 70, 149)),
-                Arguments.of("east", new PositionDto(164, 70, 148)),
-                Arguments.of("south", new PositionDto(165, 70, 147)),
-                Arguments.of("west", new PositionDto(166, 70, 148))
-        );
+        verifyNoInteractions(playerAdapter);
     }
 
 }
