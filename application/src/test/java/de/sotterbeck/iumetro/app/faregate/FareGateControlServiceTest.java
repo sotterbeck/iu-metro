@@ -49,6 +49,9 @@ class FareGateControlServiceTest {
     private DomainTicketFactory ticketFactory;
 
     @Mock
+    private PlayerRepository playerRepository;
+
+    @Mock
     private Ticket domainTicket;
 
     private FareGateControlService underTest;
@@ -62,6 +65,7 @@ class FareGateControlServiceTest {
                 gateControlAdapter,
                 ticketRepository,
                 ticketItemRepository,
+                playerRepository,
                 ticketFactory
         );
 
@@ -80,55 +84,124 @@ class FareGateControlServiceTest {
     }
 
     @Test
-    void controlGate_shouldNotOpenGate_whenValidationAllowsGateButGateDoesNotExist() {
-        stubCurrentTicket();
-        when(domainTicket.validate(any(ValidationContext.class))).thenReturn(new ValidationResult(true, false, false, null));
-        when(gateRepository.findAt(GATE_POSITION)).thenReturn(Optional.empty());
-
+    void controlGate_shouldNotOpenGateOrRecordUsage_whenValidationAllowsGateButGateDoesNotExist() {
         underTest.controlGate(request);
 
-        verify(gateControlAdapter, never()).openGate(GATE_POSITION);
+        verify(gateControlAdapter, never()).openGate(any(), any());
         verify(ticketRepository, never()).saveTicketUsage(any(), any());
         verify(ticketItemRepository, never()).deleteTicket(any(), any());
         verify(ticketRepository, never()).deleteById(any());
     }
 
-    @ParameterizedTest
-    @MethodSource("validationResults")
-    void controlGate_shouldApplyActionsBasedOnValidationFlags(ValidationResult result,
-                                                              int expectedOpenCalls,
-                                                              int expectedRecordCalls,
-                                                              int expectedRemoveCalls) {
+    @Test
+    void controlGate_shouldRecordAndRemoveUsage_whenPlayerIsBehindGateAfterClose() {
         stubCurrentTicket();
+        PositionDto playerBehindGate = new PositionDto(164, 70, 148);
+        when(playerRepository.findPosition(PLAYER_ID)).thenReturn(Optional.of(playerBehindGate));
+
+        ValidationResult result = new ValidationResult(true, true, true, null);
         when(domainTicket.validate(any(ValidationContext.class))).thenReturn(result);
-        lenient().when(gateRepository.findAt(GATE_POSITION)).thenReturn(Optional.of(gate));
+        when(gateRepository.findAt(GATE_POSITION)).thenReturn(Optional.of(gate));
 
         underTest.controlGate(request);
 
-        verify(gateRepository, times(expectedOpenCalls)).findAt(GATE_POSITION);
-        verify(gateControlAdapter, times(expectedOpenCalls)).openGate(GATE_POSITION);
-        verify(ticketRepository, times(expectedRecordCalls))
-                .saveTicketUsage(TICKET_ID, new UsageDto(STATION, REQUESTED_AT, UsageType.ENTRY));
-        verify(ticketItemRepository, times(expectedRemoveCalls)).deleteTicket(PLAYER_ID, TICKET_ID);
-        verify(ticketRepository, times(expectedRemoveCalls)).deleteById(TICKET_ID);
+        var callbackCaptor = org.mockito.ArgumentCaptor.forClass(Runnable.class);
+        verify(gateControlAdapter).openGate(eq(GATE_POSITION), callbackCaptor.capture());
+        verify(ticketRepository, never()).saveTicketUsage(any(), any());
+        verify(ticketItemRepository, never()).deleteTicket(any(), any());
+        verify(ticketRepository, never()).deleteById(any());
+
+        callbackCaptor.getValue().run();
+
+        verify(ticketRepository).saveTicketUsage(TICKET_ID, new UsageDto(STATION, REQUESTED_AT, UsageType.ENTRY));
+        verify(ticketItemRepository).deleteTicket(PLAYER_ID, TICKET_ID);
+        verify(ticketRepository).deleteById(TICKET_ID);
     }
 
-    /// Provides a stream of test arguments to validate various scenarios for gate control operations.
-    /// Each argument consists of the following:
-    /// - A [ValidationResult] object for gate validation.
-    /// - Expected number of calls to open the gate.
-    /// - Expected number of calls to record gate usage.
-    /// - Expected number of calls to remove the ticket.
-    ///
-    /// @return a stream of [Arguments], where each argument contains a [ValidationResult]
-    /// object along with the expected counts for open, record, and remove operations.
-    private static Stream<Arguments> validationResults() {
+    @Test
+    void controlGate_shouldNotRecordUsage_whenPlayerIsNotBehindGateAfterClose() {
+        stubCurrentTicket();
+        PositionDto playerInFrontOfGate = new PositionDto(166, 70, 148);
+        when(playerRepository.findPosition(PLAYER_ID)).thenReturn(Optional.of(playerInFrontOfGate));
+        when(domainTicket.validate(any(ValidationContext.class))).thenReturn(new ValidationResult(true, true, true, null));
+        when(gateRepository.findAt(GATE_POSITION)).thenReturn(Optional.of(gate));
+
+        underTest.controlGate(request);
+
+        var callbackCaptor = org.mockito.ArgumentCaptor.forClass(Runnable.class);
+        verify(gateControlAdapter).openGate(eq(GATE_POSITION), callbackCaptor.capture());
+
+        callbackCaptor.getValue().run();
+
+        verify(ticketRepository, never()).saveTicketUsage(any(), any());
+        verify(ticketItemRepository, never()).deleteTicket(any(), any());
+        verify(ticketRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void controlGate_shouldNotRecordUsage_whenPlayerIsInsideGateBlockAfterClose() {
+        stubCurrentTicket();
+        when(playerRepository.findPosition(PLAYER_ID)).thenReturn(Optional.of(GATE_POSITION));
+        when(domainTicket.validate(any(ValidationContext.class))).thenReturn(new ValidationResult(true, true, true, null));
+        when(gateRepository.findAt(GATE_POSITION)).thenReturn(Optional.of(gate));
+
+        underTest.controlGate(request);
+
+        var callbackCaptor = org.mockito.ArgumentCaptor.forClass(Runnable.class);
+        verify(gateControlAdapter).openGate(eq(GATE_POSITION), callbackCaptor.capture());
+
+        callbackCaptor.getValue().run();
+
+        verify(playerRepository).teleport(PLAYER_ID, new PositionDto(166, 70, 148));
+
+        verify(ticketRepository, never()).saveTicketUsage(any(), any());
+        verify(ticketItemRepository, never()).deleteTicket(any(), any());
+        verify(ticketRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void controlGate_shouldApplyActionsImmediately_whenValidationDeniesGate() {
+        stubCurrentTicket();
+        ValidationResult result = new ValidationResult(false, true, true, "deny");
+        when(domainTicket.validate(any(ValidationContext.class))).thenReturn(result);
+        when(gateRepository.findAt(GATE_POSITION)).thenReturn(Optional.of(gate));
+
+        underTest.controlGate(request);
+
+        verify(gateControlAdapter, never()).openGate(any(), any());
+        verify(ticketRepository).saveTicketUsage(TICKET_ID, new UsageDto(STATION, REQUESTED_AT, UsageType.ENTRY));
+        verify(ticketItemRepository).deleteTicket(PLAYER_ID, TICKET_ID);
+        verify(ticketRepository).deleteById(TICKET_ID);
+        verifyNoInteractions(playerRepository);
+    }
+
+    @ParameterizedTest
+    @MethodSource("orientationAndBehindPosition")
+    void controlGate_shouldTreatBehindPositionBySignOrientation(String signOrientation, PositionDto playerBehindGate) {
+        stubCurrentTicket();
+        when(playerRepository.findPosition(PLAYER_ID)).thenReturn(Optional.of(playerBehindGate));
+        when(domainTicket.validate(any(ValidationContext.class))).thenReturn(new ValidationResult(true, true, false, null));
+        when(gateRepository.findAt(any())).thenReturn(Optional.of(gate));
+
+        var usage = new UsageRequestModel(PLAYER_ID, STATION, REQUESTED_AT, UsageType.ENTRY);
+        var orientationRequest = new FareGateControlRequestModel(SIGN_POSITION, signOrientation, usage);
+
+        underTest.controlGate(orientationRequest);
+
+        var callbackCaptor = org.mockito.ArgumentCaptor.forClass(Runnable.class);
+        verify(gateControlAdapter).openGate(eq(GATE_POSITION), callbackCaptor.capture());
+
+        callbackCaptor.getValue().run();
+
+        verify(ticketRepository).saveTicketUsage(TICKET_ID, new UsageDto(STATION, REQUESTED_AT, UsageType.ENTRY));
+    }
+
+    private static Stream<Arguments> orientationAndBehindPosition() {
         return Stream.of(
-                Arguments.of(new ValidationResult(false, false, false, "deny"), 0, 0, 0),
-                Arguments.of(new ValidationResult(true, false, false, null), 1, 0, 0),
-                Arguments.of(new ValidationResult(false, true, false, null), 0, 1, 0),
-                Arguments.of(new ValidationResult(false, false, true, null), 0, 0, 1),
-                Arguments.of(new ValidationResult(true, true, true, null), 1, 1, 1)
+                Arguments.of("north", new PositionDto(165, 70, 149)),
+                Arguments.of("east", new PositionDto(164, 70, 148)),
+                Arguments.of("south", new PositionDto(165, 70, 147)),
+                Arguments.of("west", new PositionDto(166, 70, 148))
         );
     }
 

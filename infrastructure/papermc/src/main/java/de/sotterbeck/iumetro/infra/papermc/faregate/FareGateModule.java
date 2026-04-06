@@ -65,8 +65,15 @@ public class FareGateModule extends AbstractModule {
     static FareGateControlService provideFareGateControlInteractor(GateRepository gateRepository,
                                                                    GateControlAdapter gateControlAdapter,
                                                                    TicketRepository ticketRepository,
-                                                                   TicketItemRepository ticketItemRepository) {
-        return new FareGateControlService(gateRepository, gateControlAdapter, ticketRepository, ticketItemRepository);
+                                                                   TicketItemRepository ticketItemRepository,
+                                                                   PlayerRepository playerRepository) {
+        return new FareGateControlService(gateRepository, gateControlAdapter, ticketRepository, ticketItemRepository, playerRepository);
+    }
+
+    @Provides
+    @Singleton
+    static PlayerRepository providePlayerPositionProvider() {
+        return new SpigotPlayerRepository();
     }
 
     @Provides
