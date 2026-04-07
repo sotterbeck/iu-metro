@@ -4,7 +4,6 @@ import de.sotterbeck.iumetro.domain.ticket.Ticket;
 import de.sotterbeck.iumetro.domain.ticket.ValidationContext;
 import de.sotterbeck.iumetro.domain.ticket.ValidationResult;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public record CompositeTicketValidator(List<TicketValidator> validators) implements TicketValidator {
@@ -31,11 +30,6 @@ public record CompositeTicketValidator(List<TicketValidator> validators) impleme
         }
 
         return new ValidationResult(allowGate, recordUsage, removeTicket, reason);
-    }
-
-    @Override
-    public List<TicketValidator> validators() {
-        return new ArrayList<>(validators);
     }
 
 }
