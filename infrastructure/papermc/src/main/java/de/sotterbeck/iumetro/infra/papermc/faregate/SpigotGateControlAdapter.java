@@ -19,7 +19,7 @@ public class SpigotGateControlAdapter implements GateControlAdapter {
     }
 
     @Override
-    public void openGate(PositionDto positionDto) {
+    public void openGate(PositionDto positionDto, Runnable onClosed) {
         Block block = world.getBlockAt(positionDto.x(), positionDto.y(), positionDto.z());
         if (!(block.getBlockData() instanceof Gate gate)) {
             System.out.println(block);
@@ -32,8 +32,18 @@ public class SpigotGateControlAdapter implements GateControlAdapter {
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
                     gate.setOpen(false);
                     block.setBlockData(gate);
+                    onClosed.run();
                 },
                 OPEN_TIME_SECONDS * 20);
+    }
+
+    @Override
+    public boolean isGateOpen(PositionDto positionDto) {
+        Block block = world.getBlockAt(positionDto.x(), positionDto.y(), positionDto.z());
+        if (!(block.getBlockData() instanceof Gate gate)) {
+            return false;
+        }
+        return gate.isOpen();
     }
 
 }

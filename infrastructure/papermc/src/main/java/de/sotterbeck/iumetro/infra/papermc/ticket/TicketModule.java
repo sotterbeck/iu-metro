@@ -27,6 +27,12 @@ public class TicketModule extends AbstractModule {
 
     @Provides
     @Singleton
+    static TicketItemRepository provideTicketItemRepository() {
+        return new PaperTicketItemRepository();
+    }
+
+    @Provides
+    @Singleton
     static TicketIssueService provideTicketManagingInteractor(TicketRepository ticketRepository, TicketPresenter ticketPresenter) {
         return new TicketIssueService(ticketRepository, ticketPresenter);
     }

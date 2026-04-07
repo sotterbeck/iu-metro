@@ -4,6 +4,8 @@ import de.sotterbeck.iumetro.app.common.PositionDto;
 
 public interface GateControlAdapter {
 
-    void openGate(PositionDto positionDto);
+    void openGate(PositionDto positionDto, Runnable onClosed);
+
+    boolean isGateOpen(PositionDto positionDto);
 
 }

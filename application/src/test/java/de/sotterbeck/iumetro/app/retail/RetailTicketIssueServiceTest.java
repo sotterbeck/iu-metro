@@ -1,13 +1,14 @@
 package de.sotterbeck.iumetro.app.retail;
 
+import de.sotterbeck.iumetro.app.ticket.TicketConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -95,7 +96,8 @@ class RetailTicketIssueServiceTest {
     void delete_ShouldPresentSuccessViewAndDeleteTicket_WhenTicketExists() {
         String ticketName = "Day Pass";
         String ticketId = "7fe89139-6d9f-4f21-84f7-10a6301d33a6";
-        RetailTicketDto dto = new RetailTicketDto(UUID.fromString(ticketId), ticketName, "", 0, 0, Duration.ZERO, false, Instant.EPOCH, "");
+        RetailTicketDto dto = new RetailTicketDto(UUID.fromString(ticketId), ticketName, "", 0,
+                new TicketConfig(List.of()), false, Instant.EPOCH, "");
         when(retailTicketRepository.getById(UUID.fromString(ticketId))).thenReturn(Optional.of(dto));
         RetailTicketRequestModel request = createRetailTicketWithoutConstraints(ticketId, ticketName);
 
@@ -106,7 +108,7 @@ class RetailTicketIssueServiceTest {
     }
 
     private static RetailTicketRequestModel createRetailTicketWithoutConstraints(String ticketId, String ticketName) {
-        return new RetailTicketRequestModel(ticketId, ticketName, "", 0L, 0, Duration.ZERO.toString(), false, "");
+        return new RetailTicketRequestModel(ticketId, ticketName, "", 0L, new TicketConfig(List.of()), false, "");
     }
 
 }

@@ -2,7 +2,6 @@ package de.sotterbeck.iumetro.app.retail;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -48,8 +47,7 @@ public class RetailTicketService {
                 retailTicket.name(),
                 retailTicket.description(),
                 retailTicket.priceCents(),
-                retailTicket.usageLimit(),
-                Duration.parse(retailTicket.timeLimit()),
+                retailTicket.config(),
                 retailTicket.isActive(),
                 Instant.now(),
                 retailTicket.category()
@@ -71,7 +69,7 @@ public class RetailTicketService {
 
         RetailTicketDto deleted = retailTicket.orElseThrow();
         RetailTicketRequestModel requestedTicket = new RetailTicketRequestModel(
-                deleted.id().toString(), deleted.name(), deleted.description(), deleted.priceCents(), deleted.usageLimit(), deleted.timeLimit().toString(), deleted.isActive(), deleted.category()
+                deleted.id().toString(), deleted.name(), deleted.description(), deleted.priceCents(), deleted.config(), deleted.isActive(), deleted.category()
         );
 
         return presenter.prepareSuccessView(requestedTicket);
@@ -82,7 +80,7 @@ public class RetailTicketService {
                 UUID.fromString(retailTicket.id()),
                 retailTicket.name(),
                 retailTicket.description(),
-                0, retailTicket.usageLimit(), Duration.parse(retailTicket.timeLimit()), retailTicket.isActive(), Instant.now(), retailTicket.category()
+                0, retailTicket.config(), retailTicket.isActive(), Instant.now(), retailTicket.category()
         );
     }
 
@@ -90,7 +88,7 @@ public class RetailTicketService {
         return new RetailTicketResponseModel(dto.id().toString(),
                 dto.name(),
                 dto.description(),
-                0L, dto.usageLimit(), dto.timeLimit().toString(), dto.isActive(), dto.createdAt().toString(), dto.category()
+                0L, dto.config(), dto.isActive(), dto.createdAt().toString(), dto.category()
         );
     }
 

@@ -3,7 +3,7 @@ package de.sotterbeck.iumetro.infra.papermc.station;
 import de.sotterbeck.iumetro.app.station.MetroStationResponseModel;
 import de.sotterbeck.iumetro.app.station.MetroStationService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
-import org.bukkit.command.CommandSender;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.Permission;
 
@@ -20,7 +20,8 @@ public class MetroStationListCommand implements CloudAnnotated {
 
     @Command("metro station list")
     @Permission("iumetro.metrostation.list")
-    public void metroStationList(CommandSender sender) {
+    public void metroStationList(CommandSourceStack source) {
+        var sender = source.getSender();
         List<MetroStationResponseModel> stations = metroStationService.getAll();
         if (stations.isEmpty()) {
             sender.sendRichMessage("<red>There are no metro stations.</red>");

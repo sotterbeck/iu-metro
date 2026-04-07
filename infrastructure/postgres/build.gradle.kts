@@ -14,6 +14,7 @@ repositories {
 
 dependencies {
     implementation(project(":application"))
+    implementation(libs.jackson.databind)
     implementation(libs.jooq)
     jooqGenerator(libs.slf4j.simple)
     jooqGenerator("com.github.sabomichal:jooq-meta-postgres-flyway:1.2.0")
@@ -26,6 +27,7 @@ dependencies {
     testImplementation(libs.assertj.core)
     testImplementation(libs.assertj.db)
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.platform.launcher)
 }
 
 java {

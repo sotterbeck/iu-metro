@@ -14,8 +14,7 @@ public class TicketResponseFormatter implements TicketPresenter {
                 id.toString(),
                 formatShortId(id),
                 ticket.name(),
-                String.valueOf(ticket.usageLimit()),
-                ticket.timeLimit().toString()
+                ticket.config()
         );
     }
 

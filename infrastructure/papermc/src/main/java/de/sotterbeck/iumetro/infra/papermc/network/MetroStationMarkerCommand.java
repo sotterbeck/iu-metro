@@ -3,8 +3,8 @@ package de.sotterbeck.iumetro.infra.papermc.network;
 import de.sotterbeck.iumetro.app.common.PositionDto;
 import de.sotterbeck.iumetro.app.network.graph.StationMarkerService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.annotation.specifier.Greedy;
 import org.incendo.cloud.annotations.Argument;
@@ -25,9 +25,10 @@ public class MetroStationMarkerCommand implements CloudAnnotated {
     @Command("metro station marker add <station>")
     @Permission("iumetro.metrostation.marker.add")
     public void metroStationMarkerAdd(
-            CommandSender sender,
+            CommandSourceStack source,
             @Argument(value = "station", suggestions = "stationNames") @Greedy String station
     ) {
+        var sender = source.getSender();
         if (!(sender instanceof Player player)) {
             sender.sendRichMessage("<red>You must be a player to use this command.");
             return;
@@ -54,7 +55,8 @@ public class MetroStationMarkerCommand implements CloudAnnotated {
 
     @Command("metro station marker remove")
     @Permission("iumetro.metrostation.marker.remove")
-    public void metroStationMarkerRemove(CommandSender sender) {
+    public void metroStationMarkerRemove(CommandSourceStack source) {
+        var sender = source.getSender();
         if (!(sender instanceof Player player)) {
             sender.sendRichMessage("<red>You must be a player to use this command.");
             return;
@@ -80,9 +82,10 @@ public class MetroStationMarkerCommand implements CloudAnnotated {
     @Command("metro station marker show <station>")
     @Permission("iumetro.metrostation.marker.show")
     public void metroStationMarkerShow(
-            CommandSender sender,
+            CommandSourceStack source,
             @Argument(value = "station", suggestions = "stationNames") @Greedy String station
     ) {
+        var sender = source.getSender();
         if (!(sender instanceof Player)) {
             sender.sendRichMessage("<red>You must be a player to use this command.");
             return;
@@ -98,7 +101,8 @@ public class MetroStationMarkerCommand implements CloudAnnotated {
 
     @Command("metro station marker list")
     @Permission("iumetro.metrostation.marker.list")
-    public void metroStationMarkerList(CommandSender sender) {
+    public void metroStationMarkerList(CommandSourceStack source) {
+        var sender = source.getSender();
         var markers = stationMarkerService.list();
         if (markers.isEmpty()) {
             sender.sendRichMessage("<red>There are no markers.");

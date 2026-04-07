@@ -5,7 +5,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -36,11 +35,8 @@ public class PaperTicketPrinter {
     }
 
     private void setPersistentDataContainer(TicketResponseModel ticket, PersistentDataHolder dataHolder) {
-        NamespacedKey ticketIdKey = new NamespacedKey(plugin, "ticket-id");
-        NamespacedKey itemTypeKey = new NamespacedKey(plugin, "item-type");
-
-        dataHolder.getPersistentDataContainer().set(itemTypeKey, PersistentDataType.STRING, "ticket");
-        dataHolder.getPersistentDataContainer().set(ticketIdKey, PersistentDataType.STRING, ticket.fullId());
+        dataHolder.getPersistentDataContainer().set(TicketItems.ITEM_TYPE_KEY, PersistentDataType.STRING, TicketItems.ITEM_TYPE_VALUE);
+        dataHolder.getPersistentDataContainer().set(TicketItems.TICKET_ID_KEY, PersistentDataType.STRING, ticket.fullId());
     }
 
     private void setLore(TicketResponseModel ticket, ItemMeta meta) {

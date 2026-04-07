@@ -1,57 +1,74 @@
 package de.sotterbeck.iumetro.infra.postgres.retail;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.sotterbeck.iumetro.app.retail.RetailTicketDto;
 import de.sotterbeck.iumetro.app.retail.RetailTicketRepository;
+import de.sotterbeck.iumetro.app.ticket.TicketConfig;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.RetailTicketsRecord;
 import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.TicketCategoriesRecord;
-import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.TicketTimeLimitsRecord;
-import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.TicketUsageLimitsRecord;
-import org.jooq.DSLContext;
+import de.sotterbeck.iumetro.infra.postgres.json.JsonbConverter;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.RecordMapper;
-import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-import org.jooq.types.YearToSecond;
 
 import javax.sql.DataSource;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
-import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.*;
+import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.RETAIL_TICKETS;
+import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.TICKET_CATEGORIES;
 
 public class PostgresRetailTicketRepository implements RetailTicketRepository {
 
-    public static final RecordMapper<Record, RetailTicketDto> MAPPER = new RecordRetailTicketDtoRecordMapper();
+    public final RecordMapper<Record, RetailTicketDto> mapper;
     private final DSLContext create;
+    private final Converter<JSONB, TicketConfig> configConverter;
 
     public PostgresRetailTicketRepository(DataSource dataSource) {
         this.create = DSL.using(dataSource, SQLDialect.POSTGRES);
+        var objectMapper = new ObjectMapper();
+        var type = objectMapper.getTypeFactory()
+                .constructType(TicketConfig.class);
+
+        this.configConverter = new JsonbConverter<>(objectMapper, type);
+        this.mapper = new RetailTicketDtoRecordMapper(configConverter);
     }
 
     @Override
     public Collection<RetailTicketDto> getAll() {
-        return create.select()
+        return create.select(RETAIL_TICKETS.ID,
+                        RETAIL_TICKETS.NAME,
+                        RETAIL_TICKETS.DESCRIPTION,
+                        RETAIL_TICKETS.PRICE_CENTS,
+                        RETAIL_TICKETS.CONFIG,
+                        RETAIL_TICKETS.IS_ACTIVE,
+                        RETAIL_TICKETS.CREATED_AT,
+                        TICKET_CATEGORIES.NAME)
                 .from(RETAIL_TICKETS)
                 .join(TICKET_CATEGORIES).on(RETAIL_TICKETS.CATEGORY_ID.eq(TICKET_CATEGORIES.ID))
-                .join(TICKET_USAGE_LIMITS).on(RETAIL_TICKETS.USAGE_LIMIT_ID.eq(TICKET_USAGE_LIMITS.ID))
-                .join(TICKET_TIME_LIMITS).on(RETAIL_TICKETS.TIME_LIMIT_ID.eq(TICKET_TIME_LIMITS.ID))
                 .fetch()
-                .map(MAPPER);
+                .map(mapper)
+                .stream()
+                .map(PostgresRetailTicketRepository::ensureConfigDefaults)
+                .toList();
     }
 
     @Override
     public Optional<RetailTicketDto> getById(UUID id) {
-        return create.select()
+        return create.select(RETAIL_TICKETS.ID,
+                        RETAIL_TICKETS.NAME,
+                        RETAIL_TICKETS.DESCRIPTION,
+                        RETAIL_TICKETS.PRICE_CENTS,
+                        RETAIL_TICKETS.CONFIG,
+                        RETAIL_TICKETS.IS_ACTIVE,
+                        RETAIL_TICKETS.CREATED_AT,
+                        TICKET_CATEGORIES.NAME)
                 .from(RETAIL_TICKETS)
                 .join(TICKET_CATEGORIES).on(RETAIL_TICKETS.CATEGORY_ID.eq(TICKET_CATEGORIES.ID))
-                .join(TICKET_USAGE_LIMITS).on(RETAIL_TICKETS.USAGE_LIMIT_ID.eq(TICKET_USAGE_LIMITS.ID))
-                .join(TICKET_TIME_LIMITS).on(RETAIL_TICKETS.TIME_LIMIT_ID.eq(TICKET_TIME_LIMITS.ID))
                 .where(RETAIL_TICKETS.ID.eq(id))
                 .fetchOptional()
-                .map(MAPPER);
+                .map(mapper)
+                .map(PostgresRetailTicketRepository::ensureConfigDefaults);
     }
 
     @Override
@@ -59,16 +76,6 @@ public class PostgresRetailTicketRepository implements RetailTicketRepository {
         TicketCategoriesRecord ticketCategoriesRecord = Objects.requireNonNullElseGet(
                 create.fetchOne(TICKET_CATEGORIES, TICKET_CATEGORIES.NAME.eq(ticket.category())),
                 () -> create.newRecord(TICKET_CATEGORIES).setName(ticket.category())
-        );
-
-        TicketUsageLimitsRecord ticketUsageLimitsRecord = Objects.requireNonNullElseGet(
-                create.fetchOne(TICKET_USAGE_LIMITS, TICKET_USAGE_LIMITS.MAX_USAGES.eq(ticket.usageLimit())),
-                () -> create.newRecord(TICKET_USAGE_LIMITS).setMaxUsages(ticket.usageLimit())
-        );
-
-        TicketTimeLimitsRecord ticketTimeLimitsRecord = Objects.requireNonNullElseGet(
-                create.fetchOne(TICKET_TIME_LIMITS, TICKET_TIME_LIMITS.TIME_LIMIT.eq(YearToSecond.valueOf(ticket.timeLimit()))),
-                () -> create.newRecord(TICKET_TIME_LIMITS).setTimeLimit(YearToSecond.valueOf(ticket.timeLimit()))
         );
 
         RetailTicketsRecord ticketsRecord = Objects.requireNonNullElseGet(
@@ -79,16 +86,13 @@ public class PostgresRetailTicketRepository implements RetailTicketRepository {
         );
 
         ticketCategoriesRecord.store();
-        ticketUsageLimitsRecord.store();
-        ticketTimeLimitsRecord.store();
 
         ticketsRecord
                 .setName(ticket.name())
                 .setDescription(ticket.description())
                 .setPriceCents(ticket.priceCents())
                 .setCategoryId(ticketCategoriesRecord.getId())
-                .setUsageLimitId(ticketUsageLimitsRecord.getId())
-                .setTimeLimitId(ticketTimeLimitsRecord.getId())
+                .setConfig(configConverter.to(ticket.config()))
                 .setIsActive(ticket.isActive())
                 .store();
     }
@@ -112,23 +116,12 @@ public class PostgresRetailTicketRepository implements RetailTicketRepository {
         }
     }
 
-    private static class RecordRetailTicketDtoRecordMapper implements RecordMapper<Record, RetailTicketDto> {
-
-        @Override
-        public RetailTicketDto map(Record rec) {
-            return new RetailTicketDto(
-                    rec.get(RETAIL_TICKETS.ID),
-                    rec.get(RETAIL_TICKETS.NAME),
-                    rec.get(RETAIL_TICKETS.DESCRIPTION),
-                    rec.get(RETAIL_TICKETS.PRICE_CENTS),
-                    rec.get(TICKET_USAGE_LIMITS.MAX_USAGES),
-                    rec.get(TICKET_TIME_LIMITS.TIME_LIMIT).toDuration(),
-                    rec.get(RETAIL_TICKETS.IS_ACTIVE),
-                    rec.get(RETAIL_TICKETS.CREATED_AT).toInstant(),
-                    rec.get(TICKET_CATEGORIES.NAME)
-            );
+    private static RetailTicketDto ensureConfigDefaults(RetailTicketDto ticket) {
+        if (ticket.config() != null) {
+            return ticket;
         }
-
+        return new RetailTicketDto(ticket.id(), ticket.name(), ticket.description(), ticket.priceCents(), new TicketConfig(List.of()),
+                ticket.isActive(), ticket.createdAt(), ticket.category());
     }
 
 }

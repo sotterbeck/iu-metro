@@ -3,9 +3,9 @@ package de.sotterbeck.iumetro.infra.papermc.station;
 import de.sotterbeck.iumetro.app.common.PositionDto;
 import de.sotterbeck.iumetro.app.station.MetroStationTeleportService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.incendo.cloud.annotation.specifier.Greedy;
@@ -31,9 +31,10 @@ public class MetroStationTpCommand implements CloudAnnotated {
     @Command("metro station tp <station>")
     @Permission("iumetro.metrostation.tp")
     public void metroStationTp(
-            CommandSender sender,
+            CommandSourceStack source,
             @Argument(value = "station", suggestions = "teleportableStationNames") @Greedy String station
     ) {
+        var sender = source.getSender();
         if (!(sender instanceof Player player)) {
             sender.sendRichMessage("<red>Only players can use this command!");
             return;

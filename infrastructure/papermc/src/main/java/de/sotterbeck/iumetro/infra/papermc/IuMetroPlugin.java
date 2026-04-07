@@ -12,17 +12,15 @@ import de.sotterbeck.iumetro.infra.papermc.network.MetroNetworkModule;
 import de.sotterbeck.iumetro.infra.papermc.station.MetroStationModule;
 import de.sotterbeck.iumetro.infra.papermc.ticket.TicketModule;
 import io.javalin.Javalin;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import jakarta.inject.Inject;
-import org.bukkit.command.CommandSender;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.incendo.cloud.SenderMapper;
 import org.incendo.cloud.annotations.AnnotationParser;
-import org.incendo.cloud.bukkit.CloudBukkitCapabilities;
 import org.incendo.cloud.execution.ExecutionCoordinator;
 import org.incendo.cloud.meta.CommandMeta;
-import org.incendo.cloud.paper.LegacyPaperCommandManager;
+import org.incendo.cloud.paper.PaperCommandManager;
 
 import java.util.Set;
 
@@ -57,14 +55,14 @@ public class IuMetroPlugin extends JavaPlugin {
                 new MetroNetworkModule()
         );
 
+        injector.injectMembers(this);
+
         registerCommands();
         registerEvents();
 
         migrator.migrate();
 
         setUpWebServer();
-
-        injector.injectMembers(this);
     }
 
     private void setUpWebServer() {
@@ -85,23 +83,15 @@ public class IuMetroPlugin extends JavaPlugin {
     }
 
     private void registerCommands() {
-        ExecutionCoordinator<CommandSender> executionCoordinator = ExecutionCoordinator.asyncCoordinator();
+        ExecutionCoordinator<CommandSourceStack> executionCoordinator = ExecutionCoordinator.asyncCoordinator();
 
-        LegacyPaperCommandManager<CommandSender> commandManager = new LegacyPaperCommandManager<>(
-                this,
-                executionCoordinator,
-                SenderMapper.identity()
-        );
+        PaperCommandManager<CommandSourceStack> commandManager = PaperCommandManager.builder()
+                .executionCoordinator(executionCoordinator)
+                .buildOnEnable(this);
 
-        if (commandManager.hasCapability(CloudBukkitCapabilities.NATIVE_BRIGADIER)) {
-            commandManager.registerBrigadier();
-        } else if (commandManager.hasCapability(CloudBukkitCapabilities.ASYNCHRONOUS_COMPLETION)) {
-            commandManager.registerAsynchronousCompletions();
-        }
-
-        AnnotationParser<CommandSender> annotationParser = new AnnotationParser<>(
+        AnnotationParser<CommandSourceStack> annotationParser = new AnnotationParser<>(
                 commandManager,
-                CommandSender.class,
+                CommandSourceStack.class,
                 parserParameters -> CommandMeta.empty());
 
         cloudAnnotated.forEach(annotationParser::parse);
@@ -109,7 +99,9 @@ public class IuMetroPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        javalin.stop();
+        if (javalin != null) {
+            javalin.stop();
+        }
     }
 
 }

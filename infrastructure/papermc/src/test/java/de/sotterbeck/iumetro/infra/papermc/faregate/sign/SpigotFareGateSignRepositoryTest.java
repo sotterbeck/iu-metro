@@ -1,11 +1,5 @@
 package de.sotterbeck.iumetro.infra.papermc.faregate.sign;
 
-import be.seeseemelk.mockbukkit.Coordinate;
-import be.seeseemelk.mockbukkit.MockBukkit;
-import be.seeseemelk.mockbukkit.ServerMock;
-import be.seeseemelk.mockbukkit.WorldMock;
-import be.seeseemelk.mockbukkit.block.BlockMock;
-import be.seeseemelk.mockbukkit.block.state.SignMock;
 import de.sotterbeck.iumetro.app.common.PositionDto;
 import de.sotterbeck.iumetro.app.faregate.FareGateDto;
 import de.sotterbeck.iumetro.infra.papermc.common.sign.SignTypeKeyFactory;
@@ -18,6 +12,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockbukkit.mockbukkit.MockBukkit;
+import org.mockbukkit.mockbukkit.ServerMock;
+import org.mockbukkit.mockbukkit.block.BlockMock;
+import org.mockbukkit.mockbukkit.block.state.SignStateMock;
+import org.mockbukkit.mockbukkit.world.Coordinate;
+import org.mockbukkit.mockbukkit.world.WorldMock;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -83,7 +83,7 @@ class SpigotFareGateSignRepositoryTest {
         PositionDto position = new PositionDto(0, 0, 0);
         BlockMock block = world.createBlock(new Coordinate(0, 0, 0));
         block.setType(Material.OAK_SIGN);
-        SignMock sign = (SignMock) block.getState();
+        SignStateMock sign = (SignStateMock) block.getState();
         when(signTypeKeyFactory.getSignTypeNamespacedKey()).thenReturn(signTypeKey);
         when(fareGateKeyFactory.getFareGateTypeKey()).thenReturn(fareGateTypeKey);
         when(fareGateKeyFactory.getStationKey()).thenReturn(stationKey);
@@ -96,7 +96,7 @@ class SpigotFareGateSignRepositoryTest {
         assertThat(result.get().stationId()).isEqualTo("bb97848b-0195-4cc4-a9c9-ab1573f09821");
     }
 
-    private void setupPersistentDataContainer(SignMock sign) {
+    private void setupPersistentDataContainer(SignStateMock sign) {
         PersistentDataContainer container = sign.getPersistentDataContainer();
         container.set(signTypeKey, PersistentDataType.STRING, "faregate_entry");
         container.set(fareGateTypeKey, PersistentDataType.STRING, "entry");

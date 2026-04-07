@@ -1,16 +1,25 @@
 package de.sotterbeck.iumetro.infra.postgres.ticket;
 
+import de.sotterbeck.iumetro.app.ticket.TicketConfig;
 import de.sotterbeck.iumetro.app.ticket.TicketDto;
-import org.jooq.Record4;
+import org.jooq.Converter;
+import org.jooq.JSONB;
+import org.jooq.Record;
 import org.jooq.RecordMapper;
 
-import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.*;
+import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.TICKETS;
 
-public class TicketRecordMapper implements RecordMapper<Record4, TicketDto> {
+final class TicketRecordMapper implements RecordMapper<Record, TicketDto> {
+
+    private final Converter<JSONB, TicketConfig> converter;
+
+    TicketRecordMapper(Converter<JSONB, TicketConfig> converter) {
+        this.converter = converter;
+    }
 
     @Override
-    public TicketDto map(Record4 record) {
-        return new TicketDto(record.get(TICKETS.ID), record.get(TICKETS.NAME), record.get(TICKET_USAGE_LIMITS.MAX_USAGES), record.get(TICKET_TIME_LIMITS.TIME_LIMIT).toDuration());
+    public TicketDto map(Record rec) {
+        return new TicketDto(rec.get(TICKETS.ID), rec.get(TICKETS.NAME), converter.from(rec.get(TICKETS.CONFIG)));
     }
 
 }

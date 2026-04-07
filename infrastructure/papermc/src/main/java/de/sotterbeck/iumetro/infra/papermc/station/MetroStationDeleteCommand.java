@@ -2,7 +2,7 @@ package de.sotterbeck.iumetro.infra.papermc.station;
 
 import de.sotterbeck.iumetro.app.station.MetroStationService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
-import org.bukkit.command.CommandSender;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.incendo.cloud.annotation.specifier.Greedy;
 import org.incendo.cloud.annotations.Argument;
 import org.incendo.cloud.annotations.Command;
@@ -19,9 +19,10 @@ public class MetroStationDeleteCommand implements CloudAnnotated {
     @Command("metro station delete <station>")
     @Permission("iumetro.metrostation.delete")
     public void metroStationDelete(
-            CommandSender sender,
+            CommandSourceStack source,
             @Argument(value = "station", suggestions = "stationNames") @Greedy String station
     ) {
+        var sender = source.getSender();
         boolean deleted = metroStationService.delete(station);
 
         if (!deleted) {
