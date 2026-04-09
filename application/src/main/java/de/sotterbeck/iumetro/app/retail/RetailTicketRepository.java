@@ -1,6 +1,7 @@
 package de.sotterbeck.iumetro.app.retail;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -9,6 +10,8 @@ public interface RetailTicketRepository {
     Collection<RetailTicketDto> getAll();
 
     Optional<RetailTicketDto> getById(UUID id);
+
+    Map<String, Collection<RetailTicketDto>> getAllGroupedByCategory();
 
     void save(RetailTicketDto ticket);
 

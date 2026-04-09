@@ -3,10 +3,7 @@ package de.sotterbeck.iumetro.app.retail;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class RetailTicketService {
 
@@ -29,6 +26,17 @@ public class RetailTicketService {
         UUID uuid = UUID.fromString(id);
         return retailTicketRepository.getById(uuid)
                 .map(RetailTicketService::toResponseModel);
+    }
+
+    public Map<String, List<RetailTicketResponseModel>> getAllGroupedByCategory() {
+        Map<String, Collection<RetailTicketDto>> grouped = retailTicketRepository.getAllGroupedByCategory();
+        return grouped.entrySet().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().stream()
+                                .map(RetailTicketService::toResponseModel)
+                                .toList()
+                ));
     }
 
     public RetailTicketResponseModel create(RetailTicketRequestModel retailTicket) {

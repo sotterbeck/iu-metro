@@ -56,7 +56,7 @@ POST http://localhost:4556/api/retail-tickets
 Content-Type: application/json
 
 {
-  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "id": "550e8400-e29b-41d4-a716-446655440001",
   "name": "Day Pass",
   "description": "Unlimited travel for 24 hours",
   "priceCents": 499,
@@ -99,3 +99,6 @@ Content-Type: application/json
 
 ### Delete a retail ticket
 DELETE http://localhost:4556/api/retail-tickets/550e8400-e29b-41d4-a716-446655440000
+
+### Get all retail tickets grouped by category
+GET http://localhost:4556/api/retail-tickets/grouped-by-category

@@ -14,6 +14,7 @@ import org.jooq.impl.DSL;
 import javax.sql.DataSource;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.RETAIL_TICKETS;
 import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.TICKET_CATEGORIES;
@@ -69,6 +70,28 @@ public class PostgresRetailTicketRepository implements RetailTicketRepository {
                 .fetchOptional()
                 .map(mapper)
                 .map(PostgresRetailTicketRepository::ensureConfigDefaults);
+    }
+
+    @Override
+    public Map<String, Collection<RetailTicketDto>> getAllGroupedByCategory() {
+        return create.select(RETAIL_TICKETS.ID,
+                        RETAIL_TICKETS.NAME,
+                        RETAIL_TICKETS.DESCRIPTION,
+                        RETAIL_TICKETS.PRICE_CENTS,
+                        RETAIL_TICKETS.CONFIG,
+                        RETAIL_TICKETS.IS_ACTIVE,
+                        RETAIL_TICKETS.CREATED_AT,
+                        TICKET_CATEGORIES.NAME)
+                .from(RETAIL_TICKETS)
+                .join(TICKET_CATEGORIES).on(RETAIL_TICKETS.CATEGORY_ID.eq(TICKET_CATEGORIES.ID))
+                .fetch()
+                .map(mapper)
+                .stream()
+                .map(PostgresRetailTicketRepository::ensureConfigDefaults)
+                .collect(Collectors.groupingBy(
+                        RetailTicketDto::category,
+                        java.util.HashMap::new,
+                        Collectors.toCollection(java.util.ArrayList::new)));
     }
 
     @Override

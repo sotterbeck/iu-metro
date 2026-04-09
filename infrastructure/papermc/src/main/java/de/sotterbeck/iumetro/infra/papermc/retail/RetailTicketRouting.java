@@ -8,6 +8,7 @@ import io.javalin.Javalin;
 import io.javalin.http.HttpStatus;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class RetailTicketRouting implements Routing {
@@ -25,6 +26,11 @@ public class RetailTicketRouting implements Routing {
         javalin.get("/api/retail-tickets", ctx -> {
             List<RetailTicketResponseModel> tickets = retailTicketService.getAll();
             ctx.json(tickets);
+        });
+
+        javalin.get("/api/retail-tickets/grouped-by-category", ctx -> {
+            Map<String, List<RetailTicketResponseModel>> grouped = retailTicketService.getAllGroupedByCategory();
+            ctx.json(grouped);
         });
 
         javalin.get("/api/retail-tickets/{id}", ctx -> {
