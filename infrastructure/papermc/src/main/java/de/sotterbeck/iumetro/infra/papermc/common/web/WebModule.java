@@ -7,7 +7,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import de.sotterbeck.iumetro.app.station.MetroStationResponseModel;
-import de.sotterbeck.iumetro.infra.papermc.retail.MetroStationResponseModelMixIn;
+import de.sotterbeck.iumetro.infra.papermc.network.MetroStationResponseModelMixIn;
 import io.javalin.Javalin;
 import io.javalin.json.JavalinJackson;
 

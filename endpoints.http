@@ -1,17 +1,17 @@
 ### GET request to example server
-GET http://localhost:8080/api/metro-stations
+GET http://localhost:4556/api/metro-stations
 
 ###
-GET http://localhost:8080/api/metro-stations/positioned
+GET http://localhost:4556/api/metro-stations/positioned
 
 ###
-GET http://localhost:8080/api/metro-network/graph
+GET http://localhost:4556/api/metro-network/graph
 
 ###
-GET http://localhost:8080/api/lines
+GET http://localhost:4556/api/lines
 
 ###
-POST http://localhost:8080/api/lines
+POST http://localhost:4556/api/lines
 Content-Type: application/json
 
 {
@@ -20,10 +20,10 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:8080/api/lines/M23
+DELETE http://localhost:4556/api/lines/M23
 
 ###
-POST http://localhost:8080/api/metro-network/connections
+POST http://localhost:4556/api/metro-network/connections
 Content-Type: application/json
 
 {
@@ -33,7 +33,7 @@ Content-Type: application/json
 }
 
 ###
-PUT http://localhost:8080/api/metro-network/connections/1d5c2052-a4ad-4495-b7cd-9c5fe6947044/e6d49d3d-2ba0-4c1a-8eaa-2420de8c20aa
+PUT http://localhost:4556/api/metro-network/connections/1d5c2052-a4ad-4495-b7cd-9c5fe6947044/e6d49d3d-2ba0-4c1a-8eaa-2420de8c20aa
 Content-Type: application/json
 
 {
@@ -44,3 +44,58 @@ Content-Type: application/json
     }
   ]
 }
+
+### Get all retail tickets
+GET http://localhost:4556/api/retail-tickets
+
+### Get a specific retail ticket by ID
+GET http://localhost:4556/api/retail-tickets/550e8400-e29b-41d4-a716-446655440000
+
+### Create a new retail ticket
+POST http://localhost:4556/api/retail-tickets
+Content-Type: application/json
+
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Day Pass",
+  "description": "Unlimited travel for 24 hours",
+  "priceCents": 499,
+  "config": {
+    "constraints": [
+      {
+        "type": "time_limit",
+        "duration": "PT24H"
+      },
+      {
+        "type": "usage_limit",
+        "maxUsages": 100
+      }
+    ]
+  },
+  "isActive": true,
+  "category": "standard"
+}
+
+### Update an existing retail ticket
+PUT http://localhost:4556/api/retail-tickets/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Day Pass Updated",
+  "description": "Unlimited travel for 48 hours",
+  "priceCents": 799,
+  "config": {
+    "constraints": [
+      {
+        "type": "time_limit",
+        "duration": "PT48H"
+      }
+    ]
+  },
+  "isActive": true,
+  "category": "premium"
+}
+
+### Delete a retail ticket
+DELETE http://localhost:4556/api/retail-tickets/550e8400-e29b-41d4-a716-446655440000

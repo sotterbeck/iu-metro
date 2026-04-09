@@ -9,6 +9,7 @@ import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import de.sotterbeck.iumetro.infra.papermc.common.web.WebModule;
 import de.sotterbeck.iumetro.infra.papermc.faregate.FareGateModule;
 import de.sotterbeck.iumetro.infra.papermc.network.MetroNetworkModule;
+import de.sotterbeck.iumetro.infra.papermc.retail.RetailTicketModule;
 import de.sotterbeck.iumetro.infra.papermc.station.MetroStationModule;
 import de.sotterbeck.iumetro.infra.papermc.ticket.TicketModule;
 import io.javalin.Javalin;
@@ -52,7 +53,8 @@ public class IuMetroPlugin extends JavaPlugin {
                 new TicketModule(),
                 new FareGateModule(),
                 new MetroStationModule(),
-                new MetroNetworkModule()
+                new MetroNetworkModule(),
+                new RetailTicketModule()
         );
 
         injector.injectMembers(this);

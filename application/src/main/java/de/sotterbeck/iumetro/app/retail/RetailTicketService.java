@@ -18,14 +18,20 @@ public class RetailTicketService {
         this.presenter = presenter;
     }
 
-    List<RetailTicketResponseModel> getAll() {
+    public List<RetailTicketResponseModel> getAll() {
         Collection<RetailTicketDto> allRetailTickets = retailTicketRepository.getAll();
         return allRetailTickets.stream()
                 .map(RetailTicketService::toResponseModel)
                 .toList();
     }
 
-    RetailTicketResponseModel create(RetailTicketRequestModel retailTicket) {
+    public Optional<RetailTicketResponseModel> getById(String id) {
+        UUID uuid = UUID.fromString(id);
+        return retailTicketRepository.getById(uuid)
+                .map(RetailTicketService::toResponseModel);
+    }
+
+    public RetailTicketResponseModel create(RetailTicketRequestModel retailTicket) {
         if (retailTicketRepository.existsByName(retailTicket.name())) {
             return presenter.prepareFailView("Retail ticket with name " + retailTicket.name() + " already exists");
         }
@@ -36,7 +42,7 @@ public class RetailTicketService {
         return presenter.prepareSuccessView(retailTicket);
     }
 
-    RetailTicketResponseModel update(String id, RetailTicketRequestModel retailTicket) {
+    public RetailTicketResponseModel update(String id, RetailTicketRequestModel retailTicket) {
         UUID uuid = UUID.fromString(id);
         if (!retailTicketRepository.existsById(uuid)) {
             return presenter.prepareFailView("Retail ticket with id " + id + " does not exist");
@@ -58,7 +64,7 @@ public class RetailTicketService {
         return presenter.prepareSuccessView(retailTicket);
     }
 
-    RetailTicketResponseModel delete(String id) {
+    public RetailTicketResponseModel delete(String id) {
         UUID uuid = UUID.fromString(id);
         Optional<RetailTicketDto> retailTicket = retailTicketRepository.getById(uuid);
         if (retailTicket.isEmpty()) {

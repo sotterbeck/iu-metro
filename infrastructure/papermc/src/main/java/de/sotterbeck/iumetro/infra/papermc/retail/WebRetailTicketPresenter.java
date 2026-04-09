@@ -5,6 +5,8 @@ import de.sotterbeck.iumetro.app.retail.RetailTicketRequestModel;
 import de.sotterbeck.iumetro.app.retail.RetailTicketResponseModel;
 import io.javalin.http.BadRequestResponse;
 
+import java.time.ZonedDateTime;
+
 public class WebRetailTicketPresenter implements RetailTicketPresenter {
 
     @Override
@@ -16,7 +18,7 @@ public class WebRetailTicketPresenter implements RetailTicketPresenter {
                 retailTicket.priceCents(),
                 retailTicket.config(),
                 retailTicket.isActive(),
-                "",
+                ZonedDateTime.now().toString(),
                 retailTicket.category()
         );
     }

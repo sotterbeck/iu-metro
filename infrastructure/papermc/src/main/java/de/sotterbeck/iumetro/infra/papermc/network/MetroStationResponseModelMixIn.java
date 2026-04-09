@@ -1,4 +1,4 @@
-package de.sotterbeck.iumetro.infra.papermc.retail;
+package de.sotterbeck.iumetro.infra.papermc.network;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.sotterbeck.iumetro.app.common.PositionDto;
