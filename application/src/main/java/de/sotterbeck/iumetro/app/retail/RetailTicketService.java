@@ -94,7 +94,7 @@ public class RetailTicketService {
                 UUID.fromString(retailTicket.id()),
                 retailTicket.name(),
                 retailTicket.description(),
-                0, retailTicket.config(), retailTicket.isActive(), Instant.now(), retailTicket.category()
+                retailTicket.priceCents(), retailTicket.config(), retailTicket.isActive(), Instant.now(), retailTicket.category()
         );
     }
 
@@ -102,7 +102,7 @@ public class RetailTicketService {
         return new RetailTicketResponseModel(dto.id().toString(),
                 dto.name(),
                 dto.description(),
-                0L, dto.config(), dto.isActive(), dto.createdAt().toString(), dto.category()
+                dto.priceCents(), dto.config(), dto.isActive(), dto.createdAt().toString(), dto.category()
         );
     }
 
