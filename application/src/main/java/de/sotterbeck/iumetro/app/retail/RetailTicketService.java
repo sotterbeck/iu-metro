@@ -22,6 +22,11 @@ public class RetailTicketService {
                 .toList();
     }
 
+    public List<String> getAllCategories() {
+        return retailTicketRepository.getAllCategories().stream()
+                .toList();
+    }
+
     public Optional<RetailTicketResponseModel> getById(String id) {
         UUID uuid = UUID.fromString(id);
         return retailTicketRepository.getById(uuid)
@@ -47,7 +52,7 @@ public class RetailTicketService {
         RetailTicketDto retailTicketDto = toDto(retailTicket);
         retailTicketRepository.save(retailTicketDto);
 
-        return presenter.prepareSuccessView(retailTicket);
+        return presenter.prepareSuccessView(retailTicketDto);
     }
 
     public RetailTicketResponseModel update(String id, RetailTicketRequestModel retailTicket) {
@@ -69,7 +74,7 @@ public class RetailTicketService {
 
         retailTicketRepository.save(updated);
 
-        return presenter.prepareSuccessView(retailTicket);
+        return presenter.prepareSuccessView(updated);
     }
 
     public RetailTicketResponseModel delete(String id) {
@@ -82,16 +87,13 @@ public class RetailTicketService {
         retailTicketRepository.delete(uuid);
 
         RetailTicketDto deleted = retailTicket.orElseThrow();
-        RetailTicketRequestModel requestedTicket = new RetailTicketRequestModel(
-                deleted.id().toString(), deleted.name(), deleted.description(), deleted.priceCents(), deleted.config(), deleted.isActive(), deleted.category()
-        );
 
-        return presenter.prepareSuccessView(requestedTicket);
+        return presenter.prepareSuccessView(deleted);
     }
 
     private static @NotNull RetailTicketDto toDto(RetailTicketRequestModel retailTicket) {
         return new RetailTicketDto(
-                UUID.fromString(retailTicket.id()),
+                UUID.randomUUID(),
                 retailTicket.name(),
                 retailTicket.description(),
                 retailTicket.priceCents(), retailTicket.config(), retailTicket.isActive(), Instant.now(), retailTicket.category()

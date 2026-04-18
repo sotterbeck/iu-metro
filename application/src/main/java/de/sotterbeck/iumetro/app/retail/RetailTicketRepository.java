@@ -9,6 +9,8 @@ public interface RetailTicketRepository {
 
     Collection<RetailTicketDto> getAll();
 
+    Collection<String> getAllCategories();
+
     Optional<RetailTicketDto> getById(UUID id);
 
     Map<String, Collection<RetailTicketDto>> getAllGroupedByCategory();

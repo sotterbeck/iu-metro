@@ -29,6 +29,11 @@ public class RetailTicketRouting implements Routing {
             ctx.json(ApiResponse.success(tickets));
         });
 
+        javalin.get("/api/retail-tickets/categories", ctx -> {
+            List<String> categories = retailTicketService.getAllCategories();
+            ctx.json(ApiResponse.success(categories));
+        });
+
         javalin.get("/api/retail-tickets/grouped-by-category", ctx -> {
             Map<String, List<RetailTicketResponseModel>> grouped = retailTicketService.getAllGroupedByCategory();
             ctx.json(ApiResponse.success(grouped));

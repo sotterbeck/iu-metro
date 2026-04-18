@@ -55,6 +55,14 @@ public class PostgresRetailTicketRepository implements RetailTicketRepository {
     }
 
     @Override
+    public Collection<String> getAllCategories() {
+        return create.select(TICKET_CATEGORIES.NAME)
+                .from(TICKET_CATEGORIES)
+                .fetch()
+                .map(r -> r.get(TICKET_CATEGORIES.NAME));
+    }
+
+    @Override
     public Optional<RetailTicketDto> getById(UUID id) {
         return create.select(RETAIL_TICKETS.ID,
                         RETAIL_TICKETS.NAME,
