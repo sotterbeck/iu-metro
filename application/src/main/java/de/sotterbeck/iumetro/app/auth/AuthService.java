@@ -81,20 +81,19 @@ public final class AuthService {
         return new RefreshResult.Success(accessToken, 900);
     }
 
-    public LogoutResult logout(String token) {
+    public boolean logout(String token) {
         if (token == null || token.isBlank()) {
-            return LogoutResult.invalid();
+            return false;
         }
 
         var tokenHash = Hashes.sha256Hex(token);
 
         Optional<RefreshTokenDto> foundToken = repository.findRefreshTokenByHash(tokenHash);
-        if (foundToken.isEmpty()) {
-            return LogoutResult.success();
+        if (foundToken.isPresent()) {
+            repository.revokeRefreshToken(tokenHash);
         }
 
-        repository.revokeRefreshToken(tokenHash);
-        return LogoutResult.success();
+        return true;
     }
 
     private String generateRefreshToken(UUID userId, String userName) {

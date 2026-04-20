@@ -263,32 +263,32 @@ class AuthServiceTest {
     class Logout {
 
         @Test
-        void shouldReturnInvalid_forNullOrBlankToken() {
-            assertThat(underTest.logout(null)).isInstanceOf(LogoutResult.Invalid.class);
-            assertThat(underTest.logout("")).isInstanceOf(LogoutResult.Invalid.class);
+        void shouldReturnFalse_forNullOrBlankToken() {
+            assertThat(underTest.logout(null)).isFalse();
+            assertThat(underTest.logout("")).isFalse();
             verify(repository, never()).revokeRefreshToken(any());
         }
 
         @Test
-        void shouldReturnSuccess_whenTokenNotFound() {
+        void shouldReturnTrue_whenTokenNotFound() {
             String tokenHash = Hashes.sha256Hex(REFRESH_TOKEN);
             when(repository.findRefreshTokenByHash(tokenHash)).thenReturn(Optional.empty());
 
-            LogoutResult result = underTest.logout(REFRESH_TOKEN);
+            boolean result = underTest.logout(REFRESH_TOKEN);
 
-            assertThat(result).isInstanceOf(LogoutResult.Success.class);
+            assertThat(result).isTrue();
             verify(repository, never()).revokeRefreshToken(any());
         }
 
         @Test
-        void shouldRevokeTokenAndReturnSuccess_whenTokenIsFound() {
+        void shouldRevokeTokenAndReturnTrue_whenTokenIsFound() {
             String tokenHash = Hashes.sha256Hex(REFRESH_TOKEN);
             when(repository.findRefreshTokenByHash(tokenHash))
                     .thenReturn(Optional.of(refreshToken(tokenHash, daysFromNow(6), null)));
 
-            LogoutResult result = underTest.logout(REFRESH_TOKEN);
+            boolean result = underTest.logout(REFRESH_TOKEN);
 
-            assertThat(result).isInstanceOf(LogoutResult.Success.class);
+            assertThat(result).isTrue();
             verify(repository).revokeRefreshToken(tokenHash);
         }
 
