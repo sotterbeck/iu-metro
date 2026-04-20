@@ -1,0 +1,11 @@
+package de.sotterbeck.iumetro.app.auth;
+
+import java.util.UUID;
+
+public interface TokenProvider {
+
+    String generateAccessToken(UUID userId, String userName);
+
+    TokenValidationResult validate(String token);
+
+}

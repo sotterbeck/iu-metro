@@ -98,7 +98,7 @@ Content-Type: application/json
 }
 
 ### Delete a retail ticket
-DELETE http://localhost:4556/api/retail-tickets/550e8400-e29b-41d4-a716-446655440000
+DELETE http://localhost:4556/api/retail-tickets/550e8400-e29b-41d4-a716-446655440001
 
 ### Get all retail tickets grouped by category
 GET http://localhost:4556/api/retail-tickets/grouped-by-category

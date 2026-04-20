@@ -16,7 +16,7 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get()))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
 }
 
 tasks {
