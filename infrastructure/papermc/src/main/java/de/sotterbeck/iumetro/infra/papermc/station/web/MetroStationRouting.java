@@ -3,6 +3,7 @@ package de.sotterbeck.iumetro.infra.papermc.station.web;
 import de.sotterbeck.iumetro.app.station.MetroStationModificationService;
 import de.sotterbeck.iumetro.app.station.MetroStationModificationService.Status;
 import de.sotterbeck.iumetro.app.station.MetroStationService;
+import de.sotterbeck.iumetro.infra.papermc.auth.Role;
 import de.sotterbeck.iumetro.infra.papermc.common.web.ApiResponse;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import io.javalin.Javalin;
@@ -25,11 +26,13 @@ public class MetroStationRouting implements Routing {
     @Override
     public void bindRoutes() {
         javalin.get("/api/metro-stations", ctx ->
-                ctx.json(ApiResponse.success(metroStationService.getAll()))
+                        ctx.json(ApiResponse.success(metroStationService.getAll())),
+                Role.AUTHENTICATED
         );
 
         javalin.get("/api/metro-stations/positioned", ctx ->
-                ctx.json(ApiResponse.success(metroStationService.getAllPositioned()))
+                        ctx.json(ApiResponse.success(metroStationService.getAllPositioned())),
+                Role.AUTHENTICATED
         );
 
         javalin.put("/api/metro-stations/{name}/lines", ctx -> {
@@ -46,7 +49,7 @@ public class MetroStationRouting implements Routing {
 
             ctx.status(HttpStatus.OK);
             ctx.json(ApiResponse.success("Lines saved successfully"));
-        });
+        }, Role.AUTHENTICATED);
 
     }
 

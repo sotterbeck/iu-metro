@@ -61,16 +61,34 @@ public final class JwtTokenProvider implements TokenProvider {
         private String issuer;
         private Clock clock = Clock.systemUTC();
 
+        /**
+         * Secret for the token signing.
+         *
+         * @param secret the secret
+         * @return this builder
+         */
         public Builder secret(String secret) {
             this.secret = secret;
             return this;
         }
 
+        /**
+         * Expiration in milliseconds.
+         *
+         * @param expiration the expiration in milliseconds
+         * @return this builder
+         */
         public Builder expiration(long expiration) {
             this.expiration = expiration;
             return this;
         }
 
+        /**
+         * The issuer of the token.
+         *
+         * @param issuer the issuer of the token
+         * @return this builder
+         */
         public Builder issuer(String issuer) {
             this.issuer = issuer;
             return this;

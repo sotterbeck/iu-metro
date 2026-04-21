@@ -3,6 +3,7 @@ package de.sotterbeck.iumetro.infra.papermc.retail;
 import de.sotterbeck.iumetro.app.retail.RetailTicketRequestModel;
 import de.sotterbeck.iumetro.app.retail.RetailTicketResponseModel;
 import de.sotterbeck.iumetro.app.retail.RetailTicketService;
+import de.sotterbeck.iumetro.infra.papermc.auth.Role;
 import de.sotterbeck.iumetro.infra.papermc.common.web.ApiResponse;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import io.javalin.Javalin;
@@ -27,17 +28,17 @@ public class RetailTicketRouting implements Routing {
         javalin.get("/api/retail-tickets", ctx -> {
             List<RetailTicketResponseModel> tickets = retailTicketService.getAll();
             ctx.json(ApiResponse.success(tickets));
-        });
+        }, Role.AUTHENTICATED);
 
         javalin.get("/api/retail-tickets/categories", ctx -> {
             List<String> categories = retailTicketService.getAllCategories();
             ctx.json(ApiResponse.success(categories));
-        });
+        }, Role.AUTHENTICATED);
 
         javalin.get("/api/retail-tickets/grouped-by-category", ctx -> {
             Map<String, List<RetailTicketResponseModel>> grouped = retailTicketService.getAllGroupedByCategory();
             ctx.json(ApiResponse.success(grouped));
-        });
+        }, Role.AUTHENTICATED);
 
         javalin.get("/api/retail-tickets/{id}", ctx -> {
             String id = ctx.pathParam("id");
@@ -51,27 +52,27 @@ public class RetailTicketRouting implements Routing {
             }
 
             ctx.json(ApiResponse.success(ticket.get()));
-        });
+        }, Role.AUTHENTICATED);
 
         javalin.post("/api/retail-tickets", ctx -> {
             RetailTicketRequestModel request = ctx.bodyAsClass(RetailTicketRequestModel.class);
             RetailTicketResponseModel response = retailTicketService.create(request);
             ctx.status(HttpStatus.CREATED);
             ctx.json(ApiResponse.success(response));
-        });
+        }, Role.AUTHENTICATED);
 
         javalin.put("/api/retail-tickets/{id}", ctx -> {
             String id = ctx.pathParam("id");
             RetailTicketRequestModel request = ctx.bodyAsClass(RetailTicketRequestModel.class);
             RetailTicketResponseModel response = retailTicketService.update(id, request);
             ctx.json(ApiResponse.success(response));
-        });
+        }, Role.AUTHENTICATED);
 
         javalin.delete("/api/retail-tickets/{id}", ctx -> {
             String id = ctx.pathParam("id");
             RetailTicketResponseModel response = retailTicketService.delete(id);
             ctx.json(ApiResponse.success(response));
-        });
+        }, Role.AUTHENTICATED);
     }
 
 }

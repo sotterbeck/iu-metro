@@ -3,6 +3,7 @@ package de.sotterbeck.iumetro.infra.papermc;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import de.sotterbeck.iumetro.app.common.DbMigrator;
+import de.sotterbeck.iumetro.infra.papermc.auth.AuthModule;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.infra.papermc.common.sign.SignModule;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
@@ -45,17 +46,24 @@ public class IuMetroPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        Injector injector = Guice.createInjector(
-                new PaperPluginModule(this),
-                new PersistenceModule(),
-                new WebModule(),
-                new SignModule(),
-                new TicketModule(),
-                new FareGateModule(),
-                new MetroStationModule(),
-                new MetroNetworkModule(),
-                new RetailTicketModule()
-        );
+        Injector injector;
+        try {
+            injector = Guice.createInjector(
+                    new PaperPluginModule(this),
+                    new PersistenceModule(),
+                    new AuthModule(),
+                    new WebModule(),
+                    new SignModule(),
+                    new TicketModule(),
+                    new FareGateModule(),
+                    new MetroStationModule(),
+                    new MetroNetworkModule(),
+                    new RetailTicketModule()
+            );
+        } catch (Exception e) {
+            getLogger().severe("Failed to create Guice injector: " + e.getMessage());
+            throw e;
+        }
 
         injector.injectMembers(this);
 

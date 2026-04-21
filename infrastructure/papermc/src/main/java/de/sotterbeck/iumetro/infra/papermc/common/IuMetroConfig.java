@@ -11,4 +11,16 @@ public interface IuMetroConfig {
 
     Material signMaterial();
 
+    String authSecretKey();
+
+    int authAccessTokenTtlMinutes();
+
+    int authRefreshTokenTtlDays();
+
+    int authMagicLinkTtlMinutes();
+
+    String authBaseUrl();
+
+    List<String> authCorsOrigins();
+
 }
