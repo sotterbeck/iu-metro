@@ -18,8 +18,7 @@ public final class AuthService {
     public AuthService(AuthTokenRepository repository,
                        TokenProvider tokenProvider,
                        SecureTokenGenerator tokenGenerator,
-                       Clock clock,
-                       int refreshTokenTtlDays) {
+                       int refreshTokenTtlDays, Clock clock) {
         this.repository = repository;
         this.tokenProvider = tokenProvider;
         this.tokenGenerator = tokenGenerator;
@@ -88,10 +87,8 @@ public final class AuthService {
 
         var tokenHash = Hashes.sha256Hex(token);
 
-        Optional<RefreshTokenDto> foundToken = repository.findRefreshTokenByHash(tokenHash);
-        if (foundToken.isPresent()) {
-            repository.revokeRefreshToken(tokenHash);
-        }
+        repository.findRefreshTokenByHash(tokenHash)
+                .ifPresent(refreshToken -> repository.revokeRefreshToken(tokenHash));
 
         return true;
     }

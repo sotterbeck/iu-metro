@@ -14,8 +14,7 @@ public final class MagicLinkService {
     private final int magicLinkTtlMinutes;
     private final Clock clock;
 
-    public MagicLinkService(SecureTokenGenerator tokenGenerator,
-                            AuthTokenRepository repository,
+    public MagicLinkService(AuthTokenRepository repository, SecureTokenGenerator tokenGenerator,
                             String baseUrl,
                             int magicLinkTtlMinutes,
                             Clock clock) {

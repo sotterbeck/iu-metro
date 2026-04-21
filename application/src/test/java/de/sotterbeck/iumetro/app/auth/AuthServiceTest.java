@@ -45,7 +45,7 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new AuthService(repository, tokenProvider, tokenGenerator, FIXED_CLOCK, REFRESH_TOKEN_TTL_DAYS);
+        underTest = new AuthService(repository, tokenProvider, tokenGenerator, REFRESH_TOKEN_TTL_DAYS, FIXED_CLOCK);
     }
 
     private static OffsetDateTime now() {
@@ -167,7 +167,7 @@ class AuthServiceTest {
 
             int customTtl = 14;
             AuthService customService = new AuthService(
-                    repository, tokenProvider, tokenGenerator, FIXED_CLOCK, customTtl);
+                    repository, tokenProvider, tokenGenerator, customTtl, FIXED_CLOCK);
 
             customService.verify(RAW_OTT);
 

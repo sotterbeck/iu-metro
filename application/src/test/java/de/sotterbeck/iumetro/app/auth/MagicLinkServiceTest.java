@@ -36,8 +36,8 @@ class MagicLinkServiceTest {
     @BeforeEach
     void setUp() {
         underTest = new MagicLinkService(
-                secureTokenGenerator,
                 authTokenRepository,
+                secureTokenGenerator,
                 BASE_URL,
                 MAGIC_LINK_TTL_MINUTES,
                 FIXED_CLOCK
@@ -111,8 +111,7 @@ class MagicLinkServiceTest {
 
         int customTtl = 10;
         MagicLinkService serviceWithCustomTtl = new MagicLinkService(
-                secureTokenGenerator,
-                authTokenRepository,
+                authTokenRepository, secureTokenGenerator,
                 BASE_URL,
                 customTtl,
                 FIXED_CLOCK
