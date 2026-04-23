@@ -229,19 +229,45 @@ class AuthServiceTest {
         }
 
         @Test
-        void shouldReturnNewAccessTokenWithCorrectClaims_whenTokenIsValid() {
+        void shouldReturnNewAccessTokenAndRefreshToken_whenTokenIsValid() {
             String tokenHash = Hashes.sha256Hex(REFRESH_TOKEN);
+            String newRefreshToken = "new.refresh.token";
             when(repository.findRefreshTokenByHash(tokenHash))
                     .thenReturn(Optional.of(refreshToken(tokenHash, daysFromNow(6), null)));
             when(tokenProvider.generateAccessToken(USER_ID, USER_NAME)).thenReturn(ACCESS_TOKEN);
+            when(tokenGenerator.generateSecureToken()).thenReturn(newRefreshToken);
 
             RefreshResult result = underTest.refresh(REFRESH_TOKEN);
 
             assertThat(result).isInstanceOf(RefreshResult.Success.class);
             RefreshResult.Success success = (RefreshResult.Success) result;
             assertThat(success.accessToken()).isEqualTo(ACCESS_TOKEN);
+            assertThat(success.refreshToken()).isEqualTo(newRefreshToken);
             assertThat(success.expiresIn()).isEqualTo(900);
-            verify(tokenProvider).generateAccessToken(USER_ID, USER_NAME);
+        }
+
+        @Test
+        void shouldRevokeOldRefreshTokenAndPersistNewOne_whenTokenIsValid() {
+            String tokenHash = Hashes.sha256Hex(REFRESH_TOKEN);
+            String newRefreshToken = "new.refresh.token";
+            when(repository.findRefreshTokenByHash(tokenHash))
+                    .thenReturn(Optional.of(refreshToken(tokenHash, daysFromNow(6), null)));
+            when(tokenProvider.generateAccessToken(USER_ID, USER_NAME)).thenReturn(ACCESS_TOKEN);
+            when(tokenGenerator.generateSecureToken()).thenReturn(newRefreshToken);
+
+            underTest.refresh(REFRESH_TOKEN);
+
+            verify(repository).revokeRefreshToken(tokenHash);
+            verify(tokenGenerator).generateSecureToken();
+
+            ArgumentCaptor<RefreshTokenDto> captor = ArgumentCaptor.forClass(RefreshTokenDto.class);
+            verify(repository).saveRefreshToken(captor.capture());
+            RefreshTokenDto saved = captor.getValue();
+            assertThat(saved.tokenHash()).isEqualTo(Hashes.sha256Hex(newRefreshToken));
+            assertThat(saved.userId()).isEqualTo(USER_ID);
+            assertThat(saved.userName()).isEqualTo(USER_NAME);
+            assertThat(saved.revokedAt()).isNull();
+            assertThat(saved.expiresAt()).isEqualTo(daysFromNow(REFRESH_TOKEN_TTL_DAYS));
         }
 
         @Test

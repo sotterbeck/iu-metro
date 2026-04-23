@@ -3,7 +3,7 @@ package de.sotterbeck.iumetro.app.auth;
 public sealed interface RefreshResult permits
         RefreshResult.Expired, RefreshResult.Invalid, RefreshResult.Revoked, RefreshResult.Success {
 
-    record Success(String accessToken, long expiresIn) implements RefreshResult {
+    record Success(String accessToken, String refreshToken, long expiresIn) implements RefreshResult {
 
     }
 

@@ -7,11 +7,18 @@ import de.sotterbeck.iumetro.infra.papermc.common.web.ApiResponse;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.http.Cookie;
 import io.javalin.http.HttpStatus;
+import io.javalin.http.SameSite;
 
+import java.time.Duration;
 import java.util.Map;
 
 public class AuthRouting implements Routing {
+
+    private static final String REFRESH_TOKEN_COOKIE = "refresh_token";
+    private static final String AUTH_PATH = "/api/auth";
+    private static final int REFRESH_TOKEN_MAX_AGE_SECONDS = (int) Duration.ofDays(7).getSeconds();
 
     private final Javalin javalin;
     private final AuthService authService;
@@ -24,7 +31,7 @@ public class AuthRouting implements Routing {
     @Override
     public void bindRoutes() {
         javalin.get("/api/auth/verify", ctx -> {
-            String token = ctx.queryParam("token");
+            var token = ctx.queryParam("token");
             if (token == null || token.isBlank()) {
                 ctx.status(HttpStatus.BAD_REQUEST);
                 ctx.json(ApiResponse.failure("Missing token parameter"));
@@ -33,24 +40,22 @@ public class AuthRouting implements Routing {
 
             var result = authService.verify(token);
             switch (result) {
-                case VerifyResult.Success s -> ctx.json(Map.of(
-                        "accessToken", s.accessToken(),
-                        "refreshToken", s.refreshToken(),
-                        "expiresIn", s.expiresIn()
-                ));
+                case VerifyResult.Success s -> sendTokens(ctx, s.refreshToken(), s.accessToken(), s.expiresIn());
                 case VerifyResult.Expired ignored -> unauthorized(ctx);
                 case VerifyResult.Invalid ignored -> unauthorized(ctx);
             }
         }, Role.ANYONE);
 
         javalin.post("/api/auth/refresh", ctx -> {
-            var body = ctx.bodyAsClass(RefreshRequest.class);
-            var result = authService.refresh(body.refreshToken());
+            var refreshToken = ctx.cookie(REFRESH_TOKEN_COOKIE);
+            if (refreshToken == null || refreshToken.isBlank()) {
+                unauthorized(ctx);
+                return;
+            }
+
+            var result = authService.refresh(refreshToken);
             switch (result) {
-                case RefreshResult.Success s -> ctx.json(Map.of(
-                        "accessToken", s.accessToken(),
-                        "expiresIn", s.expiresIn()
-                ));
+                case RefreshResult.Success s -> sendTokens(ctx, s.refreshToken(), s.accessToken(), s.expiresIn());
                 case RefreshResult.Expired ignored -> unauthorized(ctx);
                 case RefreshResult.Invalid ignored -> unauthorized(ctx);
                 case RefreshResult.Revoked ignored -> unauthorized(ctx);
@@ -58,8 +63,11 @@ public class AuthRouting implements Routing {
         }, Role.ANYONE);
 
         javalin.post("/api/auth/logout", ctx -> {
-            var body = ctx.bodyAsClass(LogoutRequest.class);
-            authService.logout(body.refreshToken());
+            var refreshToken = ctx.cookie(REFRESH_TOKEN_COOKIE);
+            if (refreshToken != null && !refreshToken.isBlank()) {
+                authService.logout(refreshToken);
+            }
+            clearRefreshTokenCookie(ctx);
             ctx.json(ApiResponse.success("Logged out successfully"));
         }, Role.ANYONE);
     }
@@ -69,12 +77,52 @@ public class AuthRouting implements Routing {
         ctx.json(ApiResponse.failure("Invalid or expired token"));
     }
 
-    private record RefreshRequest(String refreshToken) {
-
+    private void sendTokens(Context ctx, String refreshToken, String accessToken, long expiresIn) {
+        setRefreshTokenCookie(ctx, refreshToken);
+        ctx.json(Map.of(
+                "accessToken", accessToken,
+                "expiresIn", expiresIn
+        ));
     }
 
-    private record LogoutRequest(String refreshToken) {
+    private void setRefreshTokenCookie(Context ctx, String refreshToken) {
+        ctx.cookie(new Cookie(
+                REFRESH_TOKEN_COOKIE,
+                refreshToken,
+                AUTH_PATH,
+                REFRESH_TOKEN_MAX_AGE_SECONDS,
+                true,
+                0,
+                true,
+                null,
+                null,
+                SameSite.STRICT
+        ));
+    }
 
+    /**
+     * Clears the refresh token cookie by sending an empty, expired cookie with the same
+     * security attributes as the original.
+     * <p>
+     * We do not use {@link Context#removeCookie(String, String)} because it does not set
+     * {@code HttpOnly}, {@code Secure}, or {@code SameSite}. Modern browsers require these
+     * attributes to match on the removal cookie for the original cookie to actually be deleted.
+     *
+     * @param ctx the context to clear the cookie from
+     */
+    private void clearRefreshTokenCookie(Context ctx) {
+        ctx.cookie(new Cookie(
+                REFRESH_TOKEN_COOKIE,
+                "",
+                AUTH_PATH,
+                0,
+                true,
+                0,
+                true,
+                null,
+                null,
+                SameSite.STRICT
+        ));
     }
 
 }

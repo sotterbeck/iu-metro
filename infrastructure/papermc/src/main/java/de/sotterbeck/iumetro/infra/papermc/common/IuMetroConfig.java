@@ -5,6 +5,7 @@ import org.bukkit.Material;
 
 import java.util.List;
 
+// TODO: Replace configuration system with `configurate` library. Currenlty it doesn't update existing config files.
 public interface IuMetroConfig {
 
     List<Component> signLines(String signId);

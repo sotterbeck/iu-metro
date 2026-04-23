@@ -76,8 +76,11 @@ public final class AuthService {
             return RefreshResult.expired();
         }
 
+        repository.revokeRefreshToken(tokenHash);
+
+        var newRefreshToken = generateRefreshToken(refreshToken.userId(), refreshToken.userName());
         var accessToken = tokenProvider.generateAccessToken(refreshToken.userId(), refreshToken.userName());
-        return new RefreshResult.Success(accessToken, 900);
+        return new RefreshResult.Success(accessToken, newRefreshToken, 900);
     }
 
     public boolean logout(String token) {
