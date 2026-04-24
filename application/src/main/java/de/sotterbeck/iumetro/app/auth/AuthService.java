@@ -49,9 +49,10 @@ public final class AuthService {
 
         var userId = magicLinkToken.userId();
         var userName = magicLinkToken.userName();
+        var role = magicLinkToken.role();
 
-        var accessToken = tokenProvider.generateAccessToken(userId, userName, "player");
-        var refreshToken = generateRefreshToken(userId, userName);
+        var accessToken = tokenProvider.generateAccessToken(userId, userName, role);
+        var refreshToken = generateRefreshToken(userId, userName, role);
 
         return new VerifyResult.Success(accessToken, refreshToken, accessTokenTtlSeconds);
     }
@@ -86,6 +87,7 @@ public final class AuthService {
                 null,
                 refreshToken.userId(),
                 refreshToken.userName(),
+                refreshToken.role(),
                 newRefreshHash,
                 refreshExpiresAt,
                 null,
@@ -94,7 +96,7 @@ public final class AuthService {
 
         repository.rotateRefreshToken(tokenHash, newRefreshToken, now);
 
-        var accessToken = tokenProvider.generateAccessToken(refreshToken.userId(), refreshToken.userName(), "player");
+        var accessToken = tokenProvider.generateAccessToken(refreshToken.userId(), refreshToken.userName(), refreshToken.role());
         return new RefreshResult.Success(accessToken, newRawRefreshToken, accessTokenTtlSeconds);
     }
 
@@ -111,7 +113,7 @@ public final class AuthService {
         return true;
     }
 
-    private String generateRefreshToken(UUID userId, String userName) {
+    private String generateRefreshToken(UUID userId, String userName, String role) {
         var rawRefreshToken = tokenGenerator.generateSecureToken();
         var refreshHash = Hashes.sha256Hex(rawRefreshToken);
         var now = OffsetDateTime.now(clock);
@@ -121,6 +123,7 @@ public final class AuthService {
                 null,
                 userId,
                 userName,
+                role,
                 refreshHash,
                 refreshExpiresAt,
                 null,

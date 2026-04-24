@@ -7,6 +7,7 @@ public record RefreshTokenDto(
         UUID id,
         UUID userId,
         String userName,
+        String role,
         String tokenHash,
         OffsetDateTime expiresAt,
         OffsetDateTime revokedAt,

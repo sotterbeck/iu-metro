@@ -17,47 +17,61 @@ public class JwtAccessManager {
         this.tokenProvider = tokenProvider;
     }
 
-    public void handle(Context ctx) throws Exception {
+    public void handle(Context ctx) {
         Set<RouteRole> routeRoles = ctx.routeRoles();
-        if (routeRoles.contains(Role.ANYONE)) {
+
+        if (routeRoles.isEmpty() || onlyAnyone(routeRoles)) {
             return;
         }
 
-        String authHeader = ctx.header("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            ctx.status(HttpStatus.UNAUTHORIZED);
-            ctx.json(ApiResponse.failure("Missing authorization header"));
-            ctx.skipRemainingHandlers();
+        String token = extractBearerToken(ctx);
+        if (token == null) {
+            deny(ctx, HttpStatus.UNAUTHORIZED, "Missing authorization header");
             return;
         }
 
-        String token = authHeader.substring(7);
-        var validation = tokenProvider.validate(token);
-        switch (validation) {
-            case TokenValidationResult.Success s -> {
-                ctx.attribute("userId", s.userId());
-                ctx.attribute("userName", s.userName());
-            }
-            case TokenValidationResult.Expired e -> {
-                ctx.status(HttpStatus.UNAUTHORIZED);
-                ctx.json(ApiResponse.failure("Invalid or expired token"));
-                ctx.skipRemainingHandlers();
-                return;
-            }
-            case TokenValidationResult.Invalid i -> {
-                ctx.status(HttpStatus.UNAUTHORIZED);
-                ctx.json(ApiResponse.failure("Invalid or expired token"));
-                ctx.skipRemainingHandlers();
-                return;
-            }
-        }
+        var result = tokenProvider.validate(token);
+        if (result instanceof TokenValidationResult.Success s) {
+            setUserAttributes(ctx, s);
 
-        if (routeRoles.contains(Role.AUTHENTICATED)) {
+            if (!hasMatchingRole(routeRoles, s.role())) {
+                deny(ctx, HttpStatus.FORBIDDEN, "Forbidden");
+            }
+
             return;
         }
 
-        ctx.status(HttpStatus.FORBIDDEN);
-        ctx.json(ApiResponse.failure("Forbidden"));
+        deny(ctx, HttpStatus.UNAUTHORIZED, "Invalid or expired token");
+    }
+
+    private boolean onlyAnyone(Set<RouteRole> routeRoles) {
+        return routeRoles.stream().allMatch(r -> r == Role.ANYONE);
+    }
+
+    private String extractBearerToken(Context ctx) {
+        String header = ctx.header("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        return null;
+    }
+
+    private void setUserAttributes(Context ctx, TokenValidationResult.Success success) {
+        ctx.attribute("userId", success.userId());
+        ctx.attribute("userName", success.userName());
+        ctx.attribute("role", success.role());
+    }
+
+    private boolean hasMatchingRole(Set<RouteRole> routeRoles, String userRole) {
+        return routeRoles.stream()
+                .filter(Role.class::isInstance)
+                .map(Role.class::cast)
+                .anyMatch(role -> role.permits(userRole));
+    }
+
+    private void deny(Context ctx, HttpStatus status, String message) {
+        ctx.status(status);
+        ctx.json(ApiResponse.failure(message));
         ctx.skipRemainingHandlers();
     }
 

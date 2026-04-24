@@ -25,13 +25,13 @@ public final class MagicLinkService {
         this.clock = clock;
     }
 
-    public MagicLinkResult generateLink(UUID userId, String userName) {
+    public MagicLinkResult generateLink(UUID userId, String userName, String role) {
         var rawToken = tokenGenerator.generateSecureToken();
         var tokenHash = Hashes.sha256Hex(rawToken);
         var now = OffsetDateTime.now(clock);
         var expiresAt = now.plusMinutes(magicLinkTtlMinutes);
 
-        repository.saveMagicLinkToken(new MagicLinkTokenDto(tokenHash, userId, userName, now, expiresAt));
+        repository.saveMagicLinkToken(new MagicLinkTokenDto(tokenHash, userId, userName, role, now, expiresAt));
 
         var url = "%s/api/auth/verify?token=%s"
                 .formatted(baseUrl, rawToken);

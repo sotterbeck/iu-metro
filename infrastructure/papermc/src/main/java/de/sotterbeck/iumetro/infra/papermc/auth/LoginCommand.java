@@ -13,6 +13,8 @@ import org.incendo.cloud.annotations.Permission;
 
 public class LoginCommand implements CloudAnnotated {
 
+    private static final String ADMIN_PERMISSION = "iumetro.web.role.admin";
+
     private final MagicLinkService magicLinkService;
 
     public LoginCommand(MagicLinkService magicLinkService) {
@@ -28,7 +30,10 @@ public class LoginCommand implements CloudAnnotated {
             return;
         }
 
-        var result = magicLinkService.generateLink(player.getUniqueId(), player.getName());
+        // This can be extracted into the Route enum, but it could be more complex in the case a user has multiple role permissions.
+        // So this is a possible refactoring for the future. For now, we keep it simple.
+        String role = player.hasPermission(ADMIN_PERMISSION) ? "admin" : "player";
+        var result = magicLinkService.generateLink(player.getUniqueId(), player.getName(), role);
         var url = result.url();
 
         var message = Component.text("[Click here to login]")

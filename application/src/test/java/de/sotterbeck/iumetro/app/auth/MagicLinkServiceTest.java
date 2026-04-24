@@ -22,6 +22,7 @@ class MagicLinkServiceTest {
     private static final int MAGIC_LINK_TTL_MINUTES = 5;
     private static final UUID USER_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
     private static final String USER_NAME = "TestPlayer";
+    private static final String ROLE = "player";
     private static final Instant FIXED_INSTANT = Instant.parse("2025-01-01T00:00:00Z");
     private static final Clock FIXED_CLOCK = Clock.fixed(FIXED_INSTANT, ZoneOffset.UTC);
 
@@ -48,7 +49,7 @@ class MagicLinkServiceTest {
     void generateLink_shouldGenerateSecureToken() {
         when(secureTokenGenerator.generateSecureToken()).thenReturn("some-ott-value");
 
-        underTest.generateLink(USER_ID, USER_NAME);
+        underTest.generateLink(USER_ID, USER_NAME, ROLE);
 
         verify(secureTokenGenerator).generateSecureToken();
     }
@@ -58,7 +59,7 @@ class MagicLinkServiceTest {
         String rawToken = "some-ott-value";
         when(secureTokenGenerator.generateSecureToken()).thenReturn(rawToken);
 
-        underTest.generateLink(USER_ID, USER_NAME);
+        underTest.generateLink(USER_ID, USER_NAME, ROLE);
 
         ArgumentCaptor<MagicLinkTokenDto> captor = ArgumentCaptor.forClass(MagicLinkTokenDto.class);
         verify(authTokenRepository).saveMagicLinkToken(captor.capture());
@@ -67,6 +68,7 @@ class MagicLinkServiceTest {
         assertThat(saved.tokenHash()).isEqualTo(Hashes.sha256Hex(rawToken));
         assertThat(saved.userId()).isEqualTo(USER_ID);
         assertThat(saved.userName()).isEqualTo(USER_NAME);
+        assertThat(saved.role()).isEqualTo(ROLE);
         assertThat(saved.createdAt()).isEqualTo(OffsetDateTime.ofInstant(FIXED_INSTANT, ZoneOffset.UTC));
         assertThat(saved.expiresAt()).isEqualTo(
                 OffsetDateTime.ofInstant(FIXED_INSTANT.plus(Duration.ofMinutes(MAGIC_LINK_TTL_MINUTES)), ZoneOffset.UTC)
@@ -78,7 +80,7 @@ class MagicLinkServiceTest {
         String rawToken = "some-ott-value";
         when(secureTokenGenerator.generateSecureToken()).thenReturn(rawToken);
 
-        MagicLinkResult result = underTest.generateLink(USER_ID, USER_NAME);
+        MagicLinkResult result = underTest.generateLink(USER_ID, USER_NAME, ROLE);
 
         assertThat(result.url()).isEqualTo(BASE_URL + "/api/auth/verify?token=" + rawToken);
     }
@@ -88,7 +90,7 @@ class MagicLinkServiceTest {
         String rawToken = "different-token-abc123";
         when(secureTokenGenerator.generateSecureToken()).thenReturn(rawToken);
 
-        MagicLinkResult result = underTest.generateLink(USER_ID, USER_NAME);
+        MagicLinkResult result = underTest.generateLink(USER_ID, USER_NAME, ROLE);
 
         assertThat(result.url()).isEqualTo(BASE_URL + "/api/auth/verify?token=" + rawToken);
     }
@@ -99,8 +101,8 @@ class MagicLinkServiceTest {
                 .thenReturn("token-a")
                 .thenReturn("token-b");
 
-        MagicLinkResult first = underTest.generateLink(USER_ID, USER_NAME);
-        MagicLinkResult second = underTest.generateLink(USER_ID, USER_NAME);
+        MagicLinkResult first = underTest.generateLink(USER_ID, USER_NAME, ROLE);
+        MagicLinkResult second = underTest.generateLink(USER_ID, USER_NAME, ROLE);
 
         assertThat(first.url()).isNotEqualTo(second.url());
     }
@@ -117,7 +119,7 @@ class MagicLinkServiceTest {
                 FIXED_CLOCK
         );
 
-        serviceWithCustomTtl.generateLink(USER_ID, USER_NAME);
+        serviceWithCustomTtl.generateLink(USER_ID, USER_NAME, ROLE);
 
         ArgumentCaptor<MagicLinkTokenDto> captor = ArgumentCaptor.forClass(MagicLinkTokenDto.class);
         verify(authTokenRepository).saveMagicLinkToken(captor.capture());
@@ -132,7 +134,7 @@ class MagicLinkServiceTest {
         String rawToken = "test-token-for-hashing";
         when(secureTokenGenerator.generateSecureToken()).thenReturn(rawToken);
 
-        underTest.generateLink(USER_ID, USER_NAME);
+        underTest.generateLink(USER_ID, USER_NAME, ROLE);
 
         ArgumentCaptor<MagicLinkTokenDto> captor = ArgumentCaptor.forClass(MagicLinkTokenDto.class);
         verify(authTokenRepository).saveMagicLinkToken(captor.capture());
@@ -147,7 +149,7 @@ class MagicLinkServiceTest {
         String rawToken = "raw-token-should-not-be-stored";
         when(secureTokenGenerator.generateSecureToken()).thenReturn(rawToken);
 
-        underTest.generateLink(USER_ID, USER_NAME);
+        underTest.generateLink(USER_ID, USER_NAME, ROLE);
 
         ArgumentCaptor<MagicLinkTokenDto> captor = ArgumentCaptor.forClass(MagicLinkTokenDto.class);
         verify(authTokenRepository).saveMagicLinkToken(captor.capture());

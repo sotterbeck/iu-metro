@@ -28,6 +28,7 @@ class AuthServiceTest {
     private static final int ACCESS_TOKEN_TTL_SECONDS = 900;
     private static final UUID USER_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
     private static final String USER_NAME = "TestPlayer";
+    private static final String ROLE = "player";
     private static final Instant FIXED_INSTANT = Instant.parse("2025-01-01T00:00:00Z");
     private static final Clock FIXED_CLOCK = Clock.fixed(FIXED_INSTANT, ZoneOffset.UTC);
     private static final String RAW_OTT = "valid-one-time-token";
@@ -129,7 +130,7 @@ class AuthServiceTest {
             String tokenHash = Hashes.sha256Hex(RAW_OTT);
             when(repository.deleteMagicTokenByHash(tokenHash))
                     .thenReturn(Optional.of(magicLinkToken(tokenHash, minutesFromNow(4))));
-            when(tokenProvider.generateAccessToken(USER_ID, USER_NAME, "player")).thenReturn(ACCESS_TOKEN);
+            when(tokenProvider.generateAccessToken(USER_ID, USER_NAME, ROLE)).thenReturn(ACCESS_TOKEN);
             when(tokenGenerator.generateSecureToken()).thenReturn(REFRESH_TOKEN);
 
             VerifyResult result = underTest.verify(RAW_OTT);
@@ -140,7 +141,7 @@ class AuthServiceTest {
             assertThat(success.refreshToken()).isEqualTo(REFRESH_TOKEN);
             assertThat(success.expiresIn()).isEqualTo(ACCESS_TOKEN_TTL_SECONDS);
 
-            verify(tokenProvider).generateAccessToken(USER_ID, USER_NAME, "player");
+            verify(tokenProvider).generateAccessToken(USER_ID, USER_NAME, ROLE);
             verify(tokenGenerator).generateSecureToken();
 
             ArgumentCaptor<RefreshTokenDto> captor = ArgumentCaptor.forClass(RefreshTokenDto.class);
@@ -149,6 +150,7 @@ class AuthServiceTest {
             assertThat(saved.tokenHash()).isEqualTo(Hashes.sha256Hex(REFRESH_TOKEN));
             assertThat(saved.userId()).isEqualTo(USER_ID);
             assertThat(saved.userName()).isEqualTo(USER_NAME);
+            assertThat(saved.role()).isEqualTo(ROLE);
             assertThat(saved.revokedAt()).isNull();
             assertThat(saved.expiresAt()).isEqualTo(daysFromNow(REFRESH_TOKEN_TTL_DAYS));
             assertThat(saved.createdAt()).isEqualTo(now());
@@ -194,7 +196,7 @@ class AuthServiceTest {
         }
 
         private MagicLinkTokenDto magicLinkToken(String tokenHash, OffsetDateTime expiresAt) {
-            return new MagicLinkTokenDto(tokenHash, USER_ID, USER_NAME, now(), expiresAt);
+            return new MagicLinkTokenDto(tokenHash, USER_ID, USER_NAME, ROLE, now(), expiresAt);
         }
 
     }
@@ -251,7 +253,7 @@ class AuthServiceTest {
             String newRefreshToken = "new.refresh.token";
             when(repository.findRefreshTokenByHash(tokenHash))
                     .thenReturn(Optional.of(refreshToken(tokenHash, daysFromNow(6), null)));
-            when(tokenProvider.generateAccessToken(USER_ID, USER_NAME, "player")).thenReturn(ACCESS_TOKEN);
+            when(tokenProvider.generateAccessToken(USER_ID, USER_NAME, ROLE)).thenReturn(ACCESS_TOKEN);
             when(tokenGenerator.generateSecureToken()).thenReturn(newRefreshToken);
 
             RefreshResult result = underTest.refresh(REFRESH_TOKEN);
@@ -269,7 +271,7 @@ class AuthServiceTest {
             String newRefreshToken = "new.refresh.token";
             when(repository.findRefreshTokenByHash(tokenHash))
                     .thenReturn(Optional.of(refreshToken(tokenHash, daysFromNow(6), null)));
-            when(tokenProvider.generateAccessToken(USER_ID, USER_NAME, "player")).thenReturn(ACCESS_TOKEN);
+            when(tokenProvider.generateAccessToken(USER_ID, USER_NAME, ROLE)).thenReturn(ACCESS_TOKEN);
             when(tokenGenerator.generateSecureToken()).thenReturn(newRefreshToken);
 
             underTest.refresh(REFRESH_TOKEN);
@@ -283,6 +285,7 @@ class AuthServiceTest {
             assertThat(saved.tokenHash()).isEqualTo(Hashes.sha256Hex(newRefreshToken));
             assertThat(saved.userId()).isEqualTo(USER_ID);
             assertThat(saved.userName()).isEqualTo(USER_NAME);
+            assertThat(saved.role()).isEqualTo(ROLE);
             assertThat(saved.revokedAt()).isNull();
             assertThat(saved.expiresAt()).isEqualTo(daysFromNow(REFRESH_TOKEN_TTL_DAYS));
             assertThat(revokedAtCaptor.getValue()).isEqualTo(now());
@@ -294,7 +297,7 @@ class AuthServiceTest {
             String newRefreshToken = "new.refresh.token";
             when(repository.findRefreshTokenByHash(tokenHash))
                     .thenReturn(Optional.of(refreshToken(tokenHash, daysFromNow(6), null)));
-            when(tokenProvider.generateAccessToken(USER_ID, USER_NAME, "player")).thenReturn(ACCESS_TOKEN);
+            when(tokenProvider.generateAccessToken(USER_ID, USER_NAME, ROLE)).thenReturn(ACCESS_TOKEN);
             when(tokenGenerator.generateSecureToken()).thenReturn(newRefreshToken);
 
             int customAccessTtl = 1800;
@@ -317,7 +320,7 @@ class AuthServiceTest {
         }
 
         private RefreshTokenDto refreshToken(String tokenHash, OffsetDateTime expiresAt, OffsetDateTime revokedAt) {
-            return new RefreshTokenDto(UUID.randomUUID(), USER_ID, USER_NAME, tokenHash, expiresAt, revokedAt, daysAgo(1));
+            return new RefreshTokenDto(UUID.randomUUID(), USER_ID, USER_NAME, ROLE, tokenHash, expiresAt, revokedAt, daysAgo(1));
         }
 
     }
@@ -365,7 +368,7 @@ class AuthServiceTest {
         }
 
         private RefreshTokenDto refreshToken(String tokenHash, OffsetDateTime expiresAt, OffsetDateTime revokedAt) {
-            return new RefreshTokenDto(UUID.randomUUID(), USER_ID, USER_NAME, tokenHash, expiresAt, revokedAt, daysAgo(1));
+            return new RefreshTokenDto(UUID.randomUUID(), USER_ID, USER_NAME, ROLE, tokenHash, expiresAt, revokedAt, daysAgo(1));
         }
 
     }

@@ -7,6 +7,7 @@ public record MagicLinkTokenDto(
         String tokenHash,
         UUID userId,
         String userName,
+        String role,
         OffsetDateTime createdAt,
         OffsetDateTime expiresAt
 ) {
