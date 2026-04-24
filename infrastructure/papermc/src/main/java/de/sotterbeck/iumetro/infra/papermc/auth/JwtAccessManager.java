@@ -19,7 +19,7 @@ public class JwtAccessManager {
 
     public void handle(Context ctx) throws Exception {
         Set<RouteRole> routeRoles = ctx.routeRoles();
-        if (routeRoles.isEmpty() || routeRoles.contains(Role.ANYONE)) {
+        if (routeRoles.contains(Role.ANYONE)) {
             return;
         }
 

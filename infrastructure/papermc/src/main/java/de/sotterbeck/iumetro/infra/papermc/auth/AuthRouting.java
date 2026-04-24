@@ -18,14 +18,15 @@ public class AuthRouting implements Routing {
 
     private static final String REFRESH_TOKEN_COOKIE = "refresh_token";
     private static final String AUTH_PATH = "/api/auth";
-    private static final int REFRESH_TOKEN_MAX_AGE_SECONDS = (int) Duration.ofDays(7).getSeconds();
 
     private final Javalin javalin;
     private final AuthService authService;
+    private final int refreshTokenMaxAgeSeconds;
 
-    public AuthRouting(Javalin javalin, AuthService authService) {
+    public AuthRouting(Javalin javalin, AuthService authService, int refreshTokenTtlDays) {
         this.javalin = javalin;
         this.authService = authService;
+        this.refreshTokenMaxAgeSeconds = (int) Duration.ofDays(refreshTokenTtlDays).getSeconds();
     }
 
     @Override
@@ -87,7 +88,7 @@ public class AuthRouting implements Routing {
                 REFRESH_TOKEN_COOKIE,
                 refreshToken,
                 AUTH_PATH,
-                REFRESH_TOKEN_MAX_AGE_SECONDS,
+                refreshTokenMaxAgeSeconds,
                 true,
                 0,
                 true,

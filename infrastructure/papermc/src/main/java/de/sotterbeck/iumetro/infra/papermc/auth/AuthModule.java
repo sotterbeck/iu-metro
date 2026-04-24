@@ -69,12 +69,18 @@ public class AuthModule extends AbstractModule {
                                           SecureTokenGenerator tokenGenerator,
                                           IuMetroConfig config,
                                           Clock clock) {
-        return new AuthService(repository, tokenProvider, tokenGenerator, config.authRefreshTokenTtlDays(), clock);
+        return new AuthService(
+                repository,
+                tokenProvider,
+                tokenGenerator,
+                config.authRefreshTokenTtlDays(),
+                (int) Duration.ofMinutes(config.authAccessTokenTtlMinutes()).getSeconds(),
+                clock);
     }
 
     @ProvidesIntoSet
-    static Routing provideAuthRouting(Javalin javalin, AuthService authService) {
-        return new AuthRouting(javalin, authService);
+    static Routing provideAuthRouting(Javalin javalin, AuthService authService, IuMetroConfig config) {
+        return new AuthRouting(javalin, authService, config.authRefreshTokenTtlDays());
     }
 
     @ProvidesIntoSet

@@ -31,7 +31,7 @@ class JwtTokenProviderTest {
     void validate_ShouldReturnSuccessWithUserIdAndUserName_WhenTokenIsValid() {
         Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneOffset.UTC);
         JwtTokenProvider provider = providerWithClock(clock);
-        String token = provider.generateAccessToken(USER_ID, USER_NAME);
+        String token = provider.generateAccessToken(USER_ID, USER_NAME, "player");
 
         TokenValidationResult result = provider.validate(token);
 
@@ -47,7 +47,7 @@ class JwtTokenProviderTest {
         JwtTokenProvider issuanceProvider = providerWithClock(
                 Clock.fixed(issuedAt, ZoneOffset.UTC));
 
-        String token = issuanceProvider.generateAccessToken(USER_ID, USER_NAME);
+        String token = issuanceProvider.generateAccessToken(USER_ID, USER_NAME, "player");
 
         JwtTokenProvider validationProvider = providerWithClock(
                 Clock.fixed(issuedAt.plusMillis(EXPIRATION_MS + 1), ZoneOffset.UTC));
@@ -63,7 +63,7 @@ class JwtTokenProviderTest {
         JwtTokenProvider issuanceProvider = providerWithClock(
                 Clock.fixed(issuedAt, ZoneOffset.UTC));
 
-        String token = issuanceProvider.generateAccessToken(USER_ID, USER_NAME);
+        String token = issuanceProvider.generateAccessToken(USER_ID, USER_NAME, "player");
 
         JwtTokenProvider validationProvider = providerWithClock(
                 Clock.fixed(issuedAt.plusMillis(EXPIRATION_MS - 1), ZoneOffset.UTC));
@@ -77,7 +77,7 @@ class JwtTokenProviderTest {
     void validate_ShouldReturnInvalid_WhenTokenSignedWithDifferentSecret() {
         Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneOffset.UTC);
         JwtTokenProvider provider = providerWithClock(clock);
-        String token = provider.generateAccessToken(USER_ID, USER_NAME);
+        String token = provider.generateAccessToken(USER_ID, USER_NAME, "player");
 
         JwtTokenProvider otherProvider = new JwtTokenProvider.Builder()
                 .secret("a-completely-different-secret-key-32c")
@@ -95,7 +95,7 @@ class JwtTokenProviderTest {
     void validate_ShouldReturnInvalid_WhenTokenIssuerDoesNotMatch() {
         Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneOffset.UTC);
         JwtTokenProvider provider = providerWithClock(clock);
-        String token = provider.generateAccessToken(USER_ID, USER_NAME);
+        String token = provider.generateAccessToken(USER_ID, USER_NAME, "player");
 
         JwtTokenProvider otherProvider = new JwtTokenProvider.Builder()
                 .secret(SECRET)
@@ -155,7 +155,7 @@ class JwtTokenProviderTest {
         JwtTokenProvider provider = providerWithClock(clock);
         UUID userId = UUID.randomUUID();
 
-        String token = provider.generateAccessToken(userId, "player1");
+        String token = provider.generateAccessToken(userId, "player1", "player");
         TokenValidationResult.Success result = (TokenValidationResult.Success) provider.validate(token);
 
         assertThat(result.userId()).isEqualTo(userId);
@@ -167,10 +167,21 @@ class JwtTokenProviderTest {
         JwtTokenProvider provider = providerWithClock(clock);
         String userName = "AnotherPlayer";
 
-        String token = provider.generateAccessToken(USER_ID, userName);
+        String token = provider.generateAccessToken(USER_ID, userName, "player");
         TokenValidationResult.Success result = (TokenValidationResult.Success) provider.validate(token);
 
         assertThat(result.userName()).isEqualTo(userName);
+    }
+
+    @Test
+    void generateAccessToken_ShouldIncludeRoleClaim_WhenValidated() {
+        Clock clock = Clock.fixed(Instant.parse("2025-01-01T00:00:00Z"), ZoneOffset.UTC);
+        JwtTokenProvider provider = providerWithClock(clock);
+
+        String token = provider.generateAccessToken(USER_ID, USER_NAME, "player");
+        TokenValidationResult.Success result = (TokenValidationResult.Success) provider.validate(token);
+
+        assertThat(result.role()).isEqualTo("player");
     }
 
     @Test
@@ -179,8 +190,8 @@ class JwtTokenProviderTest {
         JwtTokenProvider provider = providerWithClock(clock);
         UUID otherUserId = UUID.fromString("660e8400-e29b-41d4-a716-446655440000");
 
-        String token1 = provider.generateAccessToken(USER_ID, "player1");
-        String token2 = provider.generateAccessToken(otherUserId, "player2");
+        String token1 = provider.generateAccessToken(USER_ID, "player1", "player");
+        String token2 = provider.generateAccessToken(otherUserId, "player2", "player");
 
         TokenValidationResult.Success result1 = (TokenValidationResult.Success) provider.validate(token1);
         TokenValidationResult.Success result2 = (TokenValidationResult.Success) provider.validate(token2);

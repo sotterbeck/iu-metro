@@ -1,15 +1,13 @@
 package de.sotterbeck.iumetro.app.auth;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface AuthTokenRepository {
 
     void saveMagicLinkToken(MagicLinkTokenDto authToken);
 
-    Optional<MagicLinkTokenDto> findMagicLinkTokenByHash(String tokenHash);
-
-    void deleteMagicLinkToken(String tokenHash);
+    Optional<MagicLinkTokenDto> deleteMagicTokenByHash(String tokenHash);
 
     void saveRefreshToken(RefreshTokenDto refreshToken);
 
@@ -17,6 +15,6 @@ public interface AuthTokenRepository {
 
     void revokeRefreshToken(String tokenHash);
 
-    void revokeAllRefreshTokensForUser(UUID userUuid);
+    void rotateRefreshToken(String oldTokenHash, RefreshTokenDto newToken, OffsetDateTime revokedAt);
 
 }

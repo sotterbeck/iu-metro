@@ -30,11 +30,12 @@ public final class JwtTokenProvider implements TokenProvider {
     }
 
     @Override
-    public String generateAccessToken(UUID userId, String userName) {
+    public String generateAccessToken(UUID userId, String userName, String role) {
         return JWT.create()
                 .withIssuer(issuer)
                 .withSubject(userId.toString())
                 .withClaim("userName", userName)
+                .withClaim("role", role)
                 .withIssuedAt(clock.instant())
                 .withExpiresAt(clock.instant().plusMillis(expiration))
                 .sign(algorithm);
@@ -46,7 +47,8 @@ public final class JwtTokenProvider implements TokenProvider {
             var decodedJWT = verifier.verify(token);
             var userId = UUID.fromString(decodedJWT.getSubject());
             var userName = decodedJWT.getClaim("userName").asString();
-            return new TokenValidationResult.Success(userId, userName);
+            var role = decodedJWT.getClaim("role").asString();
+            return new TokenValidationResult.Success(userId, userName, role);
         } catch (TokenExpiredException e) {
             return new TokenValidationResult.Expired();
         } catch (JWTVerificationException e) {

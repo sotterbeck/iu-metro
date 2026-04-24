@@ -14,16 +14,20 @@ public final class AuthService {
     private final SecureTokenGenerator tokenGenerator;
     private final Clock clock;
     private final int refreshTokenTtlDays;
+    private final int accessTokenTtlSeconds;
 
     public AuthService(AuthTokenRepository repository,
                        TokenProvider tokenProvider,
                        SecureTokenGenerator tokenGenerator,
-                       int refreshTokenTtlDays, Clock clock) {
+                       int refreshTokenTtlDays,
+                       int accessTokenTtlSeconds,
+                       Clock clock) {
         this.repository = repository;
         this.tokenProvider = tokenProvider;
         this.tokenGenerator = tokenGenerator;
         this.clock = clock;
         this.refreshTokenTtlDays = refreshTokenTtlDays;
+        this.accessTokenTtlSeconds = accessTokenTtlSeconds;
     }
 
     public VerifyResult verify(String token) {
@@ -33,26 +37,23 @@ public final class AuthService {
 
         var tokenHash = Hashes.sha256Hex(token);
 
-        Optional<MagicLinkTokenDto> foundToken = repository.findMagicLinkTokenByHash(tokenHash);
+        Optional<MagicLinkTokenDto> foundToken = repository.deleteMagicTokenByHash(tokenHash);
         if (foundToken.isEmpty()) {
             return VerifyResult.invalid();
         }
 
         var magicLinkToken = foundToken.get();
         if (magicLinkToken.expiresAt().isBefore(OffsetDateTime.now(clock))) {
-            repository.deleteMagicLinkToken(tokenHash);
             return VerifyResult.expired();
         }
-
-        repository.deleteMagicLinkToken(tokenHash);
 
         var userId = magicLinkToken.userId();
         var userName = magicLinkToken.userName();
 
-        var accessToken = tokenProvider.generateAccessToken(userId, userName);
+        var accessToken = tokenProvider.generateAccessToken(userId, userName, "player");
         var refreshToken = generateRefreshToken(userId, userName);
 
-        return new VerifyResult.Success(accessToken, refreshToken, 900);
+        return new VerifyResult.Success(accessToken, refreshToken, accessTokenTtlSeconds);
     }
 
     public RefreshResult refresh(String token) {
@@ -76,11 +77,25 @@ public final class AuthService {
             return RefreshResult.expired();
         }
 
-        repository.revokeRefreshToken(tokenHash);
+        var newRawRefreshToken = tokenGenerator.generateSecureToken();
+        var newRefreshHash = Hashes.sha256Hex(newRawRefreshToken);
+        var now = OffsetDateTime.now(clock);
+        var refreshExpiresAt = now.plusDays(refreshTokenTtlDays);
 
-        var newRefreshToken = generateRefreshToken(refreshToken.userId(), refreshToken.userName());
-        var accessToken = tokenProvider.generateAccessToken(refreshToken.userId(), refreshToken.userName());
-        return new RefreshResult.Success(accessToken, newRefreshToken, 900);
+        var newRefreshToken = new RefreshTokenDto(
+                null,
+                refreshToken.userId(),
+                refreshToken.userName(),
+                newRefreshHash,
+                refreshExpiresAt,
+                null,
+                now
+        );
+
+        repository.rotateRefreshToken(tokenHash, newRefreshToken, now);
+
+        var accessToken = tokenProvider.generateAccessToken(refreshToken.userId(), refreshToken.userName(), "player");
+        return new RefreshResult.Success(accessToken, newRawRefreshToken, accessTokenTtlSeconds);
     }
 
     public boolean logout(String token) {

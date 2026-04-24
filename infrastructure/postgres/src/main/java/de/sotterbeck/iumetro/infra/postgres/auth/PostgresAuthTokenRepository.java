@@ -12,7 +12,6 @@ import org.jooq.impl.DSL;
 import javax.sql.DataSource;
 import java.time.OffsetDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.MAGIC_LINK_TOKENS;
 import static de.sotterbeck.iumetro.infra.postgres.jooq.generated.Tables.REFRESH_TOKENS;
@@ -37,16 +36,12 @@ public class PostgresAuthTokenRepository implements AuthTokenRepository {
     }
 
     @Override
-    public Optional<MagicLinkTokenDto> findMagicLinkTokenByHash(String tokenHash) {
-        return create.fetchOptional(MAGIC_LINK_TOKENS, MAGIC_LINK_TOKENS.TOKEN_HASH.eq(tokenHash))
-                .map(this::toMagicLinkTokenDto);
-    }
-
-    @Override
-    public void deleteMagicLinkToken(String tokenHash) {
-        create.deleteFrom(MAGIC_LINK_TOKENS)
+    public Optional<MagicLinkTokenDto> deleteMagicTokenByHash(String tokenHash) {
+        return create.deleteFrom(MAGIC_LINK_TOKENS)
                 .where(MAGIC_LINK_TOKENS.TOKEN_HASH.eq(tokenHash))
-                .execute();
+                .returning()
+                .fetchOptional()
+                .map(this::toMagicLinkTokenDto);
     }
 
     @Override
@@ -77,12 +72,24 @@ public class PostgresAuthTokenRepository implements AuthTokenRepository {
     }
 
     @Override
-    public void revokeAllRefreshTokensForUser(UUID userId) {
-        create.update(REFRESH_TOKENS)
-                .set(REFRESH_TOKENS.REVOKED_AT, OffsetDateTime.now())
-                .where(REFRESH_TOKENS.USER_ID.eq(userId))
-                .and(REFRESH_TOKENS.REVOKED_AT.isNull())
-                .execute();
+    public void rotateRefreshToken(String oldTokenHash, RefreshTokenDto newToken, OffsetDateTime revokedAt) {
+        create.transaction(configuration -> {
+            DSLContext ctx = DSL.using(configuration);
+            ctx.update(REFRESH_TOKENS)
+                    .set(REFRESH_TOKENS.REVOKED_AT, revokedAt)
+                    .where(REFRESH_TOKENS.TOKEN_HASH.eq(oldTokenHash))
+                    .execute();
+
+            RefreshTokensRecord record = ctx.newRecord(REFRESH_TOKENS)
+                    .setId(newToken.id())
+                    .setUserId(newToken.userId())
+                    .setUserName(newToken.userName())
+                    .setTokenHash(newToken.tokenHash())
+                    .setExpiresAt(newToken.expiresAt())
+                    .setRevokedAt(newToken.revokedAt())
+                    .setCreatedAt(newToken.createdAt());
+            record.store();
+        });
     }
 
     private MagicLinkTokenDto toMagicLinkTokenDto(MagicLinkTokensRecord record) {
