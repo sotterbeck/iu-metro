@@ -1,40 +1,36 @@
 package de.sotterbeck.iumetro.app.auth;
 
-public sealed interface VerifyResult permits VerifyResult.Success, VerifyResult.Expired, VerifyResult.Invalid {
+public sealed interface VerifyResult permits VerifyResult.Success, VerifyResult.Failure {
 
     record Success(String accessToken, String refreshToken, long expiresIn) implements VerifyResult {
 
     }
 
-    record Expired() implements VerifyResult {
+    sealed interface Failure extends VerifyResult {
 
-        private static final VerifyResult INSTANCE = new Expired();
+        record Expired() implements Failure {
 
+            private static final Failure INSTANCE = new Expired();
+
+        }
+
+        record Invalid() implements Failure {
+
+            private static final Failure INSTANCE = new Invalid();
+
+        }
     }
 
-    record Invalid() implements VerifyResult {
-
-        private static final VerifyResult INSTANCE = new Invalid();
-
+    static VerifyResult success(String accessToken, String refreshToken, long expiresIn) {
+        return new Success(accessToken, refreshToken, expiresIn);
     }
 
-    /**
-     * Returns a {@link VerifyResult} instance representing an expired state.
-     *
-     * @return a singleton instance of {@code VerifyResult.Expired}.
-     */
     static VerifyResult expired() {
-        return Expired.INSTANCE;
+        return Failure.Expired.INSTANCE;
     }
 
-    /**
-     * Returns a {@link VerifyResult} instance representing an invalid state,
-     * like not found, tampered, or reused.
-     *
-     * @return a singleton instance of {@code VerifyResult.Invalid}.
-     */
     static VerifyResult invalid() {
-        return Invalid.INSTANCE;
+        return Failure.Invalid.INSTANCE;
     }
 
 }

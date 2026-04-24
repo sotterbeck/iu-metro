@@ -41,8 +41,7 @@ public class AuthRouting implements Routing {
             var result = authService.verify(token);
             switch (result) {
                 case VerifyResult.Success s -> sendTokens(ctx, s.refreshToken(), s.accessToken(), s.expiresIn());
-                case VerifyResult.Expired ignored -> unauthorized(ctx);
-                case VerifyResult.Invalid ignored -> unauthorized(ctx);
+                case VerifyResult.Failure ignored -> unauthorized(ctx);
             }
         }, Role.ANYONE);
 
@@ -56,9 +55,7 @@ public class AuthRouting implements Routing {
             var result = authService.refresh(refreshToken);
             switch (result) {
                 case RefreshResult.Success s -> sendTokens(ctx, s.refreshToken(), s.accessToken(), s.expiresIn());
-                case RefreshResult.Expired ignored -> unauthorized(ctx);
-                case RefreshResult.Invalid ignored -> unauthorized(ctx);
-                case RefreshResult.Revoked ignored -> unauthorized(ctx);
+                case RefreshResult.Failure ignored -> unauthorized(ctx);
             }
         }, Role.ANYONE);
 

@@ -73,8 +73,8 @@ class AuthServiceTest {
 
         @Test
         void shouldReturnInvalid_forNullOrBlankToken() {
-            assertThat(underTest.verify(null)).isInstanceOf(VerifyResult.Invalid.class);
-            assertThat(underTest.verify("")).isInstanceOf(VerifyResult.Invalid.class);
+            assertThat(underTest.verify(null)).isInstanceOf(VerifyResult.Failure.Invalid.class);
+            assertThat(underTest.verify("")).isInstanceOf(VerifyResult.Failure.Invalid.class);
         }
 
         @Test
@@ -84,7 +84,7 @@ class AuthServiceTest {
 
             VerifyResult result = underTest.verify(RAW_OTT);
 
-            assertThat(result).isInstanceOf(VerifyResult.Invalid.class);
+            assertThat(result).isInstanceOf(VerifyResult.Failure.Invalid.class);
             verify(repository, never()).deleteMagicLinkToken(any());
             verify(tokenProvider, never()).generateAccessToken(any(), any());
             verify(tokenGenerator, never()).generateSecureToken();
@@ -98,7 +98,7 @@ class AuthServiceTest {
 
             VerifyResult result = underTest.verify(RAW_OTT);
 
-            assertThat(result).isInstanceOf(VerifyResult.Expired.class);
+            assertThat(result).isInstanceOf(VerifyResult.Failure.Expired.class);
             verify(repository).deleteMagicLinkToken(tokenHash);
             verify(tokenProvider, never()).generateAccessToken(any(), any());
             verify(tokenGenerator, never()).generateSecureToken();
@@ -112,7 +112,7 @@ class AuthServiceTest {
 
             VerifyResult result = underTest.verify(RAW_OTT);
 
-            assertThat(result).isInstanceOf(VerifyResult.Expired.class);
+            assertThat(result).isInstanceOf(VerifyResult.Failure.Expired.class);
         }
 
         @Test
@@ -187,8 +187,8 @@ class AuthServiceTest {
 
         @Test
         void shouldReturnInvalid_forNullOrBlankToken() {
-            assertThat(underTest.refresh(null)).isInstanceOf(RefreshResult.Invalid.class);
-            assertThat(underTest.refresh("")).isInstanceOf(RefreshResult.Invalid.class);
+            assertThat(underTest.refresh(null)).isInstanceOf(RefreshResult.Failure.Invalid.class);
+            assertThat(underTest.refresh("")).isInstanceOf(RefreshResult.Failure.Invalid.class);
             verify(repository, never()).findRefreshTokenByHash(any());
             verify(tokenProvider, never()).generateAccessToken(any(), any());
         }
@@ -200,7 +200,7 @@ class AuthServiceTest {
 
             RefreshResult result = underTest.refresh(REFRESH_TOKEN);
 
-            assertThat(result).isInstanceOf(RefreshResult.Invalid.class);
+            assertThat(result).isInstanceOf(RefreshResult.Failure.Invalid.class);
             verify(tokenProvider, never()).generateAccessToken(any(), any());
         }
 
@@ -212,7 +212,7 @@ class AuthServiceTest {
 
             RefreshResult result = underTest.refresh(REFRESH_TOKEN);
 
-            assertThat(result).isInstanceOf(RefreshResult.Expired.class);
+            assertThat(result).isInstanceOf(RefreshResult.Failure.Expired.class);
             verify(tokenProvider, never()).generateAccessToken(any(), any());
         }
 
@@ -224,7 +224,7 @@ class AuthServiceTest {
 
             RefreshResult result = underTest.refresh(REFRESH_TOKEN);
 
-            assertThat(result).isInstanceOf(RefreshResult.Revoked.class);
+            assertThat(result).isInstanceOf(RefreshResult.Failure.Revoked.class);
             verify(tokenProvider, never()).generateAccessToken(any(), any());
         }
 

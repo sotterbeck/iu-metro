@@ -1,56 +1,46 @@
 package de.sotterbeck.iumetro.app.auth;
 
-public sealed interface RefreshResult permits
-        RefreshResult.Expired, RefreshResult.Invalid, RefreshResult.Revoked, RefreshResult.Success {
+public sealed interface RefreshResult permits RefreshResult.Success, RefreshResult.Failure {
 
     record Success(String accessToken, String refreshToken, long expiresIn) implements RefreshResult {
 
     }
 
-    record Expired() implements RefreshResult {
+    sealed interface Failure extends RefreshResult {
 
-        private static final RefreshResult INSTANCE = new Expired();
+        record Expired() implements Failure {
 
+            private static final Failure INSTANCE = new Expired();
+
+        }
+
+        record Invalid() implements Failure {
+
+            private static final Failure INSTANCE = new Invalid();
+
+        }
+
+        record Revoked() implements Failure {
+
+            private static final Failure INSTANCE = new Revoked();
+
+        }
     }
 
-    record Invalid() implements RefreshResult {
-
-        private static final RefreshResult INSTANCE = new Invalid();
-
+    static RefreshResult success(String accessToken, String refreshToken, long expiresIn) {
+        return new Success(accessToken, refreshToken, expiresIn);
     }
 
-    record Revoked() implements RefreshResult {
-
-        private static final RefreshResult INSTANCE = new Revoked();
-
-    }
-
-    /**
-     * Returns a {@link RefreshResult} instance representing an expired state.
-     *
-     * @return a singleton instance of {@code RefreshResult.Expired}.
-     */
     static RefreshResult expired() {
-        return Expired.INSTANCE;
+        return Failure.Expired.INSTANCE;
     }
 
-    /**
-     * Returns a {@link RefreshResult} instance representing an invalid state,
-     * like not found or tampered.
-     *
-     * @return a singleton instance of {@code RefreshResult.Invalid}.
-     */
     static RefreshResult invalid() {
-        return Invalid.INSTANCE;
+        return Failure.Invalid.INSTANCE;
     }
 
-    /**
-     * Returns a {@link RefreshResult} instance representing a revoked state.
-     *
-     * @return a singleton instance of {@code RefreshResult.Revoked}.
-     */
     static RefreshResult revoked() {
-        return Revoked.INSTANCE;
+        return Failure.Revoked.INSTANCE;
     }
 
 }
