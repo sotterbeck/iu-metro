@@ -33,7 +33,7 @@ public class AuthRouting implements Routing {
 
     @Override
     public void bindRoutes() {
-        javalin.get("/api/auth/verify", ctx -> {
+        javalin.post("/api/auth/verify", ctx -> {
             NaiveRateLimit.requestPerTimeUnit(ctx, 2, TimeUnit.MINUTES);
             var request = ctx.bodyValidator(VerifyRequest.class)
                     .check((VerifyRequest r) -> r.token() != null && !r.token().isBlank(), "Missing token")
