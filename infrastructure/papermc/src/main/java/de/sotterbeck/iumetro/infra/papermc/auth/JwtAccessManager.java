@@ -1,6 +1,7 @@
 package de.sotterbeck.iumetro.infra.papermc.auth;
 
 import de.sotterbeck.iumetro.app.auth.TokenProvider;
+import de.sotterbeck.iumetro.app.auth.TokenRevocationService;
 import de.sotterbeck.iumetro.app.auth.TokenValidationResult;
 import de.sotterbeck.iumetro.infra.papermc.common.web.ApiResponse;
 import io.javalin.http.Context;
@@ -12,9 +13,11 @@ import java.util.Set;
 public class JwtAccessManager {
 
     private final TokenProvider tokenProvider;
+    private final TokenRevocationService tokenRevocationService;
 
-    public JwtAccessManager(TokenProvider tokenProvider) {
+    public JwtAccessManager(TokenProvider tokenProvider, TokenRevocationService tokenRevocationService) {
         this.tokenProvider = tokenProvider;
+        this.tokenRevocationService = tokenRevocationService;
     }
 
     public void handle(Context ctx) {
@@ -32,6 +35,11 @@ public class JwtAccessManager {
 
         var result = tokenProvider.validate(token);
         if (result instanceof TokenValidationResult.Success s) {
+            if (tokenRevocationService.isRevoked(s.jti())) {
+                deny(ctx, HttpStatus.UNAUTHORIZED, "Invalid or expired token");
+                return;
+            }
+
             setUserAttributes(ctx, s);
 
             if (!hasMatchingRole(routeRoles, s.role())) {

@@ -2,8 +2,10 @@ package de.sotterbeck.iumetro.infra.papermc;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import de.sotterbeck.iumetro.app.common.DbMigrator;
 import de.sotterbeck.iumetro.infra.papermc.auth.AuthModule;
+import de.sotterbeck.iumetro.infra.papermc.auth.LuckPermsModule;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.infra.papermc.common.sign.SignModule;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
@@ -24,6 +26,7 @@ import org.incendo.cloud.execution.ExecutionCoordinator;
 import org.incendo.cloud.meta.CommandMeta;
 import org.incendo.cloud.paper.PaperCommandManager;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 public class IuMetroPlugin extends JavaPlugin {
@@ -43,23 +46,28 @@ public class IuMetroPlugin extends JavaPlugin {
     @Inject
     private Set<Listener> listeners;
 
+    @Inject
+    private Set<LifecycleListener> lifecycleListeners;
+
     @Override
     public void onEnable() {
         saveDefaultConfig();
         Injector injector;
         try {
-            injector = Guice.createInjector(
-                    new PaperPluginModule(this),
-                    new PersistenceModule(),
-                    new AuthModule(),
-                    new WebModule(),
-                    new SignModule(),
-                    new TicketModule(),
-                    new FareGateModule(),
-                    new MetroStationModule(),
-                    new MetroNetworkModule(),
-                    new RetailTicketModule()
-            );
+            var modules = new ArrayList<Module>();
+            modules.add(new PaperPluginModule(this));
+            modules.add(new PersistenceModule());
+            modules.add(new AuthModule());
+            modules.add(new LuckPermsModule());
+            modules.add(new WebModule());
+            modules.add(new SignModule());
+            modules.add(new TicketModule());
+            modules.add(new FareGateModule());
+            modules.add(new MetroStationModule());
+            modules.add(new MetroNetworkModule());
+            modules.add(new RetailTicketModule());
+
+            injector = Guice.createInjector(modules);
         } catch (Exception e) {
             getLogger().severe("Failed to create Guice injector: " + e.getMessage());
             throw e;
@@ -69,6 +77,7 @@ public class IuMetroPlugin extends JavaPlugin {
 
         registerCommands();
         registerEvents();
+        lifecycleListeners.forEach(LifecycleListener::onEnable);
 
         migrator.migrate();
 
@@ -109,6 +118,7 @@ public class IuMetroPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        lifecycleListeners.forEach(LifecycleListener::onDisable);
         if (javalin != null) {
             javalin.stop();
         }

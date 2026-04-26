@@ -32,7 +32,8 @@ class AuthServiceTest {
     private static final Instant FIXED_INSTANT = Instant.parse("2025-01-01T00:00:00Z");
     private static final Clock FIXED_CLOCK = Clock.fixed(FIXED_INSTANT, ZoneOffset.UTC);
     private static final String RAW_OTT = "valid-one-time-token";
-    private static final String ACCESS_TOKEN = "eyJ.access.token";
+    private static final String ACCESS_TOKEN_STRING = "eyJ.access.token";
+    private static final Token ACCESS_TOKEN = new Token(ACCESS_TOKEN_STRING, "test-jti");
     private static final String REFRESH_TOKEN = "dGZ.refresh.token";
 
     @Mock
@@ -44,11 +45,14 @@ class AuthServiceTest {
     @Mock
     private SecureTokenGenerator tokenGenerator;
 
+    @Mock
+    private TokenRevocationService tokenRevocationService;
+
     private AuthService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new AuthService(repository, tokenProvider, tokenGenerator, REFRESH_TOKEN_TTL_DAYS, ACCESS_TOKEN_TTL_SECONDS, FIXED_CLOCK);
+        underTest = new AuthService(repository, tokenProvider, tokenGenerator, tokenRevocationService, REFRESH_TOKEN_TTL_DAYS, ACCESS_TOKEN_TTL_SECONDS, FIXED_CLOCK);
     }
 
     private static OffsetDateTime now() {
@@ -137,7 +141,7 @@ class AuthServiceTest {
 
             assertThat(result).isInstanceOf(VerifyResult.Success.class);
             VerifyResult.Success success = (VerifyResult.Success) result;
-            assertThat(success.accessToken()).isEqualTo(ACCESS_TOKEN);
+            assertThat(success.accessToken()).isEqualTo(ACCESS_TOKEN_STRING);
             assertThat(success.refreshToken()).isEqualTo(REFRESH_TOKEN);
             assertThat(success.expiresIn()).isEqualTo(ACCESS_TOKEN_TTL_SECONDS);
 
@@ -168,7 +172,7 @@ class AuthServiceTest {
 
             int customTtl = 14;
             AuthService customService = new AuthService(
-                    repository, tokenProvider, tokenGenerator, customTtl, ACCESS_TOKEN_TTL_SECONDS, FIXED_CLOCK);
+                    repository, tokenProvider, tokenGenerator, tokenRevocationService, customTtl, ACCESS_TOKEN_TTL_SECONDS, FIXED_CLOCK);
 
             customService.verify(RAW_OTT);
 
@@ -187,7 +191,7 @@ class AuthServiceTest {
 
             int customAccessTtl = 1800;
             AuthService customService = new AuthService(
-                    repository, tokenProvider, tokenGenerator, REFRESH_TOKEN_TTL_DAYS, customAccessTtl, FIXED_CLOCK);
+                    repository, tokenProvider, tokenGenerator, tokenRevocationService, REFRESH_TOKEN_TTL_DAYS, customAccessTtl, FIXED_CLOCK);
 
             VerifyResult result = customService.verify(RAW_OTT);
 
@@ -208,14 +212,16 @@ class AuthServiceTest {
         void shouldReturnInvalid_forNullOrBlankToken() {
             assertThat(underTest.refresh(null)).isInstanceOf(RefreshResult.Failure.Invalid.class);
             assertThat(underTest.refresh("")).isInstanceOf(RefreshResult.Failure.Invalid.class);
-            verify(repository, never()).findRefreshTokenByHash(any());
+            verify(repository, never()).rotateRefreshToken(any(), any(), any());
             verify(tokenProvider, never()).generateAccessToken(any(), any(), any());
         }
 
         @Test
-        void shouldReturnInvalid_whenTokenNotFound() {
+        void shouldReturnInvalid_whenRotationFailsWithNotFound() {
             String tokenHash = Hashes.sha256Hex(REFRESH_TOKEN);
-            when(repository.findRefreshTokenByHash(tokenHash)).thenReturn(Optional.empty());
+            when(tokenGenerator.generateSecureToken()).thenReturn("unused-token");
+            doReturn(new TokenRotationDto.Failure.NotFound())
+                    .when(repository).rotateRefreshToken(any(), any(), any());
 
             RefreshResult result = underTest.refresh(REFRESH_TOKEN);
 
@@ -224,10 +230,11 @@ class AuthServiceTest {
         }
 
         @Test
-        void shouldReturnExpired_whenTokenIsExpired() {
+        void shouldReturnExpired_whenRotationFailsWithExpired() {
             String tokenHash = Hashes.sha256Hex(REFRESH_TOKEN);
-            when(repository.findRefreshTokenByHash(tokenHash))
-                    .thenReturn(Optional.of(refreshToken(tokenHash, daysAgo(1), null)));
+            when(tokenGenerator.generateSecureToken()).thenReturn("unused-token");
+            doReturn(new TokenRotationDto.Failure.Expired())
+                    .when(repository).rotateRefreshToken(any(), any(), any());
 
             RefreshResult result = underTest.refresh(REFRESH_TOKEN);
 
@@ -236,10 +243,11 @@ class AuthServiceTest {
         }
 
         @Test
-        void shouldReturnRevoked_whenTokenIsRevoked() {
+        void shouldReturnRevoked_whenRotationFailsWithRevoked() {
             String tokenHash = Hashes.sha256Hex(REFRESH_TOKEN);
-            when(repository.findRefreshTokenByHash(tokenHash))
-                    .thenReturn(Optional.of(refreshToken(tokenHash, daysFromNow(6), minutesAgo(1))));
+            when(tokenGenerator.generateSecureToken()).thenReturn("unused-token");
+            doReturn(new TokenRotationDto.Failure.Revoked())
+                    .when(repository).rotateRefreshToken(any(), any(), any());
 
             RefreshResult result = underTest.refresh(REFRESH_TOKEN);
 
@@ -248,11 +256,11 @@ class AuthServiceTest {
         }
 
         @Test
-        void shouldReturnNewAccessTokenAndRefreshToken_whenTokenIsValid() {
+        void shouldReturnNewAccessTokenAndRefreshToken_whenRotationSucceeds() {
             String tokenHash = Hashes.sha256Hex(REFRESH_TOKEN);
             String newRefreshToken = "new.refresh.token";
-            when(repository.findRefreshTokenByHash(tokenHash))
-                    .thenReturn(Optional.of(refreshToken(tokenHash, daysFromNow(6), null)));
+            doReturn(new TokenRotationDto.Success(USER_ID, USER_NAME, ROLE))
+                    .when(repository).rotateRefreshToken(any(), any(), any());
             when(tokenProvider.generateAccessToken(USER_ID, USER_NAME, ROLE)).thenReturn(ACCESS_TOKEN);
             when(tokenGenerator.generateSecureToken()).thenReturn(newRefreshToken);
 
@@ -260,7 +268,7 @@ class AuthServiceTest {
 
             assertThat(result).isInstanceOf(RefreshResult.Success.class);
             RefreshResult.Success success = (RefreshResult.Success) result;
-            assertThat(success.accessToken()).isEqualTo(ACCESS_TOKEN);
+            assertThat(success.accessToken()).isEqualTo(ACCESS_TOKEN_STRING);
             assertThat(success.refreshToken()).isEqualTo(newRefreshToken);
             assertThat(success.expiresIn()).isEqualTo(ACCESS_TOKEN_TTL_SECONDS);
         }
@@ -269,8 +277,8 @@ class AuthServiceTest {
         void shouldRotateRefreshTokenAtomically_whenTokenIsValid() {
             String tokenHash = Hashes.sha256Hex(REFRESH_TOKEN);
             String newRefreshToken = "new.refresh.token";
-            when(repository.findRefreshTokenByHash(tokenHash))
-                    .thenReturn(Optional.of(refreshToken(tokenHash, daysFromNow(6), null)));
+            doReturn(new TokenRotationDto.Success(USER_ID, USER_NAME, ROLE))
+                    .when(repository).rotateRefreshToken(any(), any(), any());
             when(tokenProvider.generateAccessToken(USER_ID, USER_NAME, ROLE)).thenReturn(ACCESS_TOKEN);
             when(tokenGenerator.generateSecureToken()).thenReturn(newRefreshToken);
 
@@ -283,9 +291,6 @@ class AuthServiceTest {
             verify(repository).rotateRefreshToken(eq(tokenHash), captor.capture(), revokedAtCaptor.capture());
             RefreshTokenDto saved = captor.getValue();
             assertThat(saved.tokenHash()).isEqualTo(Hashes.sha256Hex(newRefreshToken));
-            assertThat(saved.userId()).isEqualTo(USER_ID);
-            assertThat(saved.userName()).isEqualTo(USER_NAME);
-            assertThat(saved.role()).isEqualTo(ROLE);
             assertThat(saved.revokedAt()).isNull();
             assertThat(saved.expiresAt()).isEqualTo(daysFromNow(REFRESH_TOKEN_TTL_DAYS));
             assertThat(revokedAtCaptor.getValue()).isEqualTo(now());
@@ -293,16 +298,15 @@ class AuthServiceTest {
 
         @Test
         void shouldUseConfiguredAccessTokenTtl() {
-            String tokenHash = Hashes.sha256Hex(REFRESH_TOKEN);
             String newRefreshToken = "new.refresh.token";
-            when(repository.findRefreshTokenByHash(tokenHash))
-                    .thenReturn(Optional.of(refreshToken(tokenHash, daysFromNow(6), null)));
+            doReturn(new TokenRotationDto.Success(USER_ID, USER_NAME, ROLE))
+                    .when(repository).rotateRefreshToken(any(), any(), any());
             when(tokenProvider.generateAccessToken(USER_ID, USER_NAME, ROLE)).thenReturn(ACCESS_TOKEN);
             when(tokenGenerator.generateSecureToken()).thenReturn(newRefreshToken);
 
             int customAccessTtl = 1800;
             AuthService customService = new AuthService(
-                    repository, tokenProvider, tokenGenerator, REFRESH_TOKEN_TTL_DAYS, customAccessTtl, FIXED_CLOCK);
+                    repository, tokenProvider, tokenGenerator, tokenRevocationService, REFRESH_TOKEN_TTL_DAYS, customAccessTtl, FIXED_CLOCK);
 
             RefreshResult result = customService.refresh(REFRESH_TOKEN);
 
@@ -311,16 +315,14 @@ class AuthServiceTest {
         }
 
         @Test
-        void shouldHashTokenWithSha256_forLookup() {
-            when(repository.findRefreshTokenByHash(any())).thenReturn(Optional.empty());
+        void shouldHashTokenWithSha256_forRotation() {
+            when(tokenGenerator.generateSecureToken()).thenReturn("unused-token");
+            doReturn(new TokenRotationDto.Failure.NotFound())
+                    .when(repository).rotateRefreshToken(any(), any(), any());
 
             underTest.refresh(REFRESH_TOKEN);
 
-            verify(repository).findRefreshTokenByHash(Hashes.sha256Hex(REFRESH_TOKEN));
-        }
-
-        private RefreshTokenDto refreshToken(String tokenHash, OffsetDateTime expiresAt, OffsetDateTime revokedAt) {
-            return new RefreshTokenDto(UUID.randomUUID(), USER_ID, USER_NAME, ROLE, tokenHash, expiresAt, revokedAt, daysAgo(1));
+            verify(repository).rotateRefreshToken(eq(Hashes.sha256Hex(REFRESH_TOKEN)), any(), any());
         }
 
     }

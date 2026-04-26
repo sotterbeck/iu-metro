@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.cloud.paper)
     implementation(libs.java.jwt)
     compileOnly(libs.paper)
+    compileOnly(libs.luckperms)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.assertj.core)
     testImplementation(libs.mockito.core)

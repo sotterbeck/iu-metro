@@ -3,8 +3,7 @@ package de.sotterbeck.iumetro.infra.postgres.auth;
 import de.sotterbeck.iumetro.app.auth.AuthTokenRepository;
 import de.sotterbeck.iumetro.app.auth.MagicLinkTokenDto;
 import de.sotterbeck.iumetro.app.auth.RefreshTokenDto;
-import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.MagicLinkTokensRecord;
-import de.sotterbeck.iumetro.infra.postgres.jooq.generated.tables.records.RefreshTokensRecord;
+import de.sotterbeck.iumetro.app.auth.TokenRotationDto;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -28,12 +27,12 @@ public class PostgresAuthTokenRepository implements AuthTokenRepository {
     public void saveMagicLinkToken(MagicLinkTokenDto authToken) {
         upsertUser(create, authToken.userId(), authToken.userName(), authToken.role(), authToken.createdAt());
 
-        MagicLinkTokensRecord record = create.newRecord(MAGIC_LINK_TOKENS)
+        create.newRecord(MAGIC_LINK_TOKENS)
                 .setTokenHash(authToken.tokenHash())
                 .setUserId(authToken.userId())
                 .setCreatedAt(authToken.createdAt())
-                .setExpiresAt(authToken.expiresAt());
-        record.store();
+                .setExpiresAt(authToken.expiresAt())
+                .store();
     }
 
     @Override
@@ -77,14 +76,14 @@ public class PostgresAuthTokenRepository implements AuthTokenRepository {
     public void saveRefreshToken(RefreshTokenDto refreshToken) {
         upsertUser(create, refreshToken.userId(), refreshToken.userName(), refreshToken.role(), refreshToken.createdAt());
 
-        RefreshTokensRecord record = create.newRecord(REFRESH_TOKENS)
+        create.newRecord(REFRESH_TOKENS)
                 .setId(refreshToken.id())
                 .setUserId(refreshToken.userId())
                 .setTokenHash(refreshToken.tokenHash())
                 .setExpiresAt(refreshToken.expiresAt())
                 .setRevokedAt(refreshToken.revokedAt())
-                .setCreatedAt(refreshToken.createdAt());
-        record.store();
+                .setCreatedAt(refreshToken.createdAt())
+                .store();
     }
 
     @Override
@@ -123,24 +122,53 @@ public class PostgresAuthTokenRepository implements AuthTokenRepository {
     }
 
     @Override
-    public void rotateRefreshToken(String oldTokenHash, RefreshTokenDto newToken, OffsetDateTime revokedAt) {
-        create.transaction(configuration -> {
+    public TokenRotationDto rotateRefreshToken(String oldTokenHash, RefreshTokenDto newToken, OffsetDateTime revokedAt) {
+        return create.transactionResult(configuration -> {
             DSLContext ctx = DSL.using(configuration);
-            ctx.update(REFRESH_TOKENS)
+
+            var updated = ctx.update(REFRESH_TOKENS)
                     .set(REFRESH_TOKENS.REVOKED_AT, revokedAt)
                     .where(REFRESH_TOKENS.TOKEN_HASH.eq(oldTokenHash))
-                    .execute();
+                    .and(REFRESH_TOKENS.REVOKED_AT.isNull())
+                    .and(REFRESH_TOKENS.EXPIRES_AT.greaterThan(OffsetDateTime.now()))
+                    .returning()
+                    .fetchOne();
 
-            upsertUser(ctx, newToken.userId(), newToken.userName(), newToken.role(), newToken.createdAt());
+            if (updated == null) {
+                var existing = ctx.selectFrom(REFRESH_TOKENS)
+                        .where(REFRESH_TOKENS.TOKEN_HASH.eq(oldTokenHash))
+                        .fetchOne();
 
-            RefreshTokensRecord record = ctx.newRecord(REFRESH_TOKENS)
+                if (existing == null) {
+                    return new TokenRotationDto.Failure.NotFound();
+                }
+                if (existing.getRevokedAt() != null) {
+                    return new TokenRotationDto.Failure.Revoked();
+                }
+                return new TokenRotationDto.Failure.Expired();
+            }
+
+            var userId = updated.getUserId();
+            var userRecord = ctx.select(USERS.NAME, USERS.ROLE)
+                    .from(USERS)
+                    .where(USERS.ID.eq(userId))
+                    .fetchOne();
+
+            var userName = userRecord != null ? userRecord.get(USERS.NAME) : null;
+            var role = userRecord != null ? userRecord.get(USERS.ROLE) : null;
+
+            upsertUser(ctx, userId, userName, role, newToken.createdAt());
+
+            ctx.newRecord(REFRESH_TOKENS)
                     .setId(newToken.id())
-                    .setUserId(newToken.userId())
+                    .setUserId(userId)
                     .setTokenHash(newToken.tokenHash())
                     .setExpiresAt(newToken.expiresAt())
                     .setRevokedAt(newToken.revokedAt())
-                    .setCreatedAt(newToken.createdAt());
-            record.store();
+                    .setCreatedAt(newToken.createdAt())
+                    .store();
+
+            return new TokenRotationDto.Success(userId, userName, role);
         });
     }
 

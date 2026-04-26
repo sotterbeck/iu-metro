@@ -1,4 +1,4 @@
-CREATE TABLE users
+CREATE TABLE IF NOT EXISTS users
 (
     id         uuid PRIMARY KEY,
     name       VARCHAR(16) NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE users
     updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE magic_link_tokens
+CREATE TABLE IF NOT EXISTS magic_link_tokens
 (
     token_hash VARCHAR(64) PRIMARY KEY,
     user_id uuid NOT NULL REFERENCES users (id),
@@ -15,7 +15,7 @@ CREATE TABLE magic_link_tokens
     expires_at timestamptz NOT NULL
 );
 
-CREATE TABLE refresh_tokens
+CREATE TABLE IF NOT EXISTS refresh_tokens
 (
     id         uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
     user_id uuid NOT NULL REFERENCES users (id),
@@ -25,5 +25,5 @@ CREATE TABLE refresh_tokens
     created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_refresh_tokens_token_hash ON refresh_tokens (token_hash);
-CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens (user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_hash ON refresh_tokens (token_hash);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens (user_id);

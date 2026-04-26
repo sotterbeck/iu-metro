@@ -43,14 +43,41 @@ public class AuthModule extends AbstractModule {
                         .ofMinutes(config.authAccessTokenTtlMinutes())
                         .toMillis())
                 .issuer("iu-metro")
+                .audience("iu-metro-api")
                 .clock(clock)
                 .build();
     }
 
     @Provides
     @Singleton
-    static JwtAccessManager provideJwtAccessManager(TokenProvider tokenProvider) {
-        return new JwtAccessManager(tokenProvider);
+    static TokenRevocationService provideTokenRevocationService(IuMetroConfig config, Clock clock) {
+        return new InMemoryTokenRevocationService(
+                Duration.ofMinutes(config.authAccessTokenTtlMinutes()),
+                clock);
+    }
+
+    @Provides
+    @Singleton
+    static JwtAccessManager provideJwtAccessManager(TokenProvider tokenProvider, TokenRevocationService tokenRevocationService) {
+        return new JwtAccessManager(tokenProvider, tokenRevocationService);
+    }
+
+    @Provides
+    @Singleton
+    static AuthService provideAuthService(AuthTokenRepository repository,
+                                          TokenProvider tokenProvider,
+                                          SecureTokenGenerator tokenGenerator,
+                                          TokenRevocationService tokenRevocationService,
+                                          IuMetroConfig config,
+                                          Clock clock) {
+        return new AuthService(
+                repository,
+                tokenProvider,
+                tokenGenerator,
+                tokenRevocationService,
+                config.authRefreshTokenTtlDays(),
+                (int) Duration.ofMinutes(config.authAccessTokenTtlMinutes()).getSeconds(),
+                clock);
     }
 
     @Provides
@@ -60,22 +87,6 @@ public class AuthModule extends AbstractModule {
                                                     IuMetroConfig config,
                                                     Clock clock) {
         return new MagicLinkService(repository, tokenGenerator, config.authBaseUrl(), config.authMagicLinkTtlMinutes(), clock);
-    }
-
-    @Provides
-    @Singleton
-    static AuthService provideAuthService(AuthTokenRepository repository,
-                                          TokenProvider tokenProvider,
-                                          SecureTokenGenerator tokenGenerator,
-                                          IuMetroConfig config,
-                                          Clock clock) {
-        return new AuthService(
-                repository,
-                tokenProvider,
-                tokenGenerator,
-                config.authRefreshTokenTtlDays(),
-                (int) Duration.ofMinutes(config.authAccessTokenTtlMinutes()).getSeconds(),
-                clock);
     }
 
     @ProvidesIntoSet

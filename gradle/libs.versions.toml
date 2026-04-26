@@ -19,6 +19,7 @@ mockito = "5.23.0"
 mockbukkit = "4.108.0"
 testcontainers = "1.20.0"
 java-jwt = "4.5.1"
+luckperms = "5.4"
 
 [libraries]
 flywaydb = { module = "org.flywaydb:flyway-core", version.ref = "flywaydb" }
@@ -49,3 +50,4 @@ mockbukkit = { module = "org.mockbukkit.mockbukkit:mockbukkit-v1.21", version.re
 testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 java-jwt = { module = "com.auth0:java-jwt", version.ref = "java-jwt" }
+luckperms = { module = "net.luckperms:api", version.ref = "luckperms" }

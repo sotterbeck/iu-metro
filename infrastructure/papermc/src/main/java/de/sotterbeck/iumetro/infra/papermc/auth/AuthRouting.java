@@ -10,9 +10,11 @@ import io.javalin.http.Context;
 import io.javalin.http.Cookie;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.SameSite;
+import io.javalin.http.util.NaiveRateLimit;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class AuthRouting implements Routing {
 
@@ -32,6 +34,8 @@ public class AuthRouting implements Routing {
     @Override
     public void bindRoutes() {
         javalin.get("/api/auth/verify", ctx -> {
+            NaiveRateLimit.requestPerTimeUnit(ctx, 2, TimeUnit.MINUTES);
+
             var token = ctx.queryParam("token");
             if (token == null || token.isBlank()) {
                 ctx.status(HttpStatus.BAD_REQUEST);
@@ -47,6 +51,8 @@ public class AuthRouting implements Routing {
         }, Role.ANYONE);
 
         javalin.post("/api/auth/refresh", ctx -> {
+            NaiveRateLimit.requestPerTimeUnit(ctx, 20, TimeUnit.MINUTES);
+
             var refreshToken = ctx.cookie(REFRESH_TOKEN_COOKIE);
             if (refreshToken == null || refreshToken.isBlank()) {
                 unauthorized(ctx);
@@ -61,6 +67,8 @@ public class AuthRouting implements Routing {
         }, Role.ANYONE);
 
         javalin.post("/api/auth/logout", ctx -> {
+            NaiveRateLimit.requestPerTimeUnit(ctx, 20, TimeUnit.MINUTES);
+
             var refreshToken = ctx.cookie(REFRESH_TOKEN_COOKIE);
             if (refreshToken != null && !refreshToken.isBlank()) {
                 authService.logout(refreshToken);

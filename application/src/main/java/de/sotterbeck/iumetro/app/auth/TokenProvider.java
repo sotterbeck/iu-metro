@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public interface TokenProvider {
 
-    String generateAccessToken(UUID userId, String userName, String role);
+    Token generateAccessToken(UUID userId, String userName, String role);
 
     TokenValidationResult validate(String token);
 

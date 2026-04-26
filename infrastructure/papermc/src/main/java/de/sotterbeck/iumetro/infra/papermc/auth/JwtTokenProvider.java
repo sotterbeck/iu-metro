@@ -6,6 +6,7 @@ import com.auth0.jwt.JWTVerifier.BaseVerification;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import de.sotterbeck.iumetro.app.auth.Token;
 import de.sotterbeck.iumetro.app.auth.TokenProvider;
 import de.sotterbeck.iumetro.app.auth.TokenValidationResult;
 
@@ -16,6 +17,7 @@ public final class JwtTokenProvider implements TokenProvider {
 
     private final long expiration;
     private final String issuer;
+    private final String audience;
     private final Clock clock;
 
     private final Algorithm algorithm;
@@ -24,21 +26,29 @@ public final class JwtTokenProvider implements TokenProvider {
     private JwtTokenProvider(Builder builder) {
         expiration = builder.expiration;
         issuer = builder.issuer;
+        audience = builder.audience;
         clock = builder.clock;
         algorithm = Algorithm.HMAC256(builder.secret);
-        verifier = ((BaseVerification) JWT.require(algorithm).withIssuer(issuer)).build(builder.clock);
+        verifier = ((BaseVerification) JWT.require(algorithm)
+                .withIssuer(issuer)
+                .withAudience(audience))
+                .build(builder.clock);
     }
 
     @Override
-    public String generateAccessToken(UUID userId, String userName, String role) {
-        return JWT.create()
+    public Token generateAccessToken(UUID userId, String userName, String role) {
+        var jti = UUID.randomUUID().toString();
+        var token = JWT.create()
                 .withIssuer(issuer)
+                .withAudience(audience)
+                .withJWTId(jti)
                 .withSubject(userId.toString())
                 .withClaim("userName", userName)
                 .withClaim("role", role)
                 .withIssuedAt(clock.instant())
-                .withExpiresAt(clock.instant().plusMillis(expiration))
-                .sign(algorithm);
+                .withExpiresAt(clock.instant().plusMillis(expiration)).sign(algorithm);
+
+        return new Token(token, jti);
     }
 
     @Override
@@ -48,7 +58,8 @@ public final class JwtTokenProvider implements TokenProvider {
             var userId = UUID.fromString(decodedJWT.getSubject());
             var userName = decodedJWT.getClaim("userName").asString();
             var role = decodedJWT.getClaim("role").asString();
-            return new TokenValidationResult.Success(userId, userName, role);
+            var jti = decodedJWT.getId();
+            return new TokenValidationResult.Success(userId, userName, role, jti);
         } catch (TokenExpiredException e) {
             return new TokenValidationResult.Expired();
         } catch (JWTVerificationException e) {
@@ -61,6 +72,7 @@ public final class JwtTokenProvider implements TokenProvider {
         private String secret;
         private long expiration;
         private String issuer;
+        private String audience = "iu-metro-api";
         private Clock clock = Clock.systemUTC();
 
         /**
@@ -93,6 +105,17 @@ public final class JwtTokenProvider implements TokenProvider {
          */
         public Builder issuer(String issuer) {
             this.issuer = issuer;
+            return this;
+        }
+
+        /**
+         * Sets the audience that the token is intended for.
+         *
+         * @param audience the audience of the token
+         * @return this builder
+         */
+        public Builder audience(String audience) {
+            this.audience = audience;
             return this;
         }
 

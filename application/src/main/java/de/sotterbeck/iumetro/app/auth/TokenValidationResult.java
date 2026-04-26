@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 public sealed interface TokenValidationResult permits TokenValidationResult.Success, TokenValidationResult.Invalid, TokenValidationResult.Expired {
 
-    record Success(UUID userId, String userName, String role) implements TokenValidationResult {
+    record Success(UUID userId, String userName, String role, String jti) implements TokenValidationResult {
 
     }
 

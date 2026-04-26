@@ -12,6 +12,7 @@ public final class AuthService {
     private final AuthTokenRepository repository;
     private final TokenProvider tokenProvider;
     private final SecureTokenGenerator tokenGenerator;
+    private final TokenRevocationService tokenRevocationService;
     private final Clock clock;
     private final int refreshTokenTtlDays;
     private final int accessTokenTtlSeconds;
@@ -19,12 +20,14 @@ public final class AuthService {
     public AuthService(AuthTokenRepository repository,
                        TokenProvider tokenProvider,
                        SecureTokenGenerator tokenGenerator,
+                       TokenRevocationService tokenRevocationService,
                        int refreshTokenTtlDays,
                        int accessTokenTtlSeconds,
                        Clock clock) {
         this.repository = repository;
         this.tokenProvider = tokenProvider;
         this.tokenGenerator = tokenGenerator;
+        this.tokenRevocationService = tokenRevocationService;
         this.clock = clock;
         this.refreshTokenTtlDays = refreshTokenTtlDays;
         this.accessTokenTtlSeconds = accessTokenTtlSeconds;
@@ -52,9 +55,10 @@ public final class AuthService {
         var role = magicLinkToken.role();
 
         var accessToken = tokenProvider.generateAccessToken(userId, userName, role);
+        tokenRevocationService.registerToken(userId, accessToken.id());
         var refreshToken = generateRefreshToken(userId, userName, role);
 
-        return new VerifyResult.Success(accessToken, refreshToken, accessTokenTtlSeconds);
+        return new VerifyResult.Success(accessToken.token(), refreshToken, accessTokenTtlSeconds);
     }
 
     public RefreshResult refresh(String token) {
@@ -63,41 +67,36 @@ public final class AuthService {
         }
 
         var tokenHash = Hashes.sha256Hex(token);
-
-        Optional<RefreshTokenDto> foundToken = repository.findRefreshTokenByHash(tokenHash);
-        if (foundToken.isEmpty()) {
-            return RefreshResult.invalid();
-        }
-
-        var refreshToken = foundToken.get();
-        if (refreshToken.revokedAt() != null) {
-            return RefreshResult.revoked();
-        }
-
-        if (refreshToken.expiresAt().isBefore(OffsetDateTime.now(clock))) {
-            return RefreshResult.expired();
-        }
-
         var newRawRefreshToken = tokenGenerator.generateSecureToken();
         var newRefreshHash = Hashes.sha256Hex(newRawRefreshToken);
         var now = OffsetDateTime.now(clock);
         var refreshExpiresAt = now.plusDays(refreshTokenTtlDays);
 
+
+        // TODO: This is ugly. Fix before commit.
         var newRefreshToken = new RefreshTokenDto(
                 null,
-                refreshToken.userId(),
-                refreshToken.userName(),
-                refreshToken.role(),
+                null,
+                null,
+                null,
                 newRefreshHash,
                 refreshExpiresAt,
                 null,
                 now
         );
 
-        repository.rotateRefreshToken(tokenHash, newRefreshToken, now);
+        var rotationResult = repository.rotateRefreshToken(tokenHash, newRefreshToken, now);
 
-        var accessToken = tokenProvider.generateAccessToken(refreshToken.userId(), refreshToken.userName(), refreshToken.role());
-        return new RefreshResult.Success(accessToken, newRawRefreshToken, accessTokenTtlSeconds);
+        return switch (rotationResult) {
+            case TokenRotationDto.Success s -> {
+                var accessToken = tokenProvider.generateAccessToken(s.userId(), s.userName(), s.role());
+                tokenRevocationService.registerToken(s.userId(), accessToken.id());
+                yield new RefreshResult.Success(accessToken.token(), newRawRefreshToken, accessTokenTtlSeconds);
+            }
+            case TokenRotationDto.Failure.NotFound ignored -> RefreshResult.invalid();
+            case TokenRotationDto.Failure.Expired ignored -> RefreshResult.expired();
+            case TokenRotationDto.Failure.Revoked ignored -> RefreshResult.revoked();
+        };
     }
 
     public boolean logout(String token) {

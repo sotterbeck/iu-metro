@@ -15,6 +15,6 @@ public interface AuthTokenRepository {
 
     void revokeRefreshToken(String tokenHash);
 
-    void rotateRefreshToken(String oldTokenHash, RefreshTokenDto newToken, OffsetDateTime revokedAt);
+    TokenRotationDto rotateRefreshToken(String oldTokenHash, RefreshTokenDto newToken, OffsetDateTime revokedAt);
 
 }
