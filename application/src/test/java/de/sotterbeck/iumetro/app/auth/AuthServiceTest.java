@@ -358,6 +358,7 @@ class AuthServiceTest {
 
             assertThat(result).isTrue();
             verify(repository).revokeRefreshToken(tokenHash);
+            verify(tokenRevocationService).revokeAllForUser(USER_ID);
         }
 
         @Test

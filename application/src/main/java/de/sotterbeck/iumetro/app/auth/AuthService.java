@@ -97,7 +97,10 @@ public final class AuthService {
         var tokenHash = Hashes.sha256Hex(token);
 
         repository.findRefreshTokenByHash(tokenHash)
-                .ifPresent(refreshToken -> repository.revokeRefreshToken(tokenHash));
+                .ifPresent(refreshToken -> {
+                    repository.revokeRefreshToken(tokenHash);
+                    tokenRevocationService.revokeAllForUser(refreshToken.userId());
+                });
 
         return true;
     }
