@@ -14,6 +14,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.17.2")
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jdk8)
+    implementation(libs.java.jwt)
     compileOnly("org.jetbrains:annotations:24.0.1")
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.platform.launcher)
@@ -23,7 +24,7 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get()))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
 }
 
 tasks {

@@ -29,7 +29,9 @@ dependencies {
     implementation(libs.cloud.core)
     implementation(libs.cloud.annotations)
     implementation(libs.cloud.paper)
+    implementation(libs.java.jwt)
     compileOnly(libs.paper)
+    compileOnly(libs.luckperms)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.assertj.core)
     testImplementation(libs.mockito.core)
@@ -40,7 +42,7 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get()))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(libs.versions.jdk.get()))
 }
 
 tasks {
@@ -79,6 +81,7 @@ tasks {
             "org.eclipse.jetty" to "$relocatedPackage.eclipse.jetty",
             "org.intellij" to "$relocatedPackage.intellij",
             "org.jetbrains.annotations" to "$relocatedPackage.jetbrains.annotations",
+            "com.auth0" to "$relocatedPackage.auth0",
 
         )
 

@@ -9,6 +9,15 @@ postgres:
 web:
   port: 4556
 
+auth:
+  secretKey: ""
+  accessTokenTtlMinutes: 15
+  refreshTokenTtlDays: 7
+  magicLinkTtlMinutes: 5
+  baseUrl: "http://localhost:4556"
+  corsOrigins:
+    - "http://localhost:3000"
+
 signs:
   material: acacia_sign
   lines:

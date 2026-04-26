@@ -8,4 +8,5 @@ module iumetro.domain {
     exports de.sotterbeck.iumetro.domain.station;
     exports de.sotterbeck.iumetro.domain.network;
     exports de.sotterbeck.iumetro.domain.ticket.validators;
+    exports de.sotterbeck.iumetro.domain.auth;
 }
