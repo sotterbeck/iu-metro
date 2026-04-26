@@ -73,17 +73,7 @@ public final class AuthService {
         var refreshExpiresAt = now.plusDays(refreshTokenTtlDays);
 
 
-        // TODO: This is ugly. Fix before commit.
-        var newRefreshToken = new RefreshTokenDto(
-                null,
-                null,
-                null,
-                null,
-                newRefreshHash,
-                refreshExpiresAt,
-                null,
-                now
-        );
+        var newRefreshToken = RefreshTokenDto.ofRotated(newRefreshHash, refreshExpiresAt, now);
 
         var rotationResult = repository.rotateRefreshToken(tokenHash, newRefreshToken, now);
 
@@ -118,16 +108,7 @@ public final class AuthService {
         var now = OffsetDateTime.now(clock);
         var refreshExpiresAt = now.plusDays(refreshTokenTtlDays);
 
-        repository.saveRefreshToken(new RefreshTokenDto(
-                null,
-                userId,
-                userName,
-                role,
-                refreshHash,
-                refreshExpiresAt,
-                null,
-                now
-        ));
+        repository.saveRefreshToken(RefreshTokenDto.of(userId, userName, role, refreshHash, refreshExpiresAt, now));
         return rawRefreshToken;
     }
 
