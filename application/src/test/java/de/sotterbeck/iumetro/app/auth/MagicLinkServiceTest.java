@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class MagicLinkServiceTest {
 
-    private static final String BASE_URL = "http://localhost:4556";
+    private static final String BASE_URL = "http://localhost:4556/verify";
     private static final int MAGIC_LINK_TTL_MINUTES = 5;
     private static final UUID USER_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
     private static final String USER_NAME = "TestPlayer";
@@ -82,7 +82,7 @@ class MagicLinkServiceTest {
 
         MagicLinkResult result = underTest.generateLink(USER_ID, USER_NAME, ROLE);
 
-        assertThat(result.url()).isEqualTo(BASE_URL + "/api/auth/verify?token=" + rawToken);
+        assertThat(result.url()).isEqualTo("%s?token=%s".formatted(BASE_URL, rawToken));
     }
 
     @Test
@@ -92,7 +92,7 @@ class MagicLinkServiceTest {
 
         MagicLinkResult result = underTest.generateLink(USER_ID, USER_NAME, ROLE);
 
-        assertThat(result.url()).isEqualTo(BASE_URL + "/api/auth/verify?token=" + rawToken);
+        assertThat(result.url()).isEqualTo("%s?token=%s".formatted(BASE_URL, rawToken));
     }
 
     @Test

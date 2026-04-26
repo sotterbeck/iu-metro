@@ -35,14 +35,11 @@ public class AuthRouting implements Routing {
     public void bindRoutes() {
         javalin.get("/api/auth/verify", ctx -> {
             NaiveRateLimit.requestPerTimeUnit(ctx, 2, TimeUnit.MINUTES);
+            var request = ctx.bodyValidator(VerifyRequest.class)
+                    .check((VerifyRequest r) -> r.token() != null && !r.token().isBlank(), "Missing token")
+                    .get();
 
-            var token = ctx.queryParam("token");
-            if (token == null || token.isBlank()) {
-                ctx.status(HttpStatus.BAD_REQUEST);
-                ctx.json(ApiResponse.failure("Missing token parameter"));
-                return;
-            }
-
+            var token = request.token();
             var result = authService.verify(token);
             switch (result) {
                 case VerifyResult.Success s -> sendTokens(ctx, s.refreshToken(), s.accessToken(), s.expiresIn());
@@ -129,6 +126,10 @@ public class AuthRouting implements Routing {
                 null,
                 SameSite.STRICT
         ));
+    }
+
+    private record VerifyRequest(String token) {
+
     }
 
 }

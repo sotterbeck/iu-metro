@@ -33,8 +33,7 @@ public final class MagicLinkService {
 
         repository.saveMagicLinkToken(new MagicLinkTokenDto(tokenHash, userId, userName, role, now, expiresAt));
 
-        var url = "%s/api/auth/verify?token=%s"
-                .formatted(baseUrl, rawToken);
+        var url = "%s?token=%s".formatted(baseUrl, rawToken);
         return new MagicLinkResult(url);
     }
 
