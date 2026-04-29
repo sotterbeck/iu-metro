@@ -2,6 +2,8 @@ package de.sotterbeck.iumetro.infra.papermc.station;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import de.sotterbeck.iumetro.app.station.MetroStationModificationService;
 import de.sotterbeck.iumetro.app.station.MetroStationRepository;
@@ -9,15 +11,20 @@ import de.sotterbeck.iumetro.app.station.MetroStationService;
 import de.sotterbeck.iumetro.app.station.MetroStationTeleportService;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
+import de.sotterbeck.iumetro.infra.papermc.station.web.MetroStationController;
 import de.sotterbeck.iumetro.infra.papermc.station.web.MetroStationRouting;
 import de.sotterbeck.iumetro.infra.postgres.station.PostgresMetroStationRepository;
-import io.javalin.Javalin;
-import jakarta.inject.Singleton;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.sql.DataSource;
 
 public class MetroStationModule extends AbstractModule {
+
+    @Override
+    protected void configure() {
+        bind(MetroStationController.class);
+        Multibinder.newSetBinder(binder(), Routing.class).addBinding().to(MetroStationRouting.class);
+    }
 
     @Provides
     @Singleton
@@ -61,10 +68,5 @@ public class MetroStationModule extends AbstractModule {
     @ProvidesIntoSet
     static CloudAnnotated provideMetroStationTpCommand(MetroStationTeleportService metroStationTeleportService, JavaPlugin plugin) {
         return new MetroStationTpCommand(metroStationTeleportService, plugin);
-    }
-
-    @ProvidesIntoSet
-    static Routing provideMetroStationRouting(Javalin javalin, MetroStationService metroStationService, MetroStationModificationService metroStationModificationService) {
-        return new MetroStationRouting(javalin, metroStationService, metroStationModificationService);
     }
 }

@@ -1,61 +1,27 @@
 package de.sotterbeck.iumetro.infra.papermc.station.web;
 
-import de.sotterbeck.iumetro.app.station.MetroStationModificationService;
-import de.sotterbeck.iumetro.app.station.MetroStationModificationService.Status;
-import de.sotterbeck.iumetro.app.station.MetroStationService;
 import de.sotterbeck.iumetro.infra.papermc.auth.Role;
-import de.sotterbeck.iumetro.infra.papermc.common.web.ApiResponse;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import io.javalin.Javalin;
-import io.javalin.http.HttpStatus;
 
-import java.util.List;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
-public class MetroStationRouting implements Routing {
+@Singleton
+public class MetroStationRouting extends Routing<MetroStationController> {
 
     private final Javalin javalin;
-    private final MetroStationService metroStationService;
-    private final MetroStationModificationService metroStationModificationService;
 
-    public MetroStationRouting(Javalin javalin, MetroStationService metroStationService, MetroStationModificationService metroStationModificationService) {
+    @Inject
+    public MetroStationRouting(Javalin javalin) {
+        super(MetroStationController.class);
         this.javalin = javalin;
-        this.metroStationService = metroStationService;
-        this.metroStationModificationService = metroStationModificationService;
     }
 
     @Override
     public void bindRoutes() {
-        javalin.get("/api/metro-stations", ctx ->
-                        ctx.json(ApiResponse.success(metroStationService.getAll())),
-                Role.AUTHENTICATED
-        );
-
-        javalin.get("/api/metro-stations/positioned", ctx ->
-                        ctx.json(ApiResponse.success(metroStationService.getAllPositioned())),
-                Role.AUTHENTICATED
-        );
-
-        javalin.put("/api/metro-stations/{name}/lines", ctx -> {
-            String name = ctx.pathParam("name");
-            var body = ctx.bodyAsClass(SaveLinesBody.class);
-
-            var status = metroStationModificationService.saveLines(name, body.lines());
-
-            if (status == Status.NOT_FOUND) {
-                ctx.status(HttpStatus.NOT_FOUND);
-                ctx.json(ApiResponse.failure("Station not found"));
-                return;
-            }
-
-            ctx.status(HttpStatus.OK);
-            ctx.json(ApiResponse.success("Lines saved successfully"));
-        }, Role.AUTHENTICATED);
-
+        javalin.get("/api/metro-stations", ctx -> controller().getAll(ctx), Role.AUTHENTICATED);
+        javalin.get("/api/metro-stations/positioned", ctx -> controller().getAllPositioned(ctx), Role.AUTHENTICATED);
+        javalin.put("/api/metro-stations/{name}/lines", ctx -> controller().saveLines(ctx), Role.AUTHENTICATED);
     }
-
-    private record SaveLinesBody(List<String> lines) {
-
-    }
-
-
 }

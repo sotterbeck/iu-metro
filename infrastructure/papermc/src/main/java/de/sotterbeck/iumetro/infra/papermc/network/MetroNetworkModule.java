@@ -3,6 +3,7 @@ package de.sotterbeck.iumetro.infra.papermc.network;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.multibindings.Multibinder;
 import com.google.inject.multibindings.ProvidesIntoSet;
 import de.sotterbeck.iumetro.app.common.CommonPresenter;
 import de.sotterbeck.iumetro.app.network.graph.*;
@@ -12,7 +13,6 @@ import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import de.sotterbeck.iumetro.infra.postgres.network.PostgresMetroNetworkRepository;
 import de.sotterbeck.iumetro.infra.postgres.network.PostgresStationMarkerRepository;
-import io.javalin.Javalin;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,6 +20,14 @@ import javax.sql.DataSource;
 import java.util.function.Supplier;
 
 public class MetroNetworkModule extends AbstractModule {
+
+    @Override
+    protected void configure() {
+        bind(MetroNetworkController.class);
+        bind(LineController.class);
+        Multibinder.newSetBinder(binder(), Routing.class).addBinding().to(MetroNetworkRouting.class);
+        Multibinder.newSetBinder(binder(), Routing.class).addBinding().to(LineRouting.class);
+    }
 
     @Provides
     @Singleton
@@ -97,15 +105,4 @@ public class MetroNetworkModule extends AbstractModule {
     static CloudAnnotated provideMetroNetworkBuildCommand(StationGraphBuilderService metroStationService) {
         return new MetroNetworkBuildCommand(metroStationService);
     }
-
-    @ProvidesIntoSet
-    static Routing provideMetroNetworkRouting(Javalin javalin, MetroNetworkGraphService metroNetworkGraphService) {
-        return new MetroNetworkRouting(javalin, metroNetworkGraphService);
-    }
-
-    @ProvidesIntoSet
-    static Routing provideLineRouting(Javalin javalin, LineService lineService) {
-        return new LineRouting(javalin, lineService);
-    }
-
 }

@@ -1,24 +1,25 @@
 package de.sotterbeck.iumetro.infra.papermc.network;
 
-import de.sotterbeck.iumetro.app.network.graph.MetroNetworkGraphService;
 import de.sotterbeck.iumetro.infra.papermc.auth.Role;
-import de.sotterbeck.iumetro.infra.papermc.common.web.ApiResponse;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import io.javalin.Javalin;
 
-public class MetroNetworkRouting implements Routing {
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+
+@Singleton
+public class MetroNetworkRouting extends Routing<MetroNetworkController> {
 
     private final Javalin javalin;
-    private final MetroNetworkGraphService metroNetworkGraphService;
 
-    public MetroNetworkRouting(Javalin javalin, MetroNetworkGraphService metroNetworkGraphService) {
+    @Inject
+    public MetroNetworkRouting(Javalin javalin) {
+        super(MetroNetworkController.class);
         this.javalin = javalin;
-        this.metroNetworkGraphService = metroNetworkGraphService;
     }
 
     @Override
     public void bindRoutes() {
-        javalin.get("/api/metro-network/graph", ctx -> ctx.json(ApiResponse.success(metroNetworkGraphService.getEntireNetwork())), Role.AUTHENTICATED);
+        javalin.get("/api/metro-network/graph", ctx -> controller().getNetworkGraph(ctx), Role.AUTHENTICATED);
     }
-
 }

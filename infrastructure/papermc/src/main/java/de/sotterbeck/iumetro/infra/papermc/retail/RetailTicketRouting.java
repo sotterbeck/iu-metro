@@ -1,78 +1,31 @@
 package de.sotterbeck.iumetro.infra.papermc.retail;
 
-import de.sotterbeck.iumetro.app.retail.RetailTicketRequestModel;
-import de.sotterbeck.iumetro.app.retail.RetailTicketResponseModel;
-import de.sotterbeck.iumetro.app.retail.RetailTicketService;
 import de.sotterbeck.iumetro.infra.papermc.auth.Role;
-import de.sotterbeck.iumetro.infra.papermc.common.web.ApiResponse;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import io.javalin.Javalin;
-import io.javalin.http.HttpStatus;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
-public class RetailTicketRouting implements Routing {
+@Singleton
+public class RetailTicketRouting extends Routing<RetailTicketController> {
 
     private final Javalin javalin;
-    private final RetailTicketService retailTicketService;
 
-    public RetailTicketRouting(Javalin javalin, RetailTicketService retailTicketService) {
+    @Inject
+    public RetailTicketRouting(Javalin javalin) {
+        super(RetailTicketController.class);
         this.javalin = javalin;
-        this.retailTicketService = retailTicketService;
     }
 
     @Override
     public void bindRoutes() {
-        javalin.get("/api/retail-tickets", ctx -> {
-            List<RetailTicketResponseModel> tickets = retailTicketService.getAll();
-            ctx.json(ApiResponse.success(tickets));
-        }, Role.AUTHENTICATED);
-
-        javalin.get("/api/retail-tickets/categories", ctx -> {
-            List<String> categories = retailTicketService.getAllCategories();
-            ctx.json(ApiResponse.success(categories));
-        }, Role.AUTHENTICATED);
-
-        javalin.get("/api/retail-tickets/grouped-by-category", ctx -> {
-            Map<String, List<RetailTicketResponseModel>> grouped = retailTicketService.getAllGroupedByCategory();
-            ctx.json(ApiResponse.success(grouped));
-        }, Role.AUTHENTICATED);
-
-        javalin.get("/api/retail-tickets/{id}", ctx -> {
-            String id = ctx.pathParam("id");
-
-            Optional<RetailTicketResponseModel> ticket = retailTicketService.getById(id);
-
-            if (ticket.isEmpty()) {
-                ctx.status(HttpStatus.NOT_FOUND);
-                ctx.json(ApiResponse.<RetailTicketResponseModel>failure("Ticket not found"));
-                return;
-            }
-
-            ctx.json(ApiResponse.success(ticket.get()));
-        }, Role.AUTHENTICATED);
-
-        javalin.post("/api/retail-tickets", ctx -> {
-            RetailTicketRequestModel request = ctx.bodyAsClass(RetailTicketRequestModel.class);
-            RetailTicketResponseModel response = retailTicketService.create(request);
-            ctx.status(HttpStatus.CREATED);
-            ctx.json(ApiResponse.success(response));
-        }, Role.AUTHENTICATED);
-
-        javalin.put("/api/retail-tickets/{id}", ctx -> {
-            String id = ctx.pathParam("id");
-            RetailTicketRequestModel request = ctx.bodyAsClass(RetailTicketRequestModel.class);
-            RetailTicketResponseModel response = retailTicketService.update(id, request);
-            ctx.json(ApiResponse.success(response));
-        }, Role.AUTHENTICATED);
-
-        javalin.delete("/api/retail-tickets/{id}", ctx -> {
-            String id = ctx.pathParam("id");
-            RetailTicketResponseModel response = retailTicketService.delete(id);
-            ctx.json(ApiResponse.success(response));
-        }, Role.AUTHENTICATED);
+        javalin.get("/api/retail-tickets", ctx -> controller().getAllRetailTickets(ctx), Role.AUTHENTICATED);
+        javalin.get("/api/retail-tickets/categories", ctx -> controller().getAllCategories(ctx), Role.AUTHENTICATED);
+        javalin.get("/api/retail-tickets/grouped-by-category", ctx -> controller().getAllGroupedByCategory(ctx), Role.AUTHENTICATED);
+        javalin.get("/api/retail-tickets/{id}", ctx -> controller().getById(ctx), Role.AUTHENTICATED);
+        javalin.post("/api/retail-tickets", ctx -> controller().create(ctx), Role.AUTHENTICATED);
+        javalin.put("/api/retail-tickets/{id}", ctx -> controller().update(ctx), Role.AUTHENTICATED);
+        javalin.delete("/api/retail-tickets/{id}", ctx -> controller().delete(ctx), Role.AUTHENTICATED);
     }
-
 }
