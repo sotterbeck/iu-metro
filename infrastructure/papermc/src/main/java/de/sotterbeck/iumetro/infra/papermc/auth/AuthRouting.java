@@ -1,26 +1,28 @@
 package de.sotterbeck.iumetro.infra.papermc.auth;
 
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
-import io.javalin.Javalin;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+
+import java.util.List;
+
+import static io.javalin.apibuilder.ApiBuilder.path;
+import static io.javalin.apibuilder.ApiBuilder.post;
 
 @Singleton
 public class AuthRouting extends Routing<AuthController> {
 
-    private final Javalin javalin;
-
     @Inject
-    public AuthRouting(Javalin javalin) {
+    public AuthRouting() {
         super(AuthController.class);
-        this.javalin = javalin;
     }
 
     @Override
     public void bindRoutes() {
-        javalin.post("/api/auth/verify", ctx -> controller().verify(ctx), Role.ANYONE);
-        javalin.post("/api/auth/refresh", ctx -> controller().refresh(ctx), Role.ANYONE);
-        javalin.post("/api/auth/logout", ctx -> controller().logout(ctx), Role.ANYONE);
+        path("/auth", List.of(Role.ANYONE), () -> {
+            post("/verify", ctx -> controller().verify(ctx));
+            post("/refresh", ctx -> controller().refresh(ctx));
+            post("/logout", ctx -> controller().logout(ctx));
+        });
     }
 }

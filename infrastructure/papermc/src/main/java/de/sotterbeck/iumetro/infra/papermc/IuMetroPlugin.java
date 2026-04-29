@@ -8,7 +8,6 @@ import de.sotterbeck.iumetro.infra.papermc.auth.AuthModule;
 import de.sotterbeck.iumetro.infra.papermc.auth.LuckPermsModule;
 import de.sotterbeck.iumetro.infra.papermc.common.CloudAnnotated;
 import de.sotterbeck.iumetro.infra.papermc.common.sign.SignModule;
-import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
 import de.sotterbeck.iumetro.infra.papermc.common.web.WebModule;
 import de.sotterbeck.iumetro.infra.papermc.faregate.FareGateModule;
 import de.sotterbeck.iumetro.infra.papermc.network.MetroNetworkModule;
@@ -36,9 +35,6 @@ public class IuMetroPlugin extends JavaPlugin {
 
     @Inject
     private Javalin javalin;
-
-    @Inject
-    private Set<Routing> routes;
 
     @Inject
     private Set<CloudAnnotated> cloudAnnotated;
@@ -85,7 +81,6 @@ public class IuMetroPlugin extends JavaPlugin {
     }
 
     private void setUpWebServer() {
-        routes.forEach(Routing::bindRoutes);
         var port = getConfig().getInt("web.port");
 
         if (port == 0) {

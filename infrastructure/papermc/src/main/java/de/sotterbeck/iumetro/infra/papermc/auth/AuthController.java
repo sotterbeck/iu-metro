@@ -9,7 +9,7 @@ import io.javalin.http.Context;
 import io.javalin.http.Cookie;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.SameSite;
-import io.javalin.http.util.NaiveRateLimit;
+import io.javalin.plugin.bundled.RateLimitPlugin;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -34,9 +34,10 @@ public class AuthController {
     }
 
     public void verify(Context ctx) {
-        NaiveRateLimit.requestPerTimeUnit(ctx, 2, TimeUnit.MINUTES);
+        ctx.with(RateLimitPlugin.class).requestPerTimeUnit(2, TimeUnit.MINUTES);
         var request = ctx.bodyValidator(VerifyRequest.class)
                 .check((VerifyRequest r) -> r.token() != null && !r.token().isBlank(), "Missing token")
+                .required()
                 .get();
 
         var token = request.token();
@@ -48,7 +49,7 @@ public class AuthController {
     }
 
     public void refresh(Context ctx) {
-        NaiveRateLimit.requestPerTimeUnit(ctx, 20, TimeUnit.MINUTES);
+        ctx.with(RateLimitPlugin.class).requestPerTimeUnit(20, TimeUnit.MINUTES);
 
         var refreshToken = ctx.cookie(REFRESH_TOKEN_COOKIE);
         if (refreshToken == null || refreshToken.isBlank()) {
@@ -64,7 +65,7 @@ public class AuthController {
     }
 
     public void logout(Context ctx) {
-        NaiveRateLimit.requestPerTimeUnit(ctx, 20, TimeUnit.MINUTES);
+        ctx.with(RateLimitPlugin.class).requestPerTimeUnit(20, TimeUnit.MINUTES);
 
         var refreshToken = ctx.cookie(REFRESH_TOKEN_COOKIE);
         if (refreshToken != null && !refreshToken.isBlank()) {
@@ -94,14 +95,22 @@ public class AuthController {
                 AUTH_PATH,
                 refreshTokenMaxAgeSeconds,
                 true,
-                0,
                 true,
-                null,
                 null,
                 SameSite.STRICT
         ));
     }
 
+    /**
+     * Clears the refresh token cookie by sending an empty, expired cookie with the same
+     * security attributes as the original.
+     * <p>
+     * We do not use {@link Context#removeCookie(String, String)} because it does not set
+     * {@code HttpOnly}, {@code Secure}, or {@code SameSite}. Modern browsers require these
+     * attributes to match on the removal cookie for the original cookie to actually be deleted.
+     *
+     * @param ctx the context to clear the cookie from
+     */
     private void clearRefreshTokenCookie(Context ctx) {
         ctx.cookie(new Cookie(
                 REFRESH_TOKEN_COOKIE,
@@ -109,9 +118,7 @@ public class AuthController {
                 AUTH_PATH,
                 0,
                 true,
-                0,
                 true,
-                null,
                 null,
                 SameSite.STRICT
         ));

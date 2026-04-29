@@ -12,8 +12,12 @@ import de.sotterbeck.iumetro.infra.papermc.common.IuMetroConfig;
 import de.sotterbeck.iumetro.infra.papermc.network.MetroStationResponseModelMixIn;
 import io.javalin.Javalin;
 import io.javalin.json.JavalinJackson;
+import io.javalin.plugin.bundled.RateLimitPlugin;
 
 import java.util.List;
+import java.util.Set;
+
+import static io.javalin.apibuilder.ApiBuilder.path;
 
 public class WebModule extends AbstractModule {
 
@@ -33,13 +37,13 @@ public class WebModule extends AbstractModule {
 
     @Provides
     @Singleton
-    static Javalin provideJavalin(ObjectMapper objectMapper, IuMetroConfig config, JwtAccessManager jwtAccessManager) {
-        return Javalin.create(javalinConfig -> {
-            javalinConfig.jsonMapper(new JavalinJackson(objectMapper, true));
+    static Javalin provideJavalin(ObjectMapper objectMapper, IuMetroConfig iuMetroConfig, JwtAccessManager jwtAccessManager, Set<Routing> routes) {
+        return Javalin.create(config -> {
+            config.jsonMapper(new JavalinJackson(objectMapper, true));
 
-            List<String> corsOrigins = config.authCorsOrigins();
+            List<String> corsOrigins = iuMetroConfig.authCorsOrigins();
             if (!corsOrigins.isEmpty()) {
-                javalinConfig.bundledPlugins.enableCors(cors -> {
+                config.bundledPlugins.enableCors(cors -> {
                     cors.addRule(rule -> {
                         for (String origin : corsOrigins) {
                             rule.allowHost(origin);
@@ -49,8 +53,13 @@ public class WebModule extends AbstractModule {
                 });
             }
 
-            javalinConfig.router.mount(router -> {
-                router.beforeMatched(jwtAccessManager::handle);
+            config.registerPlugin(new RateLimitPlugin());
+
+            config.routes.beforeMatched(jwtAccessManager::handle);
+            config.routes.apiBuilder(() -> {
+                path("/api", () -> {
+                    routes.forEach(Routing::bindRoutes);
+                });
             });
         });
     }

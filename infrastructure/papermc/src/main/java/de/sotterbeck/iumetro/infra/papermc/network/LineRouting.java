@@ -2,26 +2,28 @@ package de.sotterbeck.iumetro.infra.papermc.network;
 
 import de.sotterbeck.iumetro.infra.papermc.auth.Role;
 import de.sotterbeck.iumetro.infra.papermc.common.web.Routing;
-import io.javalin.Javalin;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+import java.util.List;
+
+import static io.javalin.apibuilder.ApiBuilder.*;
+
 @Singleton
 public class LineRouting extends Routing<LineController> {
 
-    private final Javalin javalin;
-
     @Inject
-    public LineRouting(Javalin javalin) {
+    public LineRouting() {
         super(LineController.class);
-        this.javalin = javalin;
     }
 
     @Override
     public void bindRoutes() {
-        javalin.get("/api/lines", ctx -> controller().getAllLines(ctx), Role.AUTHENTICATED);
-        javalin.post("/api/lines", ctx -> controller().create(ctx), Role.AUTHENTICATED);
-        javalin.delete("/api/lines/{name}", ctx -> controller().delete(ctx), Role.AUTHENTICATED);
+        path("/lines", List.of(Role.AUTHENTICATED), () -> {
+            get(ctx -> controller().getAllLines(ctx));
+            post(ctx -> controller().create(ctx));
+            delete("/{name}", ctx -> controller().delete(ctx));
+        });
     }
 }
