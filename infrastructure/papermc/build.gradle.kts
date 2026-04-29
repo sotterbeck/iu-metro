@@ -21,6 +21,10 @@ dependencies {
     implementation(libs.flywaydb.database.postgresql)
     implementation(libs.hikaricp)
     implementation(libs.javalin)
+    implementation(libs.javalin.openapi.plugin)
+    implementation(libs.javalin.swagger.plugin)
+    implementation(libs.javalin.redoc.plugin)
+    annotationProcessor(libs.openapi.annotation.processor)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jdk8)
     implementation(libs.slf4j.simple)
@@ -46,6 +50,15 @@ java {
 }
 
 tasks {
+    withType<JavaCompile> {
+        options.compilerArgs.addAll(
+            listOf(
+                "-Aopenapi.info.title=IuMetro API",
+                "-Aopenapi.info.version=1.0.0"
+            )
+        )
+    }
+
     test {
         useJUnitPlatform()
     }

@@ -22,6 +22,10 @@ java-jwt = "4.5.1"
 luckperms = "5.4"
 
 [libraries]
+javalin-openapi-plugin = { module = "io.javalin.community.openapi:javalin-openapi-plugin", version.ref = "javalin" }
+javalin-swagger-plugin = { module = "io.javalin.community.openapi:javalin-swagger-plugin", version.ref = "javalin" }
+javalin-redoc-plugin = { module = "io.javalin.community.openapi:javalin-redoc-plugin", version.ref = "javalin" }
+openapi-annotation-processor = { module = "io.javalin.community.openapi:openapi-annotation-processor", version.ref = "javalin" }
 flywaydb = { module = "org.flywaydb:flyway-core", version.ref = "flywaydb" }
 flywaydb-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flywaydb" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }

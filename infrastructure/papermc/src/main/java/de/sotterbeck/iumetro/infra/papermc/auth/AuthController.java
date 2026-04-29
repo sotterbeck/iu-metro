@@ -5,12 +5,13 @@ import de.sotterbeck.iumetro.app.auth.RefreshResult;
 import de.sotterbeck.iumetro.app.auth.VerifyResult;
 import de.sotterbeck.iumetro.infra.papermc.common.IuMetroConfig;
 import de.sotterbeck.iumetro.infra.papermc.common.web.ApiResponse;
+import de.sotterbeck.iumetro.infra.papermc.common.web.OpenApiSchema;
 import io.javalin.http.Context;
 import io.javalin.http.Cookie;
 import io.javalin.http.HttpStatus;
 import io.javalin.http.SameSite;
+import io.javalin.openapi.*;
 import io.javalin.plugin.bundled.RateLimitPlugin;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -33,6 +34,23 @@ public class AuthController {
         this.refreshTokenMaxAgeSeconds = (int) Duration.ofDays(config.authRefreshTokenTtlDays()).getSeconds();
     }
 
+    @OpenApi(
+            path = "/api/auth/verify",
+            methods = HttpMethod.POST,
+            summary = "Verify Minecraft token",
+            operationId = "verifyToken",
+            tags = {"Auth"},
+            description = "Exchanges a Minecraft authentication token for a JWT access token and sets a refresh token cookie. Rate limited to 2 requests per minute.",
+            requestBody = @OpenApiRequestBody(
+                    required = true,
+                    description = "Minecraft authentication token",
+                    content = @OpenApiContent(from = VerifyRequest.class)
+            ),
+            responses = {
+                    @OpenApiResponse(status = "200", description = "Access token issued", content = @OpenApiContent(from = OpenApiSchema.TokenResponse.class)),
+                    @OpenApiResponse(status = "401", description = "Invalid or expired token", content = @OpenApiContent(from = OpenApiSchema.ErrorResponse.class))
+            }
+    )
     public void verify(Context ctx) {
         ctx.with(RateLimitPlugin.class).requestPerTimeUnit(2, TimeUnit.MINUTES);
         var request = ctx.bodyValidator(VerifyRequest.class)
@@ -48,6 +66,21 @@ public class AuthController {
         }
     }
 
+    @OpenApi(
+            path = "/api/auth/refresh",
+            methods = HttpMethod.POST,
+            summary = "Refresh access token",
+            operationId = "refreshToken",
+            tags = {"Auth"},
+            description = "Exchanges a refresh token cookie for a new JWT access token and refreshes the refresh token cookie. Rate limited to 20 requests per minute.",
+            cookies = {
+                    @OpenApiParam(name = "refresh_token", description = "Refresh token cookie", required = true)
+            },
+            responses = {
+                    @OpenApiResponse(status = "200", description = "Access token refreshed", content = @OpenApiContent(from = OpenApiSchema.TokenResponse.class)),
+                    @OpenApiResponse(status = "401", description = "Invalid or expired token", content = @OpenApiContent(from = OpenApiSchema.ErrorResponse.class))
+            }
+    )
     public void refresh(Context ctx) {
         ctx.with(RateLimitPlugin.class).requestPerTimeUnit(20, TimeUnit.MINUTES);
 
@@ -64,6 +97,20 @@ public class AuthController {
         }
     }
 
+    @OpenApi(
+            path = "/api/auth/logout",
+            methods = HttpMethod.POST,
+            summary = "Logout",
+            operationId = "logout",
+            tags = {"Auth"},
+            description = "Revokes the refresh token and clears the refresh token cookie. Rate limited to 20 requests per minute.",
+            cookies = {
+                    @OpenApiParam(name = "refresh_token", description = "Refresh token cookie", required = false)
+            },
+            responses = {
+                    @OpenApiResponse(status = "200", description = "Logged out successfully", content = @OpenApiContent(from = OpenApiSchema.MessageResponse.class))
+            }
+    )
     public void logout(Context ctx) {
         ctx.with(RateLimitPlugin.class).requestPerTimeUnit(20, TimeUnit.MINUTES);
 
@@ -124,7 +171,7 @@ public class AuthController {
         ));
     }
 
-    private record VerifyRequest(String token) {
+    record VerifyRequest(String token) {
 
     }
 
